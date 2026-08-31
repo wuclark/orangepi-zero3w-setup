@@ -1,6 +1,6 @@
 # Vendor sources and provenance
 
-Zero3W PVR Forge does not redistribute PowerVR firmware or proprietary user-space
+orangepi-zero3w-setup does not redistribute PowerVR firmware or proprietary user-space
 libraries. Each user must obtain those files from an image or package they are
 legally permitted to use.
 

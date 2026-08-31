@@ -96,7 +96,7 @@ The base image installs no additional packages by default. After SSH works,
 run this only if you want to choose software:
 
 ```bash
-cd ~/zero3w-pvr-forge
+cd ~/orangepi-zero3w-setup
 sudo ./scripts/armbian-provision.sh
 ```
 

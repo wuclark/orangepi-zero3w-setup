@@ -14,7 +14,7 @@ Backends: x11vnc, wayvnc, tigervnc
 
 Remote services are separate from desktop installation. x11vnc and wayvnc
 mirror an active session; TigerVNC creates a separate virtual X11 desktop.
-Services use SSH tunneling by default. See docs/SSH-TUNNELING.md.
+Services use SSH tunneling by default. See docs/remote/ssh-tunneling.md.
 EOF
 }
 while (($#)); do

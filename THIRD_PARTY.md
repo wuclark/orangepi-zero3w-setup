@@ -16,4 +16,4 @@ Debian packages installed by the scripts remain subject to their respective Debi
 Before publishing binary releases, review the license shipped with the source package and obtain permission where required. A source-only installer that extracts user-supplied files is the default supported distribution model.
 
 Source locations, versions, and known archive checksums are recorded in
-[`docs/vendor-sources.md`](docs/vendor-sources.md).
+[`docs/optional/gpu/vendor-sources.md`](docs/optional/gpu/vendor-sources.md).

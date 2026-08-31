@@ -1,7 +1,7 @@
 # Claude Code project instructions
 
 Follow `AGENTS.md` as the canonical agent policy. Start each task by reading it
-and `docs/DEVELOPMENT.md`. Plan before modifying installer, systemd, Xorg, boot,
+and `docs/development/development.md`. Plan before modifying installer, systemd, Xorg, boot,
 or kernel-module code. Do not claim hardware validation from container tests.
 
 Useful local checks:

@@ -24,7 +24,7 @@ trap cleanup EXIT
 
 usage() {
     cat <<EOF
-Zero3W PVR Forge — all-in-one Armbian installer
+Orange Pi Zero 3W Setup — optional PowerVR installer
 
 Usage:
   sudo ./install.sh [options]
@@ -91,7 +91,7 @@ if [[ -f $PVR_TARBALL ]]; then
 elif [[ ! -d $VENDOR_ROOT ]]; then
     die "No PVR input found. Put pvr-userspace.tar.gz in vendor-files/, pass
 --pvr-tarball FILE, or use the legacy --vendor-root DIR option. See
-docs/vendor-sources.md. Proprietary files are not redistributed."
+docs/optional/gpu/vendor-sources.md. Proprietary files are not redistributed."
 fi
 
 if [[ ! -f "$MODULE_PATH" ]]; then
@@ -152,7 +152,7 @@ fi
 cat <<EOF
 
 ============================================================
- Zero3W PVR Forge installation completed
+ Optional Orange Pi Zero 3W GPU installation completed
 ============================================================
 
 User:        $TARGET_USER

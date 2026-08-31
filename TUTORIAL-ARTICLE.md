@@ -26,7 +26,7 @@ Presentation test: spinning hardware-rendered vkcube
 ```
 
 This article explains what made it work and how to reproduce it using the
-Zero3W PVR Forge repository.
+orangepi-zero3w-setup repository.
 
 ## The central problem: rendering and display are different devices
 
@@ -48,7 +48,7 @@ Mesa KMSRO/DRI layer to reach `renderD128` for acceleration.
 
 ## Why this repository does not include the proprietary binaries
 
-Zero3W PVR Forge is source-only. It contains installers, configuration,
+orangepi-zero3w-setup is source-only. It contains installers, configuration,
 validation, documentation, and build automation. Users supply a legally
 obtained matching PowerVR filesystem.
 
@@ -79,16 +79,16 @@ Set-ExecutionPolicy -Scope Process Bypass
   -SourceDirectory "C:\Users\YOUR-NAME\Downloads\gpu-vpu-output" `
   -BoardHost "192.168.1.80" `
   -SshUser "orangepi" `
-  -RemoteRepoPath "/home/orangepi/zero3w-pvr-forge"
+  -RemoteRepoPath "/home/orangepi/orangepi-zero3w-setup"
 ```
 
 Conceptually, it performs these operations:
 
 ```powershell
 $Board = "orangepi@192.168.1.80"
-ssh.exe $Board "mkdir -p ~/zero3w-pvr-forge/vendor-files"
-scp.exe .\pvr-userspace.tar.gz "${Board}:~/zero3w-pvr-forge/vendor-files/"
-scp.exe .\vpu-userspace.tar.gz "${Board}:~/zero3w-pvr-forge/vendor-files/"
+ssh.exe $Board "mkdir -p ~/orangepi-zero3w-setup/vendor-files"
+scp.exe .\pvr-userspace.tar.gz "${Board}:~/orangepi-zero3w-setup/vendor-files/"
+scp.exe .\vpu-userspace.tar.gz "${Board}:~/orangepi-zero3w-setup/vendor-files/"
 ```
 
 On Armbian, the installer validates paths and link targets, extracts privately,
@@ -99,7 +99,7 @@ then copies only known files into isolated `/opt` locations.
 Once the archives exist under `vendor-files/`:
 
 ```bash
-cd ~/zero3w-pvr-forge
+cd ~/orangepi-zero3w-setup
 chmod +x armbian-startup.sh install.sh scripts/*.sh
 ./armbian-startup.sh
 ```
@@ -328,7 +328,7 @@ five layers had to agree:
 4. Mesa KMSRO/DRI integration between the render and display devices;
 5. Xorg startup ordering and headless presentation.
 
-Zero3W PVR Forge turns that working state into a guarded, logged, reversible
+orangepi-zero3w-setup turns that working state into a guarded, logged, reversible
 installation instead of a collection of commands buried in shell history.
 
 The full terminal-oriented procedure is in

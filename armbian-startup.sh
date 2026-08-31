@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Zero3W PVR Forge — documented fresh-Armbian entry point
+# Optional Orange Pi Zero 3W GPU — documented fresh-Armbian entry point
 #
 # Run this script ON THE ORANGE PI after the Windows transfer script has copied
 # the extracted PowerVR filesystem into this repository's vendor-root folder.

@@ -116,7 +116,7 @@ passed. Read the GPU guide before running it.
 The lower-level extracted-tree/debug equivalent is:
 
 ```bash
-cd zero3w-pvr-forge
+cd orangepi-zero3w-setup
 
 sudo ./scripts/armbian-bootstrap.sh \
   --vendor-root "$HOME/pvr-stage" \
@@ -242,7 +242,7 @@ See [docs/reference/architecture.md](docs/reference/architecture.md) and [docs/r
 The installer backs up replaced configuration under:
 
 ```text
-/var/backups/zero3w-pvr-forge/
+/var/backups/orangepi-zero3w-setup/
 ```
 
 To disable the stack without deleting the runtime:

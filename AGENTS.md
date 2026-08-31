@@ -1,12 +1,14 @@
 # Agent instructions
 
-This repository brings a proprietary PowerVR DDK 24.2 userspace together with
-an out-of-tree kernel module on one narrowly tested Orange Pi Zero 3W stack.
-Treat boot sequencing and ABI checks as safety-critical.
+This repository provides modular setup guidance for the Orange Pi Zero 3W /
+Allwinner A733. The base system is CLI-only; the proprietary PowerVR DDK and
+out-of-tree kernel module are optional, narrowly tested layers. Treat GPU boot
+sequencing and ABI checks as safety-critical.
 
 ## Before changing anything
 
-1. Read `README.md`, `docs/DEVELOPMENT.md`, `docs/architecture.md`, and
+1. Read `README.md`, `docs/development/development.md`,
+   `docs/reference/architecture.md`, and
    `manifests/reference-stack.env`.
 2. Preserve the clean-room rule: never commit generated vendor archives,
    extracted proprietary files, firmware, or `pvrsrvkm.ko`.
@@ -26,6 +28,8 @@ Treat boot sequencing and ABI checks as safety-critical.
   parsing when `pwsh` exists, `git diff --check`, and `tests/test-archives.sh`.
 - Do not run installers on a development workstation. Hardware tests must be
   explicit and occur on the target board.
+- The base and desktop/package setup paths must not run `apt update` unless the
+  user explicitly passes an update option.
 - Update README, CLI help, step-by-step guide, tutorial, and changelog whenever
   an input, option, installed path, or support claim changes.
 - Record hardware test evidence using `scripts/collect-diagnostics.sh` and put
@@ -33,6 +37,6 @@ Treat boot sequencing and ABI checks as safety-critical.
 
 ## Definition of done
 
-The archive flow, legacy extracted-tree flow, dry/static tests, documentation,
+The modular base flow, archive flow, legacy extracted-tree flow, dry/static tests, documentation,
 uninstall/recovery instructions, and Git exclusion rules agree. A maintainer can
 explain every root write and every boot-order dependency from the diff alone.

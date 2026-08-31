@@ -1,4 +1,4 @@
-# Zero3W PVR Forge: detailed step-by-step guide
+# Orange Pi Zero 3W: detailed optional GPU guide
 
 > This is the optional GPU reference-stack guide. For the general CLI-only
 > board setup, start with [First boot and Wi-Fi](../guide/01-first-boot-wifi.md), then
@@ -85,16 +85,16 @@ sudo apt update
 sudo apt install -y git
 
 cd ~
-git clone https://github.com/YOUR-NAME/zero3w-pvr-forge.git
-cd zero3w-pvr-forge
+git clone https://github.com/YOUR-NAME/orangepi-zero3w-setup.git
+cd orangepi-zero3w-setup
 ```
 
 If using the downloadable ZIP instead:
 
 ```bash
 sudo apt install -y unzip
-unzip zero3w-pvr-forge.zip
-cd zero3w-pvr-forge
+unzip orangepi-zero3w-setup.zip
+cd orangepi-zero3w-setup
 ```
 
 ## Step 3: identify the generated archives on Windows
@@ -120,7 +120,7 @@ Set-ExecutionPolicy -Scope Process Bypass
   -SourceDirectory "C:\Users\YOUR-NAME\Downloads\gpu-vpu-output" `
   -BoardHost "192.168.1.80" `
   -SshUser "orangepi" `
-  -RemoteRepoPath "/home/orangepi/zero3w-pvr-forge"
+  -RemoteRepoPath "/home/orangepi/orangepi-zero3w-setup"
 ```
 
 The script uploads the existing archives without extracting or repackaging them.
@@ -130,9 +130,9 @@ The underlying transfer pattern is:
 
 ```powershell
 $Board = "orangepi@192.168.1.80"
-ssh.exe $Board "mkdir -p ~/zero3w-pvr-forge/vendor-files"
-scp.exe .\pvr-userspace.tar.gz "${Board}:~/zero3w-pvr-forge/vendor-files/"
-scp.exe .\vpu-userspace.tar.gz "${Board}:~/zero3w-pvr-forge/vendor-files/"
+ssh.exe $Board "mkdir -p ~/orangepi-zero3w-setup/vendor-files"
+scp.exe .\pvr-userspace.tar.gz "${Board}:~/orangepi-zero3w-setup/vendor-files/"
+scp.exe .\vpu-userspace.tar.gz "${Board}:~/orangepi-zero3w-setup/vendor-files/"
 ```
 
 Prefer the repository's full PowerShell script because it adds validation and
@@ -141,7 +141,7 @@ error handling around these commands.
 ## Step 5: validate and stage the archives on Armbian
 
 ```bash
-cd ~/zero3w-pvr-forge
+cd ~/orangepi-zero3w-setup
 
 stage=$(mktemp -d)
 ./scripts/prepare-vendor-archives.sh \
@@ -380,7 +380,7 @@ The successful result is a hardware-rendered spinning cube.
 ### Automated verification
 
 ```bash
-cd ~/zero3w-pvr-forge
+cd ~/orangepi-zero3w-setup
 ./scripts/verify.sh
 ```
 
@@ -421,7 +421,7 @@ sudo systemctl set-default multi-user.target
 Collect diagnostics:
 
 ```bash
-cd ~/zero3w-pvr-forge
+cd ~/orangepi-zero3w-setup
 sudo ./scripts/collect-diagnostics.sh
 ```
 
@@ -434,7 +434,7 @@ sudo ./scripts/uninstall.sh
 Installer backups are stored below:
 
 ```text
-/var/backups/zero3w-pvr-forge/
+/var/backups/orangepi-zero3w-setup/
 ```
 
 ## Updating the repository

@@ -23,7 +23,7 @@ Set-ExecutionPolicy -Scope Process Bypass
   -SourcePath "D:\A733\pvr-stage" `
   -BoardHost "orangepizero3w.local" `
   -SshUser "orangepi" `
-  -RemoteRepoPath "/home/orangepi/zero3w-pvr-forge"
+  -RemoteRepoPath "/home/orangepi/orangepi-zero3w-setup"
 #>
 [CmdletBinding()]
 param(
