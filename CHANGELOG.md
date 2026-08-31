@@ -18,3 +18,4 @@
 - Add explicit LightDM session entries and reversible X11/Wayland switching,
   including Debian 13 `labwc` support.
 - Add Debian 13 `fluxbox` as a lightweight X11 session profile.
+- Document the Windows WSL2/`usbipd` workflow for preparing an ext4 SD card.

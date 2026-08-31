@@ -118,6 +118,49 @@ On Windows:
 .\windows\Prepare-HeadlessPreset.ps1 -OutputFile .\not_logged_in_yet
 ```
 
+### Windows with WSL2 and a USB card reader
+
+WSL2's `wsl --mount` command does not directly support USB SD-card readers.
+Use Microsoft's [USB connection workflow](https://learn.microsoft.com/en-us/windows/wsl/connect-usb)
+with `usbipd-win` instead. Close File Explorer and any Windows disk utility
+using the card first.
+
+In **Administrator PowerShell**, find the reader and note its bus ID:
+
+```powershell
+usbipd list
+usbipd bind --busid 1-4
+usbipd attach --wsl --busid 1-4
+```
+
+Replace `1-4` with the bus ID shown by `usbipd list`. The `bind` command is
+normally needed once per device; `attach` makes it available to WSL2. Then,
+inside WSL, identify the Armbian root partition:
+
+```bash
+lsblk -f
+sudo mkdir -p /mnt/armbian-root
+sudo mount -t ext4 /dev/sdX2 /mnt/armbian-root
+```
+
+Replace `/dev/sdX2` after checking `lsblk`; the larger ext4 partition is the
+root filesystem. Generate the preset from WSL:
+
+```bash
+cd /path/to/orangepi-zero3w-setup
+sudo ./scripts/create-headless-preset.sh --root-mount /mnt/armbian-root
+sudo umount /mnt/armbian-root
+```
+
+After unmounting, detach the reader from **PowerShell**:
+
+```powershell
+usbipd detach --busid 1-4
+```
+
+Do not remove the card or reuse it in Windows until the WSL mount has been
+unmounted and the USB device detached.
+
 PowerShell can also write directly when an ext4 root filesystem is available:
 
 ```powershell
