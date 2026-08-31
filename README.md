@@ -10,8 +10,8 @@ GPU, VPU, and NPU layers are installed separately.
 
 ## Quick start
 
-For a new SD card, first create the Wi-Fi-enabled Armbian preset described in
-[First boot and Wi-Fi](docs/guide/01-first-boot-wifi.md). After SSH works:
+For a new SD card, follow [Prepare the SD card](docs/guide/00-prepare-sd-card.md),
+then [First boot and Wi-Fi](docs/guide/01-first-boot-wifi.md). After SSH works:
 
 ```bash
 sudo ./setup.sh base
@@ -41,6 +41,7 @@ Viewer instructions.
 
 ## Guide
 
+- [Prepare the SD card](docs/guide/00-prepare-sd-card.md)
 - [First boot and Wi-Fi](docs/guide/01-first-boot-wifi.md)
 - [Base system](docs/guide/02-base-system.md)
 - [Desktop sessions](docs/guide/03-desktop-sessions.md)
@@ -95,7 +96,7 @@ For a fresh board with the generated archives stored on Windows, follow
 - `windows/Copy-VendorArchives.ps1` on Windows; then
 - `./armbian-startup.sh` on the Orange Pi.
 
-For a completely headless board, begin with [Headless Armbian setup](docs/legacy/headless-armbian-setup.md).
+For a completely headless board, begin with [Prepare the SD card](docs/guide/00-prepare-sd-card.md).
 The base image installs no extra software; `scripts/armbian-provision.sh`
 offers an explicit opt-in menu after SSH is working.
 

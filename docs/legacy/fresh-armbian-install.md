@@ -1,7 +1,8 @@
 # Fresh Armbian installation from Windows
 
 For the full SD-card, Wi-Fi, and first-boot process on Windows, Linux, or
-macOS, start with [Headless Armbian setup](headless-armbian-setup.md). This
+macOS, start with [Prepare the SD card](../guide/00-prepare-sd-card.md), then
+[First boot and Wi-Fi](../guide/01-first-boot-wifi.md). This
 page covers the later vendor archive and PVR installation phase.
 
 > The preferred method now transfers `pvr-userspace.tar.gz` and optional
