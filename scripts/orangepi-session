@@ -4,16 +4,19 @@ set -Eeuo pipefail
 STATE=/etc/orangepi-zero3w-setup/state
 CONF=/etc/lightdm/lightdm.conf.d/50-orangepi-zero3w-setup.conf
 declare -A TYPE=(
-    [openbox]=x11 [xfce]=x11 [i3]=x11 [icewm]=x11
-    [sway]=wayland [enlightenment-x11]=x11 [enlightenment-wayland]=wayland
+    [openbox]=x11 [xfce]=x11 [i3]=x11 [icewm]=x11 [fluxbox]=x11
+    [sway]=wayland [labwc]=wayland
+    [enlightenment-x11]=x11 [enlightenment-wayland]=wayland
 )
 declare -A SESSION=(
-    [openbox]=openbox [xfce]=xfce [i3]=i3 [icewm]=icewm
-    [sway]=sway [enlightenment-x11]=enlightenment [enlightenment-wayland]=enlightenment
+    [openbox]=openbox [xfce]=xfce [i3]=i3 [icewm]=icewm [fluxbox]=fluxbox
+    [sway]=sway [labwc]=labwc
+    [enlightenment-x11]=enlightenment-x11 [enlightenment-wayland]=enlightenment-wayland
 )
 declare -A CMD=(
-    [openbox]=openbox [xfce]=startxfce4 [i3]=i3 [icewm]=icewm
-    [sway]=sway [enlightenment-x11]=enlightenment_start [enlightenment-wayland]=enlightenment_start
+    [openbox]=openbox [xfce]=startxfce4 [i3]=i3 [icewm]=icewm [fluxbox]=startfluxbox
+    [sway]=sway [labwc]=labwc
+    [enlightenment-x11]=enlightenment_start [enlightenment-wayland]=enlightenment_start
 )
 die(){ echo "ERROR: $*" >&2; exit 1; }
 require_root(){ [[ $EUID -eq 0 ]] || die 'Run with sudo.'; }
@@ -34,7 +37,7 @@ set_profile() {
 [Seat:*]
 autologin-user=$(cat "$STATE/user" 2>/dev/null || echo orangepi)
 autologin-user-timeout=0
-user-session=${SESSION[$profile]}
+user-session=orangepi-${SESSION[$profile]}
 EOF
     printf '%s\n' "$profile" >"$STATE/desktop-profile"
     printf '%s\n' "${TYPE[$profile]}" >"$STATE/remote-type"
@@ -44,7 +47,7 @@ EOF
 
 case "${1:-}" in
     list)
-        printf '%s\n' openbox xfce i3 icewm sway enlightenment-x11 enlightenment-wayland
+        printf '%s\n' openbox xfce i3 icewm fluxbox sway labwc enlightenment-x11 enlightenment-wayland
         ;;
     current)
         current

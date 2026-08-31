@@ -24,7 +24,9 @@ Package installation uses the existing apt cache. To explicitly refresh it:
 sudo ./setup.sh packages --update
 ```
 
-Choose a GUI only when wanted:
+Choose a GUI only when wanted. Available desktop profiles include X11 sessions
+(`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`) and Wayland sessions
+(`sway`, `labwc`):
 
 ```bash
 sudo ./setup.sh desktop --profile openbox

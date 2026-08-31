@@ -268,6 +268,20 @@ ssh -L 5900:127.0.0.1:5900 orangepi@BOARD_IP
 
 The VNC viewer then connects to `127.0.0.1:5900`.
 
+The desktop installer also supports explicit X11 and Wayland session profiles.
+Install the profiles you want, then select one before rebooting:
+
+```bash
+sudo ./setup.sh desktop --profile xfce
+sudo ./setup.sh desktop --profile labwc
+sudo orangepi-session set labwc --reboot
+```
+
+`openbox`, `xfce`, `i3`, `icewm`, and `fluxbox` use X11. `sway` and `labwc` use the
+compositor's Wayland DRM session. The Wayland profiles are not part of the
+proven PowerVR/X11 support claim until they have real-board presentation and
+reboot evidence.
+
 ## Proving that acceleration is real
 
 After rebooting and waiting approximately one minute:

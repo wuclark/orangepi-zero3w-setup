@@ -8,6 +8,13 @@
 > `vpu-userspace.tar.gz`. Follow [the archive workflow](../optional/gpu/archive-workflow.md).
 > Any later `vendor-root` instructions are the legacy/debug alternative.
 
+The desktop layer supports separate X11 profiles (`openbox`, `xfce`, `i3`,
+`icewm`, and `fluxbox`) and experimental Wayland profiles (`sway` and `labwc`). Install a
+profile with `setup.sh desktop`, then switch installed profiles with
+`sudo orangepi-session set PROFILE --reboot`. The proven GPU evidence in this
+guide applies to the X11/LightDM path only; a Wayland login requires separate
+board evidence.
+
 This guide reproduces hardware-accelerated Vulkan, OpenGL ES, X11 presentation,
 and x11vnc on an Orange Pi Zero 3W with the Allwinner A733 and PowerVR
 BXM-4-64 GPU.

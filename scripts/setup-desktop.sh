@@ -10,7 +10,7 @@ usage() {
     cat <<'EOF'
 Usage: sudo ./setup.sh desktop --profile PROFILE [--user USER]
 
-Profiles: openbox, xfce, i3, icewm, sway, enlightenment-x11,
+Profiles: openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11,
           enlightenment-wayland
 
 Installs only the selected desktop and LightDM. It does not run apt update.
@@ -36,7 +36,9 @@ declare -A PACKAGES=(
     [xfce]='lightdm lightdm-gtk-greeter xfce4 xfce4-goodies'
     [i3]='lightdm lightdm-gtk-greeter i3 xterm dbus-x11'
     [icewm]='lightdm lightdm-gtk-greeter icewm xterm dbus-x11'
+    [fluxbox]='lightdm lightdm-gtk-greeter fluxbox xterm dbus-x11'
     [sway]='lightdm sway wayland-protocols xwayland'
+    [labwc]='lightdm labwc wayland-protocols xwayland'
     [enlightenment-x11]='lightdm enlightenment xterm dbus-x11'
     [enlightenment-wayland]='lightdm enlightenment wayland-protocols xwayland'
 )
@@ -59,15 +61,39 @@ case "$PROFILE" in
     xfce) SESSION=xfce ;;
     i3) SESSION=i3 ;;
     icewm) SESSION=icewm ;;
-    sway) SESSION=sway ;;
-    enlightenment-x11|enlightenment-wayland) SESSION=enlightenment ;;
+    sway|labwc|enlightenment-x11|enlightenment-wayland) SESSION=$PROFILE ;;
+esac
+install -d -m 755 /usr/local/libexec/orangepi-zero3w-setup
+install -m 755 "$SCRIPT_DIR/orangepi-session-launch" /usr/local/libexec/orangepi-zero3w-setup/session-launch
+install_session_file() {
+    local profile=$1 type=$2
+    local directory
+    case "$type" in
+        x11) directory=/usr/share/xsessions ;;
+        wayland) directory=/usr/share/wayland-sessions ;;
+        *) die "Unknown session type: $type" ;;
+    esac
+    install -d -m 755 "$directory"
+    cat >"$directory/orangepi-$profile.desktop" <<EOF
+[Desktop Entry]
+Name=Orange Pi $profile
+Comment=Orange Pi managed $type session
+Exec=/usr/local/libexec/orangepi-zero3w-setup/session-launch $profile
+TryExec=${profile%%-*}
+Type=Application
+DesktopNames=$profile
+EOF
+}
+case "$PROFILE" in
+    openbox|xfce|i3|icewm|fluxbox|enlightenment-x11) install_session_file "$PROFILE" x11 ;;
+    sway|labwc|enlightenment-wayland) install_session_file "$PROFILE" wayland ;;
 esac
 cat >"$CONF" <<EOF
 # managed by orangepi-zero3w-setup
 [Seat:*]
 autologin-user=$TARGET_USER
 autologin-user-timeout=0
-user-session=$SESSION
+user-session=orangepi-$SESSION
 EOF
 systemctl set-default graphical.target
 systemctl enable lightdm

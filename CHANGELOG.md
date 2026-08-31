@@ -15,3 +15,6 @@
 - Add an unchanged Windows archive-transfer script.
 - Retain `--vendor-root` as a legacy/debug input.
 - Add Codex CLI and Claude Code continuation instructions.
+- Add explicit LightDM session entries and reversible X11/Wayland switching,
+  including Debian 13 `labwc` support.
+- Add Debian 13 `fluxbox` as a lightweight X11 session profile.

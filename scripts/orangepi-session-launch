@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+PROFILE=${1:?session profile required}
+import_later() {
+    systemctl --user import-environment \
+        DISPLAY XAUTHORITY WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP \
+        SWAYSOCK 2>/dev/null || true
+}
+
+case "$PROFILE" in
+    xfce)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=XFCE
+        import_later
+        exec startxfce4
+        ;;
+    openbox)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=Openbox
+        import_later
+        exec openbox-session
+        ;;
+    i3)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=i3
+        import_later
+        exec i3
+        ;;
+    icewm)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=IceWM
+        import_later
+        if command -v icewm-session >/dev/null 2>&1; then
+            exec icewm-session
+        fi
+        exec icewm
+        ;;
+    fluxbox)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=Fluxbox
+        import_later
+        exec startfluxbox
+        ;;
+    sway)
+        export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway
+        exec sway
+        ;;
+    labwc)
+        export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=labwc
+        exec labwc
+        ;;
+    enlightenment-x11)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=Enlightenment
+        import_later
+        exec enlightenment_start
+        ;;
+    enlightenment-wayland)
+        export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=Enlightenment
+        exec enlightenment_start
+        ;;
+    *)
+        echo "Unknown session profile: $PROFILE" >&2
+        exit 2
+        ;;
+esac
