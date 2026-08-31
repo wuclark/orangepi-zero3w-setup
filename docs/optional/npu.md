@@ -1,7 +1,7 @@
-# Optional VPU and NPU
+# Optional NPU acceleration
 
-VPU and NPU support are separate from the base setup and GPU. The repository
-does not currently claim a tested NPU runtime. Use the diagnostic placeholder:
+NPU support is separate from the base setup, GPU, and VPU. The repository does
+not currently claim a tested NPU runtime. Use the diagnostic placeholder:
 
 ```bash
 sudo ./setup.sh npu --status

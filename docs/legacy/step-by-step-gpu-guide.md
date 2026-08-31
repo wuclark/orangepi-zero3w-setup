@@ -1,11 +1,11 @@
 # Zero3W PVR Forge: detailed step-by-step guide
 
 > This is the optional GPU reference-stack guide. For the general CLI-only
-> board setup, start with [First boot and Wi-Fi](01-first-boot-wifi.md), then
+> board setup, start with [First boot and Wi-Fi](../guide/01-first-boot-wifi.md), then
 > add desktop and remote access separately.
 
 > The preferred input is now `pvr-userspace.tar.gz`, with optional
-> `vpu-userspace.tar.gz`. Follow [the archive workflow](ARCHIVE-WORKFLOW.md).
+> `vpu-userspace.tar.gz`. Follow [the archive workflow](../optional/gpu/archive-workflow.md).
 > Any later `vendor-root` instructions are the legacy/debug alternative.
 
 This guide reproduces hardware-accelerated Vulkan, OpenGL ES, X11 presentation,

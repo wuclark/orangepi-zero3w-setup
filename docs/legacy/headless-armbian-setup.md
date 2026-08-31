@@ -101,7 +101,7 @@ sudo ./scripts/armbian-provision.sh
 ```
 
 Press Enter at the menu to install nothing. The PVR/GPU stack remains a
-separate, deliberate installation described in [Fresh Armbian installation](FRESH-ARMBIAN-INSTALL.md).
+separate, deliberate installation described in [Fresh Armbian installation](fresh-armbian-install.md).
 
 ## Recovery
 

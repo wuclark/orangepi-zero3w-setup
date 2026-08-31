@@ -1,12 +1,12 @@
 # Fresh Armbian installation from Windows
 
 For the full SD-card, Wi-Fi, and first-boot process on Windows, Linux, or
-macOS, start with [Headless Armbian setup](HEADLESS-ARMBIAN-SETUP.md). This
+macOS, start with [Headless Armbian setup](headless-armbian-setup.md). This
 page covers the later vendor archive and PVR installation phase.
 
 > The preferred method now transfers `pvr-userspace.tar.gz` and optional
 > `vpu-userspace.tar.gz` unchanged. Run `windows/Copy-VendorArchives.ps1`, then
-> `./armbian-startup.sh`. See [the archive workflow](ARCHIVE-WORKFLOW.md). The
+> `./armbian-startup.sh`. See [the archive workflow](../optional/gpu/archive-workflow.md). The
 > extracted-tree procedure below remains as a legacy/debug alternative.
 
 This guide covers the complete workflow when the PowerVR userspace has already

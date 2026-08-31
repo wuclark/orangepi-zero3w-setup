@@ -11,7 +11,7 @@ GPU, VPU, and NPU layers are installed separately.
 ## Quick start
 
 For a new SD card, first create the Wi-Fi-enabled Armbian preset described in
-[First boot and Wi-Fi](docs/01-first-boot-wifi.md). After SSH works:
+[First boot and Wi-Fi](docs/guide/01-first-boot-wifi.md). After SSH works:
 
 ```bash
 sudo ./setup.sh base
@@ -36,18 +36,19 @@ Remote access is a separate choice. SSH tunneling is the default:
 sudo ./setup.sh remote --backend x11vnc
 ```
 
-See [the SSH tunneling guide](docs/SSH-TUNNELING.md) for Windows TightVNC
+See [the SSH tunneling guide](docs/remote/ssh-tunneling.md) for Windows TightVNC
 Viewer instructions.
 
 ## Guide
 
-- [First boot and Wi-Fi](docs/01-first-boot-wifi.md)
-- [Base system](docs/02-base-system.md)
-- [Desktop sessions](docs/03-desktop-sessions.md)
-- [Remote access](docs/04-remote-access.md)
-- [Optional GPU](docs/05-gpu-optional.md)
-- [Optional VPU and NPU](docs/06-vpu-npu-optional.md)
-- [Recovery and reset](docs/07-recovery.md)
+- [First boot and Wi-Fi](docs/guide/01-first-boot-wifi.md)
+- [Base system](docs/guide/02-base-system.md)
+- [Desktop sessions](docs/guide/03-desktop-sessions.md)
+- [Remote access](docs/guide/04-remote-access.md)
+- [Recovery and reset](docs/guide/05-recovery.md)
+- [Optional GPU](docs/optional/gpu/gpu.md)
+- [Optional VPU](docs/optional/vpu.md)
+- [Optional NPU](docs/optional/npu.md)
 
 ## Optional PowerVR reference stack
 
@@ -89,23 +90,23 @@ sudo ./setup.sh gpu
 ```
 
 For a fresh board with the generated archives stored on Windows, follow
-[Fresh Armbian installation from Windows](docs/FRESH-ARMBIAN-INSTALL.md). It uses:
+[Fresh Armbian installation from Windows](docs/legacy/fresh-armbian-install.md). It uses:
 
 - `windows/Copy-VendorArchives.ps1` on Windows; then
 - `./armbian-startup.sh` on the Orange Pi.
 
-For a completely headless board, begin with [Headless Armbian setup](docs/HEADLESS-ARMBIAN-SETUP.md).
+For a completely headless board, begin with [Headless Armbian setup](docs/legacy/headless-armbian-setup.md).
 The base image installs no extra software; `scripts/armbian-provision.sh`
 offers an explicit opt-in menu after SSH is working.
 
 Additional documentation:
 
-- [Detailed step-by-step guide](docs/STEP-BY-STEP-GUIDE.md)
-- [Preferred userspace archive workflow](docs/ARCHIVE-WORKFLOW.md)
+- [Detailed step-by-step GPU guide](docs/legacy/step-by-step-gpu-guide.md)
+- [Preferred userspace archive workflow](docs/optional/gpu/archive-workflow.md)
 - [Publishable tutorial article](TUTORIAL-ARTICLE.md)
-- [Architecture explanation](docs/architecture.md)
-- [Hardware references](docs/HARDWARE-REFERENCES.md)
-- [Troubleshooting and recovery](docs/troubleshooting.md)
+- [Architecture explanation](docs/reference/architecture.md)
+- [Hardware references](docs/reference/hardware.md)
+- [Troubleshooting and recovery](docs/reference/troubleshooting.md)
 
 The legacy all-in-one GPU command remains available as `install.sh`; it builds
 or validates `pvrsrvkm.ko`, installs the matching runtime, and configures the
@@ -130,7 +131,7 @@ sudo apt install -y git build-essential bc bison flex libssl-dev libelf-dev
 ./scripts/build-pvrsrvkm.sh --output ./pvrsrvkm.ko
 ```
 
-See [Vendor sources and provenance](docs/vendor-sources.md) for the upstream
+See [Vendor sources and provenance](docs/optional/gpu/vendor-sources.md) for the upstream
 kernel branch, verified proprietary userspace version, and licensing notes.
 
 The reference GPU bootstrap script:
@@ -171,7 +172,7 @@ separately after an X11 desktop is verified:
 sudo ./scripts/install-x11vnc.sh --user "$USER"
 ```
 
-Use the SSH tunnel in [SSH-TUNNELING.md](docs/SSH-TUNNELING.md), then connect
+Use the SSH tunnel in [ssh-tunneling.md](docs/remote/ssh-tunneling.md), then connect
 your Windows viewer to `localhost::5900`. The service mirrors the real Xorg
 display; it does not create a separate virtual desktop.
 
@@ -218,7 +219,7 @@ Copy the archives unchanged from Windows:
   -BoardHost "orangepizero3w.local"
 ```
 
-See [CLI agent development](docs/DEVELOPMENT.md) before continuing with Codex
+See [CLI agent development](docs/development/development.md) before continuing with Codex
 CLI or Claude Code. `AGENTS.md` is the canonical repository policy; `CLAUDE.md`
 points Claude Code to the same rules.
 
@@ -234,7 +235,7 @@ The board exposes two DRM devices:
 
 Xorg must use `card0` as its screen. The vendor Mesa KMSRO/DRI layer connects that display device to the PowerVR render node. If Xorg selects `card1` as primary it fails with `KMS doesn't support dumb interface`; if the PowerVR GLES libraries are missing, DRI initializes and then silently falls back to software.
 
-See [docs/architecture.md](docs/architecture.md) and [docs/troubleshooting.md](docs/troubleshooting.md).
+See [docs/reference/architecture.md](docs/reference/architecture.md) and [docs/reference/troubleshooting.md](docs/reference/troubleshooting.md).
 
 ## Safety and recovery
 

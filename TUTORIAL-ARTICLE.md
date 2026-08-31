@@ -6,7 +6,7 @@
 **Updated reproducibility note:** transfer the generated `pvr-userspace.tar.gz`
 and optional `vpu-userspace.tar.gz` unchanged. The installer validates and
 stages them on Linux, avoiding Windows damage to symlinks or permissions. See
-`docs/ARCHIVE-WORKFLOW.md`; extracted `pvr-stage` trees are now a legacy option.
+`docs/optional/gpu/archive-workflow.md`; extracted `pvr-stage` trees are now a legacy option.
 
 The Orange Pi Zero 3W is a tiny Allwinner A733 board with a PowerVR B-Series
 BXM-4-64 GPU. The hardware is capable, but on a clean Armbian Debian 13 system,
@@ -332,5 +332,5 @@ Zero3W PVR Forge turns that working state into a guarded, logged, reversible
 installation instead of a collection of commands buried in shell history.
 
 The full terminal-oriented procedure is in
-`docs/STEP-BY-STEP-GUIDE.md`, while `docs/troubleshooting.md` covers common
+`docs/legacy/step-by-step-gpu-guide.md`, while `docs/reference/troubleshooting.md` covers common
 failure signatures and recovery.

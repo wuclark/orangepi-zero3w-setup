@@ -2,8 +2,8 @@
 
 The PowerVR DDK and out-of-tree `pvrsrvkm` module are optional and supported
 only on the reference Armbian Debian 13 vendor kernel. Read the existing
-[archive workflow](ARCHIVE-WORKFLOW.md), [architecture](architecture.md), and
-[troubleshooting guide](troubleshooting.md) before installation.
+[archive workflow](archive-workflow.md), [architecture](../../reference/architecture.md), and
+[troubleshooting guide](../../reference/troubleshooting.md) before installation.
 
 ```bash
 sudo ./setup.sh gpu

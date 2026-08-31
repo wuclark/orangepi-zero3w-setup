@@ -16,7 +16,7 @@ codex
 Suggested first prompt:
 
 ```text
-Read AGENTS.md, docs/DEVELOPMENT.md, docs/architecture.md, and the reference
+Read AGENTS.md, docs/development/development.md, docs/reference/architecture.md, and the reference
 manifest. Inspect git status. Work only on issue #NUMBER. Preserve the supported
 stack and proprietary-file exclusions. Run all required tests and report which
 checks are local-only versus run on real hardware.
