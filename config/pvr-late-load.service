@@ -1,0 +1,15 @@
+[Unit]
+Description=Delayed PowerVR GPU kernel module loading
+ConditionPathExists=/opt/pvrsrvkm.ko
+After=multi-user.target
+Before=display-manager.service lightdm.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sleep 30
+ExecStart=/bin/sh -c '/usr/sbin/lsmod | /usr/bin/grep -q "^pvrsrvkm " || /sbin/insmod /opt/pvrsrvkm.ko'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical.target
+

@@ -1,0 +1,17 @@
+vendor-root/
+vendor-files/
+build-pvrsrvkm/
+gpu-bringup-logs/
+not_logged_in_yet
+headless-preset*
+*.ko
+*.so
+*.so.*
+*.img
+*.img.xz
+*.log
+*.strace
+*.tar
+*.tar.gz
+*.tgz
+*.zip

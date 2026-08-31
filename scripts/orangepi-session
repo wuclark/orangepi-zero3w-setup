@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+STATE=/etc/orangepi-zero3w-setup/state
+CONF=/etc/lightdm/lightdm.conf.d/50-orangepi-zero3w-setup.conf
+declare -A TYPE=(
+    [openbox]=x11 [xfce]=x11 [i3]=x11 [icewm]=x11
+    [sway]=wayland [enlightenment-x11]=x11 [enlightenment-wayland]=wayland
+)
+declare -A SESSION=(
+    [openbox]=openbox [xfce]=xfce [i3]=i3 [icewm]=icewm
+    [sway]=sway [enlightenment-x11]=enlightenment [enlightenment-wayland]=enlightenment
+)
+declare -A CMD=(
+    [openbox]=openbox [xfce]=startxfce4 [i3]=i3 [icewm]=icewm
+    [sway]=sway [enlightenment-x11]=enlightenment_start [enlightenment-wayland]=enlightenment_start
+)
+die(){ echo "ERROR: $*" >&2; exit 1; }
+require_root(){ [[ $EUID -eq 0 ]] || die 'Run with sudo.'; }
+current(){ [[ -f $STATE/desktop-profile ]] && cat "$STATE/desktop-profile" || echo none; }
+
+set_profile() {
+    local profile=$1 reboot=${2:-no}
+    [[ -n ${TYPE[$profile]+yes} ]] || die "Unknown profile: $profile"
+    command -v "${CMD[$profile]}" >/dev/null 2>&1 ||
+        die "The $profile session is not installed."
+    install -d -m 755 "$(dirname "$CONF")" "$STATE"
+    if [[ -f $CONF ]]; then
+        cp -a "$CONF" "$STATE/lightdm.conf.previous"
+    fi
+    printf '%s\n' "$(current)" >"$STATE/desktop-profile.previous"
+    cat >"$CONF" <<EOF
+# managed by orangepi-zero3w-setup
+[Seat:*]
+autologin-user=$(cat "$STATE/user" 2>/dev/null || echo orangepi)
+autologin-user-timeout=0
+user-session=${SESSION[$profile]}
+EOF
+    printf '%s\n' "$profile" >"$STATE/desktop-profile"
+    printf '%s\n' "${TYPE[$profile]}" >"$STATE/remote-type"
+    echo "Default session set to $profile. Reboot to activate it."
+    [[ $reboot == --reboot ]] && systemctl reboot
+}
+
+case "${1:-}" in
+    list)
+        printf '%s\n' openbox xfce i3 icewm sway enlightenment-x11 enlightenment-wayland
+        ;;
+    current)
+        current
+        ;;
+    set)
+        require_root
+        [[ -n ${2:-} ]] || die 'Usage: orangepi-session set PROFILE [--reboot]'
+        set_profile "$2" "${3:---no-reboot}"
+        ;;
+    rollback)
+        require_root
+        previous=$(cat "$STATE/desktop-profile.previous" 2>/dev/null || true)
+        [[ -n ${TYPE[$previous]+yes} ]] || die 'No valid previous desktop profile.'
+        set_profile "$previous" "${2:---no-reboot}"
+        ;;
+    *)
+        cat <<'EOF'
+Usage:
+  orangepi-session list
+  orangepi-session current
+  sudo orangepi-session set PROFILE [--reboot]
+  sudo orangepi-session rollback [--reboot]
+EOF
+        ;;
+esac

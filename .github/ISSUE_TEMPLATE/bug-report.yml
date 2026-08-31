@@ -1,0 +1,24 @@
+name: Bug report
+description: Report an installer, boot, GPU, X11, or VPU problem
+body:
+  - type: markdown
+    attributes:
+      value: Do not attach proprietary archives, modules, images, secrets, or VNC password files.
+  - type: textarea
+    id: system
+    attributes:
+      label: System and versions
+      description: Board revision/RAM, OS image, uname -a, DDK build, BVNC, and module vermagic.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Attach output from scripts/collect-diagnostics.sh after reviewing it for sensitive data.
