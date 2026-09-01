@@ -4,6 +4,10 @@ The general project entry point is `setup.sh`; the PowerVR `install.sh` flow is
 an optional, safety-sensitive module. The base setup is intentionally CLI-only
 and never runs `apt update` unless the user explicitly requests it.
 
+Track unfinished implementation work in [ROADMAP.md](../../ROADMAP.md). Keep
+the roadmap status aligned with tested code and do not mark a hardware layer
+complete from static or archive tests alone.
+
 ## Start a session
 
 ```bash

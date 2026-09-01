@@ -31,3 +31,5 @@
   no NPU runtime or support claim is added yet.
 - Add a Docker/WSL2 image-based extraction wrapper with an ignored but tracked
   `work/` layout for source images and generated archives.
+- Add `ROADMAP.md` documenting the remaining extraction, NPU/VPU validation,
+  installer, evidence, and documentation gates.
