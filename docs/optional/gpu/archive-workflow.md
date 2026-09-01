@@ -6,11 +6,61 @@ layout while crossing Windows. Do not extract and repackage them in Explorer.
 
 ## Generate the archives
 
-Follow the external `OrangePiZero3W-GPU-VPU` project to create:
+Generate the archives in this repository from locally supplied, verified source
+root filesystems:
+
+```bash
+./scripts/extract-vendor-userspace-docker.sh
+```
+
+The extractor produces:
 
 ```text
 pvr-userspace.tar.gz
 vpu-userspace.tar.gz
+npu-userspace.tar.gz
+```
+
+On Windows, use `windows/Extract-VendorUserspace.ps1` through WSL2. Mount or
+unpack the source images before running it; image mounting differs between
+Windows, WSL2, and native Linux.
+
+## WSL2 work layout and preparation
+
+Keep source images and generated proprietary archives under the ignored
+repository-local `work/` directory:
+
+```text
+work/
+├── images/                 # original verified .img/.xz/.7z files
+└── vendor-output/          # generated archives and manifests
+```
+
+For WSL2 Ubuntu, copy the verified images into `work/images/` and run:
+
+```bash
+./scripts/extract-vendor-userspace-docker.sh
+```
+
+The Docker helper discovers the first ext4 partition in each image, mounts both
+partitions read-only inside a privileged temporary container, and removes the
+mounts afterward. It supports `.img`, `.img.xz`, and `.img.7z` inputs. It
+recognizes names such as:
+
+```text
+radxa-a733_bullseye_kde_r2.output_512.img.xz
+Orangepizero3w_1.0.0_ubuntu_jammy_desktop_xfce_linux6.6.98.7z
+```
+
+The wrapper refuses to guess when multiple candidates exist and does not treat
+arbitrary similarly named images as supported. Select another image explicitly
+with `GPU_VPU_IMAGE` and `NPU_IMAGE`; that path is experimental until the
+package manifests, runtime paths, hashes, and generated archive are checked:
+
+```bash
+GPU_VPU_IMAGE=./work/images/radxa.img \
+NPU_IMAGE=./work/images/orangepi.img.xz \
+./scripts/extract-vendor-userspace-docker.sh
 ```
 
 These are third-party/proprietary outputs. Review their licenses and keep them
@@ -28,7 +78,7 @@ tarballs unchanged and do not extract them into the target root filesystem.
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\windows\Copy-VendorArchives.ps1 `
-  -SourceDirectory "C:\Users\YOU\Downloads\OrangePiZero3W-GPU-VPU\output" `
+  -SourceDirectory "C:\path\to\orangepi-zero3w-setup\work\vendor-output" `
   -BoardHost "orangepizero3w.local" `
   -SshUser "orangepi"
 ```

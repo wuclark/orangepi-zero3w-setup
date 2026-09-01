@@ -67,8 +67,9 @@ driver should be treated as a matched unit.
 
 ## Moving the generated archives from Windows
 
-Use the upstream outputs `pvr-userspace.tar.gz` and `vpu-userspace.tar.gz`
-unchanged. This preserves Linux metadata and avoids a fragile Windows extraction.
+Use the repository-generated outputs `pvr-userspace.tar.gz`,
+`vpu-userspace.tar.gz`, and optional `npu-userspace.tar.gz` unchanged. This
+preserves Linux metadata and avoids a fragile Windows extraction.
 
 The repository includes `windows/Copy-VendorArchives.ps1`:
 

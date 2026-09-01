@@ -194,12 +194,13 @@ display; it does not create a separate virtual desktop.
 
 ## Vendor root layout
 
-The recommended input is the unchanged archive produced by
-`OrangePiZero3W-GPU-VPU`:
+The recommended input is the unchanged archive produced by this repository's
+extractor:
 
 ```text
 vendor-files/pvr-userspace.tar.gz
 vendor-files/vpu-userspace.tar.gz  # optional
+vendor-files/npu-userspace.tar.gz  # optional experimental
 ```
 
 The installer validates paths, extracts into a private temporary directory,
@@ -227,11 +228,20 @@ usr/lib/firmware/rgx.sh.36.56.104.183
 
 Some source images place firmware elsewhere. Pass `--firmware-dir PATH` when necessary.
 
+Generate the archives on Linux or WSL2 from verified, mounted source roots:
+
+```bash
+./scripts/extract-vendor-userspace-docker.sh
+```
+
+See [Userspace archive workflow](docs/optional/gpu/archive-workflow.md) for
+the `work/` layout and read-only image-mounting procedure.
+
 Copy the archives unchanged from Windows:
 
 ```powershell
 .\windows\Copy-VendorArchives.ps1 `
-  -SourceDirectory "C:\path\to\OrangePiZero3W-GPU-VPU\output" `
+  -SourceDirectory "C:\path\to\orangepi-zero3w-setup\work\vendor-output" `
   -BoardHost "orangepizero3w.local"
 ```
 

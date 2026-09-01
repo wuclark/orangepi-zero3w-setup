@@ -1,5 +1,11 @@
 vendor-root/
 vendor-files/
+work/*
+!work/README.md
+!work/images/
+!work/images/.gitkeep
+!work/vendor-output/
+!work/vendor-output/.gitkeep
 build-pvrsrvkm/
 gpu-bringup-logs/
 not_logged_in_yet

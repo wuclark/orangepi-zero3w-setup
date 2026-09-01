@@ -28,9 +28,11 @@ community hybrid-image project below:
 - Referenced archive SHA-256:
   `1b5604fed61647ab1b510f24af5968477e8a7a361430aa0864efbed7b5fe6ca2`
 
-The extraction project produces `pvr-userspace.tar.gz` and
-`vpu-userspace.tar.gz`. Copy those archives unchanged into `vendor-files/` and
-run:
+This repository's `scripts/extract-vendor-userspace.sh` produces
+`pvr-userspace.tar.gz`, `vpu-userspace.tar.gz`, and the experimental
+`npu-userspace.tar.gz`. The external project remains a provenance/reference
+source for the Radxa extraction layout. Copy generated archives unchanged into
+`vendor-files/` and run:
 
 ```bash
 sudo ./install.sh

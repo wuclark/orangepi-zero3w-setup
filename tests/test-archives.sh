@@ -19,6 +19,21 @@ out=$($ROOT/scripts/prepare-vendor-archives.sh \
 [[ $out == "$TMP/out" && -f $TMP/out/usr/lib/libVK_IMG.so ]]
 [[ -f $TMP/out/.zero3w-vpu/usr/lib/aarch64-linux-gnu/libcedar_test.so ]]
 
+# The repository-owned extractor keeps GPU, VPU, and NPU archives isolated.
+mkdir -p "$TMP/source/etc" "$TMP/source/usr/lib" "$TMP/source/usr/local/lib/dri" \
+  "$TMP/source/var/lib/dpkg/info"
+touch "$TMP/source/usr/lib/libVK_IMG.so" "$TMP/source/usr/local/lib/dri/pvr_dri.so" \
+  "$TMP/source/usr/lib/libcedarc.so" "$TMP/source/usr/lib/libvipcore.so"
+printf '/usr/lib/libVK_IMG.so\n/usr/local/lib/dri/pvr_dri.so\n' \
+  > "$TMP/source/var/lib/dpkg/info/xserver-xorg-img-bxm.list"
+printf '/usr/lib/libcedarc.so\n' > "$TMP/source/var/lib/dpkg/info/libcedarc.list"
+"$ROOT/scripts/extract-vendor-userspace.sh" \
+  --source-root "$TMP/source" --output-dir "$TMP/generated" >/dev/null
+tar -tzf "$TMP/generated/pvr-userspace.tar.gz" | grep -q 'usr/lib/libVK_IMG.so'
+tar -tzf "$TMP/generated/vpu-userspace.tar.gz" | grep -q 'usr/lib/libcedarc.so'
+tar -tzf "$TMP/generated/npu-userspace.tar.gz" | grep -q 'usr/lib/libvipcore.so'
+! tar -tzf "$TMP/generated/npu-userspace.tar.gz" | grep -q 'libVK_IMG.so'
+
 # A traversal member must be rejected before extraction.
 python3 - "$TMP/unsafe.tar.gz" <<'PY'
 import io, sys, tarfile

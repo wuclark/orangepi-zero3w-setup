@@ -189,24 +189,27 @@ into the Armbian root filesystem:
 /home/orangepi/orangepi-zero3w-setup/vendor-files/
 ├── pvr-userspace.tar.gz
 ├── vpu-userspace.tar.gz       # optional VPU userspace
-└── npu-userspace.tar.gz       # future/experimental NPU userspace
+└── npu-userspace.tar.gz       # optional experimental NPU userspace
 ```
 
 On Linux, with the Armbian root partition mounted at `/mnt/armbian-root` and
-the archives in `./vendor-output/`:
+the archives in `./work/vendor-output/`:
 
 ```bash
 sudo install -d -o root -g root -m 0755 \
   /mnt/armbian-root/home/orangepi/orangepi-zero3w-setup/vendor-files
 sudo install -o root -g root -m 0644 \
-  ./vendor-output/pvr-userspace.tar.gz \
+  ./work/vendor-output/pvr-userspace.tar.gz \
   /mnt/armbian-root/home/orangepi/orangepi-zero3w-setup/vendor-files/
 sudo install -o root -g root -m 0644 \
-  ./vendor-output/vpu-userspace.tar.gz \
+  ./work/vendor-output/vpu-userspace.tar.gz \
+  /mnt/armbian-root/home/orangepi/orangepi-zero3w-setup/vendor-files/
+sudo install -o root -g root -m 0644 \
+  ./work/vendor-output/npu-userspace.tar.gz \
   /mnt/armbian-root/home/orangepi/orangepi-zero3w-setup/vendor-files/
 ```
 
-Omit the second `install` command when the optional VPU archive is unavailable.
+Omit the VPU or NPU command when that optional archive is unavailable.
 The archives are installer inputs, not executable files; root ownership with
 directory mode `0755` and file mode `0644` is appropriate. If an ext4-capable
 Windows tool assigns different ownership, correct it after first login:
@@ -218,9 +221,9 @@ sudo chmod 0644 ~/orangepi-zero3w-setup/vendor-files/*
 
 This step is optional. If the repository or archives are not placed on the
 card, use `windows/Copy-VendorArchives.ps1` after SSH becomes available.
-There is no supported NPU installation workflow yet. The planned
-cross-platform extraction and board-validation work is tracked in
-[Optional NPU acceleration](../optional/npu.md#implementation-todo-cross-platform-userspace-extraction).
+Generate all three archives before this step with
+`scripts/extract-vendor-userspace-docker.sh`; the NPU archive remains
+experimental and is not installed by the current setup flow.
 
 ## What the preset scripts do
 

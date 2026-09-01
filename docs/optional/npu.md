@@ -12,19 +12,25 @@ records the kernel, module, firmware/runtime versions, device nodes, sample
 workload, and successful output. Proprietary archives and firmware remain
 excluded from Git.
 
-## Implementation TODO: cross-platform userspace extraction
+## Cross-platform userspace extraction
 
-The planned workflow is to generate an `npu-userspace.tar.gz` archive from a
-legally obtained, checksum-verified Orange Pi image. The archive may be
-created on native Linux, WSL2, or another Linux environment; Windows should
-provide a PowerShell wrapper for selecting the image and copying the result.
-The Orange Pi will consume the archive through the normal vendor-files
-workflow after SSH is available.
+The repository now provides a host-side extractor for all three userspace
+layers. GPU/VPU normally come from a Radxa A733 root filesystem and NPU from
+the matching Orange Pi root filesystem:
+
+```bash
+./scripts/extract-vendor-userspace-docker.sh
+```
+
+Use `--source-root` when all components are in one test root. The inputs must
+be mounted or unpacked, checksum-verified filesystems. The extractor runs on
+native Linux or WSL2; Windows has a wrapper at
+`windows/Extract-VendorUserspace.ps1`.
 
 Keep extraction and installation separate:
 
-1. A host-side extractor mounts the Orange Pi image read-only in a private
-   temporary directory and copies only an allowlisted NPU runtime.
+1. The host-side extractor reads mounted source roots and copies only
+   allowlisted GPU, VPU, and NPU runtime files.
 2. The existing archive validator checks paths, links, archive format, and
    required files without extracting over `/`.
 3. A future board-side installer stages privately, verifies architecture and
@@ -32,17 +38,17 @@ Keep extraction and installation separate:
 4. `scripts/collect-diagnostics.sh` records `/dev/vipcore`, module details,
    runtime versions, and a reproducible inference smoke test.
 
-The implementation must determine and document the exact VIPLite/Vivante
-runtime files, configuration, firmware requirements, and whether model
-compiler tools belong in a separate SDK archive. It must not copy `vipcore.ko`
-or claim support merely because `/dev/vipcore` exists. Validate against the
-Orange Pi image and the target board's running kernel/driver ABI first.
+The extractor currently targets the VIPLite runtime libraries, including
+`libVIPhal.so` and `libNBGlinker.so`, but the allowlist must be checked against
+the exact Orange Pi image before release. It must not copy `vipcore.ko` or
+claim support merely because `/dev/vipcore` exists. Validate against the Orange
+Pi image and the target board's running kernel/driver ABI first.
 
 Planned inputs and outputs:
 
 ```text
-Host input:  orangepi-zero3w-image.img[.xz|.7z]
-Host output: npu-userspace.tar.gz + manifest.sha256
+Host input:  mounted/extracted Radxa and Orange Pi root filesystems
+Host output: pvr-userspace.tar.gz, vpu-userspace.tar.gz, npu-userspace.tar.gz
 Board input: vendor-files/npu-userspace.tar.gz
 Board test:  /dev/vipcore + pinned VIPLite workload
 ```

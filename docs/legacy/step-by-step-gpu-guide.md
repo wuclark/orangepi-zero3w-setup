@@ -107,7 +107,7 @@ cd orangepi-zero3w-setup
 ## Step 3: identify the generated archives on Windows
 
 The PowerVR files cannot be redistributed by this project. Generate the
-matching outputs legally with `OrangePiZero3W-GPU-VPU`. The selected directory
+matching outputs legally with this repository's extractor. The selected directory
 should contain:
 
 ```text

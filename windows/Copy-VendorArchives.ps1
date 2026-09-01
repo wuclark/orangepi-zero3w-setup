@@ -9,6 +9,7 @@ param(
 $ErrorActionPreference = "Stop"
 $pvr = Join-Path $SourceDirectory "pvr-userspace.tar.gz"
 $vpu = Join-Path $SourceDirectory "vpu-userspace.tar.gz"
+$npu = Join-Path $SourceDirectory "npu-userspace.tar.gz"
 if (-not (Test-Path -LiteralPath $pvr -PathType Leaf)) { throw "Missing $pvr" }
 if (-not (Get-Command ssh -ErrorAction SilentlyContinue)) { throw "OpenSSH ssh is not installed." }
 if (-not (Get-Command scp -ErrorAction SilentlyContinue)) { throw "OpenSSH scp is not installed." }
@@ -21,5 +22,9 @@ if ($LASTEXITCODE -ne 0) { throw "PVR archive upload failed." }
 if (Test-Path -LiteralPath $vpu -PathType Leaf) {
     & scp -P $SshPort -- $vpu "${destination}:$RemoteRepoPath/vendor-files/vpu-userspace.tar.gz"
     if ($LASTEXITCODE -ne 0) { throw "VPU archive upload failed." }
+}
+if (Test-Path -LiteralPath $npu -PathType Leaf) {
+    & scp -P $SshPort -- $npu "${destination}:$RemoteRepoPath/vendor-files/npu-userspace.tar.gz"
+    if ($LASTEXITCODE -ne 0) { throw "NPU archive upload failed." }
 }
 Write-Host "Archives copied unchanged. On the board run: cd $RemoteRepoPath && ./armbian-startup.sh"

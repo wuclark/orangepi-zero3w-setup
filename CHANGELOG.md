@@ -26,5 +26,8 @@
   including Debian 13 `labwc` support.
 - Add Debian 13 `fluxbox` as a lightweight X11 session profile.
 - Document the Windows WSL2/`usbipd` workflow for preparing an ext4 SD card.
-- Track a future cross-platform Orange Pi NPU userspace extraction workflow;
+- Add a repository-owned cross-platform GPU/VPU/NPU userspace extractor for
+  mounted root filesystems, producing local archives and checksum manifests;
   no NPU runtime or support claim is added yet.
+- Add a Docker/WSL2 image-based extraction wrapper with an ignored but tracked
+  `work/` layout for source images and generated archives.
