@@ -24,6 +24,10 @@ snapshot and selected test files. It does not clone these repositories during
 an image build, and it does not place proprietary archives or kernel modules in
 Git.
 
+After boot, the optional source synchronization command clones the maintained
+trees under `/opt/orangepi-zero3w-setup/sources`; the selected user's home only
+contains the symlink to the setup directory.
+
 ## NPU and SDK origins
 
 | Repository | Role | Provenance/status |

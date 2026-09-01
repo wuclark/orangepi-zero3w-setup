@@ -23,13 +23,21 @@ copies.
 
 The setup repository uses the locally supplied `work/images/ai-sdk.tar.gz`
 snapshot during image creation. To keep the source trees available on a board
-for later updates, clone them separately; they are not required for the
-preloaded runtime smoke test:
+for later updates, clone them under the stable setup directory; they are not
+required for the preloaded runtime smoke test:
 
 ```bash
-mkdir -p "$HOME/src"
-git clone https://github.com/wuclark/a733_npu_driver.git "$HOME/src/a733_npu_driver"
-git clone https://github.com/wuclark/ai-sdk.git "$HOME/src/ai-sdk"
+cd /opt/orangepi-zero3w-setup
+sudo ./scripts/sync-a733-sources.sh
+```
+
+The resulting trees are independent of the login username:
+
+```text
+/opt/orangepi-zero3w-setup/sources/a733_npu_driver
+/opt/orangepi-zero3w-setup/sources/ai-sdk
+/opt/orangepi-zero3w-setup/sources/radxa-a7a-toolkit
+/opt/orangepi-zero3w-setup/sources/a733-powervr-fex
 ```
 
 The board's vendor kernel and NPU device-tree support come from the installed

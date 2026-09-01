@@ -18,6 +18,17 @@ sudo ./setup.sh base
 sudo ./setup.sh packages
 ```
 
+For a username-independent SSH and maintenance foundation, run the core layer
+from the setup directory:
+
+```bash
+sudo ./setup.sh core
+sudo ./setup.sh sources
+```
+
+The setup remains installed at `/opt/orangepi-zero3w-setup`; the selected
+login user's `~/orangepi-zero3w-setup` path is only a symlink to that location.
+
 When preparing the card, you may pre-copy the unchanged GPU and optional VPU
 archives into the repository's `vendor-files/` directory; the preparation
 guide documents the layout and permissions. Otherwise transfer them after boot

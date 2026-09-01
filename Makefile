@@ -10,7 +10,8 @@ REBUILD ?= no
 	board-gpu-precheck board-gpu-install board-gpu-verify \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
-	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets
+	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets \
+	board-core-install board-core-status board-a733-sources
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -44,6 +45,8 @@ help:
 		'make board-vpu-decode-test              Run downloaded H.264/H.265 VPU tests' \
 		'make board-npu-precheck/verify          Run supported NPU checks' \
 		'make board-npu-test                     Run NPU test and save evidence' \
+		'make board-core-install/status          Install or inspect SSH/maintenance core' \
+		'make board-a733-sources                 Clone/update maintained A733 sources' \
 		'make npu-test-assets                    Stage selected A733 NPU test files' \
 		'PowerVR app helper: ./scripts/run-pvr-app.sh COMMAND' \
 		'REBUILD=1 make image  Rebuild an existing derived image safely'
@@ -161,6 +164,15 @@ board-npu-verify:
 
 board-npu-test:
 	sudo ./scripts/test-npu.sh --output /var/log/orangepi-zero3w-setup/npu-smoke-test.txt
+
+board-core-install:
+	sudo ./setup.sh core
+
+board-core-status:
+	sudo ./setup.sh core --status
+
+board-a733-sources:
+	sudo ./setup.sh sources
 
 npu-test-assets:
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }

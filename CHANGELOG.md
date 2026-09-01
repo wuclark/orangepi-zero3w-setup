@@ -64,3 +64,5 @@
   remain local-only.
 - Save persistent NPU smoke-test evidence with kernel, driver, runtime/model
   hashes, and runner output.
+- Add a username-independent SSH/maintenance core and optional A733 source
+  synchronization under `/opt/orangepi-zero3w-setup/sources`.

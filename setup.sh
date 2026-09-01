@@ -15,6 +15,8 @@ Usage:
   sudo ./setup.sh gpu [existing GPU installer options]
   sudo ./setup.sh vpu [--status|--install|--verify]
   sudo ./setup.sh npu --status
+  sudo ./setup.sh core [--update|--status]
+  sudo ./setup.sh sources
   sudo ./setup.sh status
   sudo ./setup.sh reset
   sudo ./setup.sh uninstall
@@ -28,6 +30,8 @@ command_name=${1:-help}
 shift || true
 case "$command_name" in
     base) exec "$REPO_ROOT/scripts/setup-base.sh" "$@" ;;
+    core) exec "$REPO_ROOT/scripts/setup-core.sh" "$@" ;;
+    sources) exec "$REPO_ROOT/scripts/sync-a733-sources.sh" "$@" ;;
     packages) exec "$REPO_ROOT/scripts/armbian-provision.sh" "$@" ;;
     desktop) exec "$REPO_ROOT/scripts/setup-desktop.sh" "$@" ;;
     remote) exec "$REPO_ROOT/scripts/setup-remote.sh" "$@" ;;
