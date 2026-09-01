@@ -188,7 +188,8 @@ into the Armbian root filesystem:
 ```text
 /home/orangepi/orangepi-zero3w-setup/vendor-files/
 ├── pvr-userspace.tar.gz
-└── vpu-userspace.tar.gz       # optional VPU userspace
+├── vpu-userspace.tar.gz       # optional VPU userspace
+└── npu-userspace.tar.gz       # future/experimental NPU userspace
 ```
 
 On Linux, with the Armbian root partition mounted at `/mnt/armbian-root` and
@@ -217,7 +218,9 @@ sudo chmod 0644 ~/orangepi-zero3w-setup/vendor-files/*
 
 This step is optional. If the repository or archives are not placed on the
 card, use `windows/Copy-VendorArchives.ps1` after SSH becomes available.
-There is no supported NPU userspace archive workflow yet.
+There is no supported NPU installation workflow yet. The planned
+cross-platform extraction and board-validation work is tracked in
+[Optional NPU acceleration](../optional/npu.md#implementation-todo-cross-platform-userspace-extraction).
 
 ## What the preset scripts do
 
