@@ -1,0 +1,45 @@
+# Testing workflows
+
+The tests are split by where they are safe to run.
+
+## Host/pre-boot tests
+
+Run these on Linux or WSL2 before copying archives to the board:
+
+```bash
+./tests/host/test-preboot-extraction.sh
+```
+
+This uses synthetic files only. It checks archive isolation, required runtime
+shapes, checksum manifests, and rejection of kernel modules. It does not prove
+that a particular vendor image contains a compatible runtime. Test the real
+images with:
+
+```bash
+./scripts/extract-vendor-userspace-docker.sh
+```
+
+## Board/post-boot tests
+
+After the archives and matching module have been installed on a recoverable
+Orange Pi with UART access, run:
+
+```bash
+./tests/board/test-postboot-acceleration.sh
+```
+
+Select only the layers being tested when the others are not installed:
+
+```bash
+./tests/board/test-postboot-acceleration.sh --gpu --output work/gpu-test.txt
+./tests/board/test-postboot-acceleration.sh --npu --output work/npu-test.txt
+```
+
+The board test is diagnostic only: it does not install packages, load modules,
+change boot ordering, or reboot. It checks kernel/module identity, device
+nodes, firmware, runtime libraries, and available GPU/VPU/NPU smoke-test tools.
+Run `scripts/collect-diagnostics.sh` before and after hardware testing and put
+sanitized results in an issue, not in this repository.
+
+Keep real images, extracted roots, archives, logs, models, and test output under
+the ignored `work/` directory or outside the repository.

@@ -12,6 +12,7 @@ specified in `AGENTS.md`.
 - [x] Tracked `work/` layout with Git exclusions for images and proprietary
   outputs.
 - [x] Static, shell, and archive tests for the local workflows.
+- [x] Host pre-boot extraction test and board post-boot diagnostic scaffold.
 - [ ] Real-image test of the Docker extractor using the pinned source images.
 - [ ] NPU userspace installation and runtime validation.
 - [ ] VPU runtime validation.

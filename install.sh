@@ -9,6 +9,7 @@ source "$SCRIPT_DIR/lib.sh"
 VENDOR_ROOT="$REPO_ROOT/vendor-root"
 PVR_TARBALL="$REPO_ROOT/vendor-files/pvr-userspace.tar.gz"
 VPU_TARBALL="$REPO_ROOT/vendor-files/vpu-userspace.tar.gz"
+NPU_TARBALL="$REPO_ROOT/vendor-files/npu-userspace.tar.gz"
 MODULE_PATH="$REPO_ROOT/vendor-files/pvrsrvkm.ko"
 FIRMWARE_DIR=""
 TARGET_USER=""
@@ -32,12 +33,14 @@ Usage:
 Default input layout:
   vendor-files/pvr-userspace.tar.gz  Recommended GPU userspace input
   vendor-files/vpu-userspace.tar.gz  Optional VPU userspace input
+  vendor-files/npu-userspace.tar.gz  Optional NPU archive (validation only)
   vendor-files/pvrsrvkm.ko    Matching module (built automatically if absent)
 
 Options:
   --vendor-root DIR     Vendor filesystem root
   --pvr-tarball FILE    pvr-userspace.tar.gz (preferred)
   --vpu-tarball FILE    vpu-userspace.tar.gz (optional)
+  --npu-tarball FILE    npu-userspace.tar.gz (validation only; not installed)
   --without-vpu         Do not install VPU userspace when its archive exists
   --module FILE         Existing matching pvrsrvkm.ko
   --firmware-dir DIR    Override firmware source directory
@@ -62,6 +65,7 @@ while (($#)); do
         --vendor-root) VENDOR_ROOT="${2:?missing directory}"; shift 2 ;;
         --pvr-tarball) PVR_TARBALL="${2:?missing file}"; shift 2 ;;
         --vpu-tarball) VPU_TARBALL="${2:?missing file}"; shift 2 ;;
+        --npu-tarball) NPU_TARBALL="${2:?missing file}"; shift 2 ;;
         --without-vpu) INSTALL_VPU=no; shift ;;
         --module) MODULE_PATH="${2:?missing file}"; shift 2 ;;
         --firmware-dir) FIRMWARE_DIR="${2:?missing directory}"; shift 2 ;;
@@ -86,6 +90,7 @@ if [[ -f $PVR_TARBALL ]]; then
     STAGING_ROOT=$(mktemp -d -t zero3w-pvr-install.XXXXXXXX)
     PREPARE_ARGS=(--pvr-tarball "$PVR_TARBALL" --output "$STAGING_ROOT")
     [[ ! -f $VPU_TARBALL ]] || PREPARE_ARGS+=(--vpu-tarball "$VPU_TARBALL")
+    [[ ! -f $NPU_TARBALL ]] || PREPARE_ARGS+=(--npu-tarball "$NPU_TARBALL")
     "$SCRIPT_DIR/prepare-vendor-archives.sh" "${PREPARE_ARGS[@]}" >/dev/null
     VENDOR_ROOT=$STAGING_ROOT
 elif [[ ! -d $VENDOR_ROOT ]]; then

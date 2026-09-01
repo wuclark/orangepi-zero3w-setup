@@ -118,6 +118,7 @@ offers an explicit opt-in menu after SSH is working.
 Additional documentation:
 
 - [Development roadmap](ROADMAP.md)
+- [Testing workflows](tests/README.md)
 - [Detailed step-by-step GPU guide](docs/legacy/step-by-step-gpu-guide.md)
 - [Preferred userspace archive workflow](docs/optional/gpu/archive-workflow.md)
 - [Publishable tutorial article](TUTORIAL-ARTICLE.md)

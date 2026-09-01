@@ -13,11 +13,16 @@ mkdir -p "$TMP/vpu/usr/lib/aarch64-linux-gnu" "$TMP/vpu/etc/xdg"
 touch "$TMP/vpu/usr/lib/aarch64-linux-gnu/libcedar_test.so"
 printf 'hacks=test\n' > "$TMP/vpu/etc/xdg/gstomx.conf"
 tar -C "$TMP/vpu" -czf "$TMP/vpu-userspace.tar.gz" .
+mkdir -p "$TMP/npu/usr/local/lib/npu"
+touch "$TMP/npu/usr/local/lib/npu/libVIPhal.so"
+tar -C "$TMP/npu" -czf "$TMP/npu-userspace.tar.gz" .
 out=$($ROOT/scripts/prepare-vendor-archives.sh \
   --pvr-tarball "$TMP/pvr-userspace.tar.gz" \
-  --vpu-tarball "$TMP/vpu-userspace.tar.gz" --output "$TMP/out")
+  --vpu-tarball "$TMP/vpu-userspace.tar.gz" \
+  --npu-tarball "$TMP/npu-userspace.tar.gz" --output "$TMP/out")
 [[ $out == "$TMP/out" && -f $TMP/out/usr/lib/libVK_IMG.so ]]
 [[ -f $TMP/out/.zero3w-vpu/usr/lib/aarch64-linux-gnu/libcedar_test.so ]]
+[[ -f $TMP/out/.zero3w-npu/usr/local/lib/npu/libVIPhal.so ]]
 
 # The repository-owned extractor keeps GPU, VPU, and NPU archives isolated.
 mkdir -p "$TMP/source/etc" "$TMP/source/usr/lib" "$TMP/source/usr/local/lib/dri" \

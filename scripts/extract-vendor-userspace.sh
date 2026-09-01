@@ -122,7 +122,9 @@ for pattern in usr/lib/libvip*.so* usr/lib/lib*vip*.so* \
     etc/vip* etc/viplite*; do
     copy_glob "$pattern"
 done
-for pattern in home/orangepi/lib/libVIPhal.so* home/orangepi/lib/libNBGlinker.so* \
+for pattern in usr/lib/libVIPhal.so* usr/lib/libNBGlinker.so* \
+    usr/lib/aarch64-linux-gnu/libVIPhal.so* usr/lib/aarch64-linux-gnu/libNBGlinker.so* \
+    home/orangepi/lib/libVIPhal.so* home/orangepi/lib/libNBGlinker.so* \
     opt/*/lib/libVIPhal.so* opt/*/lib/libNBGlinker.so*; do
     copy_glob "$pattern" usr/local/lib/npu
 done
