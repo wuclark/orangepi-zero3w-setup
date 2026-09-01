@@ -52,6 +52,11 @@ The running board evidence for this project is based on kernel
 trees come from the board image/kernel package, not from a repository cloned by
 the setup scripts.
 
+The reference board's verified CPU numbering is also recorded: CPUs 0–5 are
+the lower-frequency 1.794 GHz cluster and CPUs 6–7 are the higher-frequency
+2.002 GHz cluster. This is board evidence, not a universal A733 numbering
+guarantee; check `lscpu` before applying affinity settings.
+
 ## Radxa and Allwinner BSP sources
 
 | Repository | Role | Provenance/status |

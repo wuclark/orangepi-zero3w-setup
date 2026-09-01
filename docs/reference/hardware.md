@@ -14,3 +14,19 @@ These hardware facts do not prove userspace or kernel ABI compatibility. The
 software support claim in this repository remains limited to the reference
 manifest and recorded real-board tests. The PDFs are not bundled in this source
 archive; obtain them from Orange Pi or another authorized source.
+
+## Verified CPU topology
+
+The reference Orange Pi board reports eight CPUs in two frequency clusters:
+
+```text
+CPU 0-5: 1.794 GHz maximum — lower-frequency Cortex-A55 cluster
+CPU 6-7: 2.002 GHz maximum — higher-frequency Cortex-A76 cluster
+```
+
+CPU numbering is platform-specific; verify a replacement image with
+`lscpu -e=CPU,CORE,SOCKET,MAXMHZ` before applying affinity settings. A workload
+that should leave one lower-frequency CPU available for maintenance can use
+CPUs `0-4,6-7`, leaving CPU 5 unused by that workload. Do not use
+`isolcpus` or pin `sshd` as part of the default setup; SSH normally needs no
+dedicated CPU.

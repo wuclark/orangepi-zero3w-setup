@@ -43,6 +43,28 @@ The resulting trees are independent of the login username:
 The board's vendor kernel and NPU device-tree support come from the installed
 Orange Pi image; no `Rabs9/A733-kernel` repository is required by this setup.
 
+### CPU affinity for heavy workloads
+
+The verified reference board numbers its CPU clusters as follows:
+
+```text
+CPU 0-5: lower-frequency cluster, maximum 1.794 GHz
+CPU 6-7: higher-frequency cluster, maximum 2.002 GHz
+```
+
+If a long-running NPU or media workload needs to leave one lower-frequency
+CPU available for SSH and maintenance, constrain that workload instead of
+changing kernel boot parameters:
+
+```bash
+taskset -c 0-4,6-7 your-heavy-program
+```
+
+This example leaves CPU 5 out of that process. It does not reserve CPU 5 for
+all system services, and CPU numbering must be rechecked on a different image
+with `lscpu -e=CPU,CORE,SOCKET,MAXMHZ`. A dedicated SSH CPU is normally
+unnecessary.
+
 On an image built with the AI SDK test bundle:
 
 ```bash

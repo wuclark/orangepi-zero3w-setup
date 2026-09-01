@@ -66,3 +66,5 @@
   hashes, and runner output.
 - Add a username-independent SSH/maintenance core and optional A733 source
   synchronization under `/opt/orangepi-zero3w-setup/sources`.
+- Document the verified Orange Pi CPU numbering and safe workload affinity
+  example for leaving a maintenance CPU available.
