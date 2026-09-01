@@ -38,7 +38,7 @@ if [[ $GPU == yes ]]; then
 fi
 if [[ $VPU == yes ]]; then
     check 'GStreamer available' command -v gst-launch-1.0
-    check 'Cedar device node' sh -c 'test -e /dev/cedar_dev* || find /dev -maxdepth 1 -name "cedar_dev*" -print -quit | grep -q .'
+    check 'Cedar device node' sh -c 'find /dev -maxdepth 1 -name "cedar_dev*" -print -quit | grep -q .'
 fi
 if [[ $NPU == yes ]]; then
     check 'NPU device node' test -e /dev/vipcore
