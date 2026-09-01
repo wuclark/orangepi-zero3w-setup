@@ -8,6 +8,33 @@ are present. Start with:
 sudo ./setup.sh npu --status
 ```
 
+## Maintained A733 sources
+
+The maintained source repositories for the NPU workflow are:
+
+- Driver bring-up, board scripts, and NPU examples:
+  <https://github.com/wuclark/a733_npu_driver>
+- A733 VIPLite SDK snapshot and examples:
+  <https://github.com/wuclark/ai-sdk>
+
+See the [A733 source and provenance map](../reference/source-provenance.md)
+for independent references, vendor repositories, source images, and recovery
+copies.
+
+The setup repository uses the locally supplied `work/images/ai-sdk.tar.gz`
+snapshot during image creation. To keep the source trees available on a board
+for later updates, clone them separately; they are not required for the
+preloaded runtime smoke test:
+
+```bash
+mkdir -p "$HOME/src"
+git clone https://github.com/wuclark/a733_npu_driver.git "$HOME/src/a733_npu_driver"
+git clone https://github.com/wuclark/ai-sdk.git "$HOME/src/ai-sdk"
+```
+
+The board's vendor kernel and NPU device-tree support come from the installed
+Orange Pi image; no `Rabs9/A733-kernel` repository is required by this setup.
+
 On an image built with the AI SDK test bundle:
 
 ```bash
@@ -15,6 +42,17 @@ make board-npu-precheck
 make board-npu-install
 make board-npu-verify
 ```
+
+The verification evidence is saved as
+`/var/log/orangepi-zero3w-setup/acceleration-progress.log.npu.verify.npu.txt`.
+To run the smoke test independently and write a stable evidence file, use:
+
+```bash
+make board-npu-test
+```
+
+The evidence records the kernel, driver `vermagic`, runtime/model/input
+hashes, device permissions, loaded module, runner output, and result.
 
 Do not install or document a runtime as supported until real-board evidence
 records the kernel, module, firmware/runtime versions, device nodes, sample

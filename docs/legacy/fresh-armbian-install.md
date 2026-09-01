@@ -36,7 +36,7 @@ From Windows PowerShell, either clone it directly on the board over SSH or copy
 the downloaded repository folder. For a GitHub repository:
 
 ```powershell
-ssh orangepi@BOARD_IP "git clone https://github.com/YOUR-NAME/orangepi-zero3w-setup.git"
+ssh orangepi@BOARD_IP "git clone https://github.com/wuclark/orangepi-zero3w-setup.git"
 ```
 
 ## 2. Transfer the generated vendor archives (recommended)

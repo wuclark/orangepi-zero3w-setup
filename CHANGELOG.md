@@ -62,3 +62,5 @@
 - Image builds now stage selected A733 NPU test assets from the local AI SDK
   into `npu-test-assets.tar.gz` when available; proprietary source archives
   remain local-only.
+- Save persistent NPU smoke-test evidence with kernel, driver, runtime/model
+  hashes, and runner output.

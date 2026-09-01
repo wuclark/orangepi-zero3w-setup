@@ -92,7 +92,7 @@ sudo apt update
 sudo apt install -y git
 
 cd ~
-git clone https://github.com/YOUR-NAME/orangepi-zero3w-setup.git
+git clone https://github.com/wuclark/orangepi-zero3w-setup.git
 cd orangepi-zero3w-setup
 ```
 

@@ -11,7 +11,7 @@ complete from static or archive tests alone.
 ## Start a session
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/orangepi-zero3w-setup.git
+git clone https://github.com/wuclark/orangepi-zero3w-setup.git
 cd orangepi-zero3w-setup
 codex
 # or: claude

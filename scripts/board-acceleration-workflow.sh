@@ -52,7 +52,7 @@ if [[ $ACTION == precheck || $ACTION == verify ]]; then
     set -e
     if ((result == 0)) && [[ $ACTION == verify && $LAYER == npu ]]; then
         set +e
-        "$SCRIPT_DIR/test-npu.sh" 2>&1 | tee -a "$LOG"
+        "$SCRIPT_DIR/test-npu.sh" --output "$evidence.npu.txt" 2>&1 | tee -a "$LOG"
         result=${PIPESTATUS[0]}
         set -e
         if ((result != 0)); then

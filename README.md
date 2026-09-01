@@ -84,6 +84,7 @@ Viewer instructions.
 - [Optional GPU](docs/optional/gpu/gpu.md)
 - [Optional VPU](docs/optional/vpu.md)
 - [Optional NPU](docs/optional/npu.md)
+- [A733 source and provenance map](docs/reference/source-provenance.md)
 
 ## Optional PowerVR reference stack
 
@@ -186,7 +187,8 @@ sudo apt install -y git build-essential bc bison flex libssl-dev libelf-dev
 ./scripts/build-pvrsrvkm.sh --output ./pvrsrvkm.ko
 ```
 
-See [Vendor sources and provenance](docs/optional/gpu/vendor-sources.md) for the upstream
+See the [A733 source and provenance map](docs/reference/source-provenance.md) and
+[GPU vendor sources](docs/optional/gpu/vendor-sources.md) for the upstream
 kernel branch, verified proprietary userspace version, and licensing notes.
 
 The reference GPU bootstrap script:
