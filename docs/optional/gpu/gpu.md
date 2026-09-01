@@ -19,3 +19,47 @@ sudo ./setup.sh gpu --update
 This path is safety-sensitive: the tested kernel requires delayed module
 loading. Do not shorten or replace that ordering without a board reboot test,
 UART access, and a recovery plan.
+
+## Launching EGL/GLES applications
+
+Do not set the vendor library paths globally for every application. Use the
+repository helper for programs that should use the PowerVR EGL/GLES stack:
+
+```bash
+DISPLAY=:0 ./scripts/run-pvr-app.sh eglinfo -B
+DISPLAY=:0 ./scripts/run-pvr-app.sh vkcube
+```
+
+The helper sets `LD_LIBRARY_PATH` and `LIBGL_DRIVERS_PATH` for only the child
+application. A plain `glxinfo -B` may still report Mesa `llvmpipe`; that is the
+separate desktop GLX path and is not evidence that Vulkan or EGL/GLES failed.
+
+## Wayland validation
+
+Wayland is not active in the default LightDM/Openbox session. Test it from a
+local HDMI console, with UART recovery available, after installing a Wayland
+profile:
+
+```bash
+sudo ./setup.sh desktop --profile labwc
+sudo orangepi-session set labwc --reboot
+```
+
+Inside the Wayland session, do not use `sudo` for graphical tests:
+
+```bash
+echo "$XDG_SESSION_TYPE $WAYLAND_DISPLAY $XDG_RUNTIME_DIR"
+wayland-info
+./scripts/run-pvr-app.sh eglinfo -B
+```
+
+The Wayland EGL platform must report the PowerVR renderer. Separately check
+the Vulkan surface capability:
+
+```bash
+vulkaninfo | grep -F VK_KHR_wayland_surface
+```
+
+The current verified Vulkan output advertises X11 XCB/XLIB surfaces but not
+`VK_KHR_wayland_surface`, so Wayland Vulkan presentation is not currently
+claimed. A successful Wayland login alone is not acceleration evidence.

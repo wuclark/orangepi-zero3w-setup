@@ -45,6 +45,8 @@
   pre-write validation, and host tests.
 - Add a scoped `make clean` for generated outputs that preserves source images.
 - Add explicit Make targets for each board GPU/VPU/NPU workflow phase.
+- Add a scoped PowerVR application launcher and document EGL/GLES and Wayland
+  validation boundaries.
 - Add an explicit interactive `make preset` target with credential-safe
   replacement behavior.
 - Normalize embedded repository directory traversal permissions for the board

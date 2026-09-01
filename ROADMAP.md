@@ -15,9 +15,14 @@ specified in `AGENTS.md`.
 - [x] Host pre-boot extraction test and board post-boot diagnostic scaffold.
 - [x] Board-side one-layer-at-a-time runner with persistent progress and
   per-step evidence logs.
+- [x] Scoped PowerVR launcher for EGL/GLES and Vulkan application tests.
 - [x] Real-image test of the Docker extractor using the pinned source images.
 - [ ] NPU userspace installation and runtime validation.
 - [ ] VPU runtime validation.
+- [ ] Investigate desktop GLX acceleration; resolve the `pvr`/Zink geometry
+  shader limitation or document the exact unsupported boundary.
+- [ ] Validate Wayland EGL rendering on labwc/sway and determine whether the
+  Vulkan ICD can gain safe `VK_KHR_wayland_surface` presentation support.
 - [x] Add Docker preloading of the setup repository and generated archives into
   a separate Armbian target image.
 - [x] Build and verify a preloaded image from the current Armbian base image;

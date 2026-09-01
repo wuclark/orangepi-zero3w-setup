@@ -252,6 +252,18 @@ exec /usr/lib/xorg/Xorg "$@"
 This matters because setting these vendor paths globally would affect unrelated
 applications and make recovery harder.
 
+For user applications, use the repository launcher instead:
+
+```bash
+DISPLAY=:0 ./scripts/run-pvr-app.sh eglinfo -B
+DISPLAY=:0 ./scripts/run-pvr-app.sh vkcube
+```
+
+This keeps the vendor environment scoped to the tested process. Wayland EGL
+must be tested in a real labwc or sway session; Wayland Vulkan additionally
+requires `VK_KHR_wayland_surface`, which is not advertised by the current
+verified Vulkan ICD.
+
 ## Creating a headless but real X11 desktop
 
 x11vnc mirrors an existing Xorg display; it does not create one. With no monitor

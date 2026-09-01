@@ -41,6 +41,7 @@ help:
 		'make board-gpu-precheck/install/verify  Run GPU phases on the board' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
 		'make board-npu-precheck/verify          Run supported NPU checks' \
+		'PowerVR app helper: ./scripts/run-pvr-app.sh COMMAND' \
 		'REBUILD=1 make image  Rebuild an existing derived image safely'
 
 extract:

@@ -153,6 +153,9 @@ The equivalent Make targets are `board-gpu-*`, `board-vpu-*`, and
 `board-npu-precheck`/`board-npu-verify`.
 Prechecks may report expected missing-layer warnings but still record a
 successful baseline; verification steps fail when required checks are absent.
+Use `scripts/run-pvr-app.sh COMMAND` for EGL/GLES applications that must use
+the isolated PowerVR environment. Wayland requires a separate local-console
+test; see the GPU troubleshooting guide before switching sessions.
 
 The legacy all-in-one GPU command remains available as `install.sh`; it builds
 or validates `pvrsrvkm.ko`, installs the matching runtime, and configures the

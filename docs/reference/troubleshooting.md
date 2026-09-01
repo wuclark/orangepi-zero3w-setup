@@ -48,6 +48,25 @@ libGLESv2_PVR_MESA.so
 
 Use `scripts/verify.sh` and check all `ldd` results.
 
+Run EGL/GLES applications through the isolated helper so the vendor libraries
+are selected:
+
+```bash
+DISPLAY=:0 ./scripts/run-pvr-app.sh eglinfo -B
+```
+
+If this reports PowerVR while plain `eglinfo` reports llvmpipe, the hardware
+path is present and only the application environment was missing. Desktop
+GLX may still remain on llvmpipe.
+
+## Testing Wayland
+
+The default session is X11. Test `labwc` or `sway` from the local HDMI console
+after selecting the profile and rebooting. In the Wayland session check
+`wayland-info` and run `./scripts/run-pvr-app.sh eglinfo -B`. Also check
+`vulkaninfo` for `VK_KHR_wayland_surface`; without that extension, do not claim
+Wayland Vulkan presentation support.
+
 ## X11 shows 1024x600 instead of forced 1080p
 
 EDID preferred modes override the forced connector mode after Xorg starts. Use:
@@ -57,4 +76,3 @@ DISPLAY=:0 xrandr --output HDMI-1 --mode 1920x1080 --rate 60
 ```
 
 The reference 7-inch MPI7010 display correctly prefers 1024x600.
-
