@@ -39,6 +39,8 @@
   user selected by the first-boot preset; add pre-write image validation.
 - Add a board-side GPU/VPU/NPU step runner with persistent progress and evidence
   logging; it never reboots automatically and refuses unvalidated NPU install.
+- Treat expected missing-layer precheck warnings as a recorded baseline while
+  keeping post-install verification failures strict.
 - Add Makefile targets for idempotent extraction, staged image creation,
   pre-write validation, and host tests.
 - Add a scoped `make clean` for generated outputs that preserves source images.

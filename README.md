@@ -151,6 +151,8 @@ results, reboot requirements, and evidence under
 `/var/log/orangepi-zero3w-setup/`.
 The equivalent Make targets are `board-gpu-*`, `board-vpu-*`, and
 `board-npu-precheck`/`board-npu-verify`.
+Prechecks may report expected missing-layer warnings but still record a
+successful baseline; verification steps fail when required checks are absent.
 
 The legacy all-in-one GPU command remains available as `install.sh`; it builds
 or validates `pvrsrvkm.ko`, installs the matching runtime, and configures the

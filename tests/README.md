@@ -61,6 +61,8 @@ Repeat the same sequence for `vpu`. Use `npu` for precheck only until the
 board-side NPU installer is implemented. Progress is appended to
 `/var/log/orangepi-zero3w-setup/acceleration-progress.log`, with per-step
 evidence files beside it. The orchestrator never reboots automatically.
+Prechecks record missing layers as a baseline and exit successfully; verify
+steps return failure when required checks are still missing.
 
 Equivalent Make targets are available on the board:
 
