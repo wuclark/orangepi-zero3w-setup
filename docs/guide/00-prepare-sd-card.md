@@ -233,7 +233,8 @@ into the Armbian root filesystem:
 /home/orangepi/orangepi-zero3w-setup/vendor-files/
 ├── pvr-userspace.tar.gz
 ├── vpu-userspace.tar.gz       # optional VPU userspace
-└── npu-userspace.tar.gz       # optional experimental NPU userspace
+├── npu-userspace.tar.gz       # optional experimental NPU userspace
+└── npu-test-assets.tar.gz     # generated automatically when AI SDK is present
 ```
 
 On Linux, with the Armbian root partition mounted at `/mnt/armbian-root` and
@@ -280,7 +281,12 @@ This step is optional. If the repository or archives are not placed on the
 card, use `windows/Copy-VendorArchives.ps1` after SSH becomes available.
 Generate all three archives before this step with
 `scripts/extract-vendor-userspace-docker.sh`; the NPU archive remains
-experimental and is not installed by the current setup flow.
+experimental and is installed only by the explicit board NPU target.
+
+If `work/images/ai-sdk.tar.gz` is present, `make newsd` also generates and
+copies `npu-test-assets.tar.gz`. This is a small board-test bundle, not the
+full SDK; it contains selected AArch64 VIPLite headers, `vpm_run` source, test
+NBG/input data, and a YOLOv5 test graph/sample.
 
 ## What the preset scripts do
 

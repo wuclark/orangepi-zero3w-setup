@@ -10,7 +10,7 @@ REBUILD ?= no
 	board-gpu-precheck board-gpu-install board-gpu-verify \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
-	board-npu-precheck board-npu-install board-npu-verify
+	board-npu-precheck board-npu-install board-npu-verify npu-test-assets
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -26,7 +26,7 @@ help:
 		'  3. Write the reported *-preloaded-firstboot.img to the confirmed SD card.' \
 		'  4. On the board: GPU precheck/install, reboot, then GPU verify.' \
 		'  5. Run the equivalent VPU targets one at a time.' \
-		'  6. Run NPU precheck/verify; NPU install is currently blocked.' \
+		'  6. Run NPU precheck/install/verify when the AI SDK test bundle is present.' \
 		'  Board log: /var/log/orangepi-zero3w-setup/acceleration-progress.log' \
 		'' \
 		'make extract    Generate vendor archives, or reuse existing output' \
@@ -43,6 +43,7 @@ help:
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
 		'make board-vpu-decode-test              Run downloaded H.264/H.265 VPU tests' \
 		'make board-npu-precheck/verify          Run supported NPU checks' \
+		'make npu-test-assets                    Stage selected A733 NPU test files' \
 		'PowerVR app helper: ./scripts/run-pvr-app.sh COMMAND' \
 		'REBUILD=1 make image  Rebuild an existing derived image safely'
 
@@ -51,6 +52,10 @@ extract:
 		echo 'Reusing existing vendor archives in $(VENDOR_OUTPUT)'; \
 	else \
 		./scripts/extract-vendor-userspace-docker.sh; \
+	fi
+	@if [[ -f work/images/ai-sdk.tar.gz && ! -f $(VENDOR_OUTPUT)/npu-test-assets.tar.gz ]]; then \
+		./scripts/stage-npu-test-assets.sh --sdk-tarball work/images/ai-sdk.tar.gz \
+			--output $(VENDOR_OUTPUT)/npu-test-assets.tar.gz; \
 	fi
 
 preset:
@@ -148,8 +153,12 @@ board-npu-precheck:
 	sudo $(BOARD_WORKFLOW) --layer npu --action precheck $(BOARD_ARGS)
 
 board-npu-install:
-	@echo 'NPU installation is intentionally blocked until board ABI validation is complete.'
-	@exit 3
+	sudo $(BOARD_WORKFLOW) --layer npu --action install --yes $(BOARD_ARGS)
 
 board-npu-verify:
 	sudo $(BOARD_WORKFLOW) --layer npu --action verify $(BOARD_ARGS)
+
+npu-test-assets:
+	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
+	@./scripts/stage-npu-test-assets.sh --sdk-tarball work/images/ai-sdk.tar.gz \
+		--output $(VENDOR_OUTPUT)/npu-test-assets.tar.gz

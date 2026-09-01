@@ -17,8 +17,8 @@ Options:
   --yes        Do not ask for install confirmation
 
 Run one layer at a time. GPU installation requires a manual reboot before
---action verify. NPU installation is intentionally refused until its runtime
-and kernel/userspace ABI have been validated on real hardware.
+--action verify. NPU installation requires the generated runtime and test
+asset archives; verification runs the bundled VIPLite smoke test.
 EOF
 }
 while (($#)); do
@@ -50,6 +50,17 @@ if [[ $ACTION == precheck || $ACTION == verify ]]; then
         "--$LAYER" --output "$evidence" 2>&1 | tee -a "$LOG"
     result=${PIPESTATUS[0]}
     set -e
+    if ((result == 0)) && [[ $ACTION == verify && $LAYER == npu ]]; then
+        set +e
+        "$SCRIPT_DIR/test-npu.sh" 2>&1 | tee -a "$LOG"
+        result=${PIPESTATUS[0]}
+        set -e
+        if ((result != 0)); then
+            record failed "NPU smoke test failed"; exit "$result"
+        fi
+        record passed 'NPU VIPLite smoke test passed'
+        exit 0
+    fi
     if ((result == 0)); then
         record passed "board checks passed; evidence=$evidence"
         exit 0
@@ -94,9 +105,20 @@ case "$LAYER" in
         set -e
         ;;
     npu)
-        printf 'NPU installation is not implemented until board ABI validation is complete.\n' | tee -a "$LOG"
-        record blocked 'no supported NPU installer; run --action precheck for evidence'
-        exit 3
+        archive="$REPO_ROOT/vendor-files/npu-userspace.tar.gz"
+        test_archive="$REPO_ROOT/vendor-files/npu-test-assets.tar.gz"
+        [[ -f $archive && -f $test_archive ]] || {
+            record failed 'vendor-files requires npu-userspace.tar.gz and npu-test-assets.tar.gz'; exit 1;
+        }
+        stage=$(mktemp -d -t zero3w-npu-work.XXXXXXXX)
+        trap 'rm -rf -- "$stage"' EXIT
+        "$SCRIPT_DIR/prepare-vendor-archives.sh" --pvr-tarball "$REPO_ROOT/vendor-files/pvr-userspace.tar.gz" \
+            --npu-tarball "$archive" --output "$stage" >/dev/null
+        set +e
+        "$SCRIPT_DIR/install-npu-userspace.sh" --vendor-root "$stage/.zero3w-npu" \
+            --test-archive "$test_archive" 2>&1 | tee -a "$LOG"
+        result=${PIPESTATUS[0]}
+        set -e
         ;;
 esac
 

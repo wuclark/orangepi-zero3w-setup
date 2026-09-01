@@ -150,7 +150,9 @@ On the board, validate and install one acceleration layer at a time with
 results, reboot requirements, and evidence under
 `/var/log/orangepi-zero3w-setup/`.
 The equivalent Make targets are `board-gpu-*`, `board-vpu-*`, and
-`board-npu-precheck`/`board-npu-verify`.
+`board-npu-precheck`/`board-npu-install`/`board-npu-verify`. When `work/images/ai-sdk.tar.gz` is
+available, `make newsd` also places a selected A733 NPU test bundle in the
+image; the full SDK remains outside the image.
 Prechecks may report expected missing-layer warnings but still record a
 successful baseline; verification steps fail when required checks are absent.
 The VPU install also installs the Cedar configuration and GStreamer parser

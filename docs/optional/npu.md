@@ -1,10 +1,19 @@
 # Optional NPU acceleration
 
-NPU support is separate from the base setup, GPU, and VPU. The repository does
-not currently claim a tested NPU runtime. Use the diagnostic placeholder:
+NPU support is separate from the base setup, GPU, and VPU. The repository
+provides an experimental runtime/test path when both generated NPU archives
+are present. Start with:
 
 ```bash
 sudo ./setup.sh npu --status
+```
+
+On an image built with the AI SDK test bundle:
+
+```bash
+make board-npu-precheck
+make board-npu-install
+make board-npu-verify
 ```
 
 Do not install or document a runtime as supported until real-board evidence
@@ -39,7 +48,8 @@ Keep extraction and installation separate:
    runtime versions, and a reproducible inference smoke test.
 
 The extractor currently targets the VIPLite runtime libraries, including
-`libVIPhal.so` and `libNBGlinker.so`, but the allowlist must be checked against
+`libVIPhal.so` and `libNBGlinker.so`, while the AI SDK staging step supplies the
+board test assets. The allowlist must be checked against
 the exact Orange Pi image before release. It must not copy `vipcore.ko` or
 claim support merely because `/dev/vipcore` exists. Validate against the Orange
 Pi image and the target board's running kernel/driver ABI first.
@@ -52,3 +62,10 @@ Host output: pvr-userspace.tar.gz, vpu-userspace.tar.gz, npu-userspace.tar.gz
 Board input: vendor-files/npu-userspace.tar.gz
 Board test:  /dev/vipcore + pinned VIPLite workload
 ```
+
+When `work/images/ai-sdk.tar.gz` is available, `make newsd` stages a small
+`npu-test-assets.tar.gz` alongside the NPU userspace archive. It contains the
+AArch64 `vpm_run` source, VIPLite headers, one test NBG and input data, plus a
+YOLOv5 NBG and sample image; it does not contain the full SDK. The runner is
+compiled and tested on the target board, so this remains experimental until
+the workload returns success on the target kernel and driver.

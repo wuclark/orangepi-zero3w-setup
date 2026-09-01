@@ -59,3 +59,6 @@
 - Add `make newsd` for a clean, prompted, fully validated SD-card image build.
 - Add `ROADMAP.md` documenting the remaining extraction, NPU/VPU validation,
   installer, evidence, and documentation gates.
+- Image builds now stage selected A733 NPU test assets from the local AI SDK
+  into `npu-test-assets.tar.gz` when available; proprietary source archives
+  remain local-only.

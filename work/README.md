@@ -13,6 +13,10 @@ work/
 │   └── armbian/
 │       └── Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal.img.xz
 └── vendor-output/          # generated archives and manifests
+
+The optional `work/images/ai-sdk.tar.gz` is also used by `make extract` to
+create a small, selected `npu-test-assets.tar.gz`; the full SDK is never put
+in an image or committed.
 ```
 
 Generate archives from Docker in WSL2 or Linux with:

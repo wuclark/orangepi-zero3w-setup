@@ -38,6 +38,8 @@ cp -a /repo/work/vendor-output/pvr-userspace.tar.gz "$TARGET/vendor-files/"
 for archive in vpu-userspace.tar.gz npu-userspace.tar.gz; do
     [[ -f /repo/work/vendor-output/$archive ]] && cp -a "/repo/work/vendor-output/$archive" "$TARGET/vendor-files/"
 done
+[[ -f /repo/work/vendor-output/npu-test-assets.tar.gz ]] && \
+    cp -a /repo/work/vendor-output/npu-test-assets.tar.gz "$TARGET/vendor-files/"
 chown -R root:root "$TARGET"; chmod 0644 "$TARGET/vendor-files/"*.tar.gz
 find "$TARGET" -type d -exec chmod 755 {} +
 find "$TARGET" -type f -printf '%P\n' | sort > "$OUTPUT_IMAGE.manifest.txt"
