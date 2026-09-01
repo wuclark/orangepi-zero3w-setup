@@ -38,6 +38,7 @@ for archive in vpu-userspace.tar.gz npu-userspace.tar.gz; do
     [[ -f /repo/work/vendor-output/$archive ]] && cp -a "/repo/work/vendor-output/$archive" "$TARGET/vendor-files/"
 done
 chown -R root:root "$TARGET"; chmod 0644 "$TARGET/vendor-files/"*.tar.gz
+find "$TARGET" -type d -exec chmod 755 {} +
 find "$TARGET" -type f -printf '%P\n' | sort > "$OUTPUT_IMAGE.manifest.txt"
 sync; umount "$WORK/root"; losetup -D 2>/dev/null || true
 (cd "$(dirname "$OUTPUT_IMAGE")" && sha256sum "$(basename "$OUTPUT_IMAGE")" > "$(basename "$OUTPUT_IMAGE").sha256")

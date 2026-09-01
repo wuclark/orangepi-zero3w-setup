@@ -45,6 +45,8 @@
 - Add explicit Make targets for each board GPU/VPU/NPU workflow phase.
 - Add an explicit interactive `make preset` target with credential-safe
   replacement behavior.
+- Normalize embedded repository directory traversal permissions for the board
+  user while keeping files and vendor archives root-owned.
 - Add `make newsd` for a clean, prompted, fully validated SD-card image build.
 - Add `ROADMAP.md` documenting the remaining extraction, NPU/VPU validation,
   installer, evidence, and documentation gates.
