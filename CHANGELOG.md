@@ -9,8 +9,8 @@
   update` unless explicitly requested.
 - Add cross-platform headless Armbian first-boot preset generators and an
   opt-in post-boot software menu.
-- Restrict first-boot preset generators to Armbian's documented variables;
-  hostname is configured after login with `setup.sh base --hostname`.
+- Restrict first-boot preset files to Armbian's documented variables and use a
+  one-time provisioning hook for hostname configuration.
 - Document optional pre-boot copying of unchanged GPU/VPU archives onto the
   prepared SD card, including ownership and permissions.
 - Document optional Debian Docker and Docker Compose installation and use.

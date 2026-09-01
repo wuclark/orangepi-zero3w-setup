@@ -12,12 +12,13 @@ sudo rm -f /root/.not_logged_in_yet
 hostnamectl
 uname -a
 ip addr
-sudo ./setup.sh base --hostname op03W
+sudo ./setup.sh base
 ```
 
 The first-boot preset configures only Armbian's documented preset variables.
-Set the hostname after login with the `--hostname` option shown above; the
-preset generator does not attempt to encode hostname configuration.
+The companion `/root/provisioning.sh` hook sets the hostname after the first
+successful login. Verify it with `hostnamectl`, then remove the temporary
+`/root/.not_logged_in_yet` and `/root/provisioning.sh` files if they remain.
 
 Do not run GPU installation until the board reports the expected kernel and a
 serial-console recovery path is available.

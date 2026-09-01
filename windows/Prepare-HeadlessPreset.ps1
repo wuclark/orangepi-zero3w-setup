@@ -5,6 +5,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 if ($RootMountPath) { $OutputFile = Join-Path $RootMountPath "root\.not_logged_in_yet" }
+$hostnameValue = Read-Host "Hostname [orangepi]"; if (-not $hostnameValue) { $hostnameValue = "orangepi" }
 $userName = Read-Host "Username [orangepi]"; if (-not $userName) { $userName = "orangepi" }
 $rootPassword = Read-Host "Root password" -AsSecureString
 $userPassword = Read-Host "User password" -AsSecureString
@@ -16,6 +17,7 @@ function Unsecure([Security.SecureString]$Value) {
     finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
 }
 $rootPlain = Unsecure $rootPassword; $userPlain = Unsecure $userPassword; $wifiPlain = Unsecure $wifiPassword
+if ($hostnameValue -notmatch '^[A-Za-z0-9][A-Za-z0-9.-]*$') { throw "Invalid hostname." }
 function Escape-ConfigValue([string]$Value) {
     return $Value.Replace('\', '\\').Replace('"', '\"').Replace('$', '\$').Replace('`', '\`')
 }
@@ -43,4 +45,13 @@ $parent = Split-Path -Parent $OutputFile
 if ($parent) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
 $fullOutput = [IO.Path]::GetFullPath($OutputFile)
 [IO.File]::WriteAllText($fullOutput, $content)
-Write-Host "Created $fullOutput. Copy it to /root/.not_logged_in_yet and delete it after first boot."
+$provisioningOutput = Join-Path (Split-Path -Parent $fullOutput) "provisioning.sh"
+$provisioning = @"
+#!/usr/bin/env bash
+set -Eeuo pipefail
+hostnamectl set-hostname '$hostnameValue'
+"@
+[IO.File]::WriteAllText($provisioningOutput, $provisioning)
+Write-Host "Created $fullOutput. Copy it to /root/.not_logged_in_yet."
+Write-Host "Created $provisioningOutput. Copy it to /root/provisioning.sh."
+Write-Host "Delete both files after first boot."

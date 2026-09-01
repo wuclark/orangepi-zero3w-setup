@@ -105,18 +105,24 @@ sudo umount /mnt/armbian-root
 Confirm the partition number with `lsblk`; it may differ from `/dev/sdX2`.
 Unmount the card before removing it.
 
-If the computer cannot safely mount ext4, create the file separately and copy
-it to the mounted root partition's `root/` directory:
+If the computer cannot safely mount ext4, create the files separately and copy
+both to the mounted root partition's `root/` directory:
 
 ```bash
 ./scripts/create-headless-preset.sh --output ./not_logged_in_yet
 ```
+
+This creates `not_logged_in_yet` and `provisioning.sh` in the current directory.
+Copy them to `/root/.not_logged_in_yet` and `/root/provisioning.sh`.
 
 On Windows:
 
 ```powershell
 .\windows\Prepare-HeadlessPreset.ps1 -OutputFile .\not_logged_in_yet
 ```
+
+This also creates `provisioning.sh`; copy it to `/root/provisioning.sh` with the
+preset file.
 
 ### Windows with WSL2 and a USB card reader
 
@@ -224,16 +230,18 @@ they do not download, partition, or write the Armbian image. They prompt for:
 
 They write only Armbian's documented first-boot variables for Wi-Fi, DHCP, US
 Wi-Fi regulatory settings, `en_US.UTF-8`, and `America/Los_Angeles`. Hostname is
-not a documented first-boot preset variable, so set it after login with
-`sudo ./setup.sh base --hostname NAME`. The Bash
+not a documented first-boot preset variable; instead, they create the
+one-time `/root/provisioning.sh` hook, which runs `hostnamectl` after the first
+successful login. The Bash
 generator validates the mount by checking for an `etc` directory, creates the
-destination with restrictive permissions, and uses mode `600`. The PowerShell
+preset with restrictive permissions, and uses mode `600`. The provisioning
+hook is executable and uses mode `700`. The PowerShell
 generator uses a secure prompt for passwords while prompting, but the generated
 file necessarily contains plaintext values because Armbian requires them.
 
-Keep the file private, do not commit it, and delete it immediately after the
-first successful SSH login. It is temporary bootstrap material, not a general
-configuration file.
+Keep both files private, do not commit them, and delete them immediately after
+the first successful SSH login. They are temporary bootstrap material, not
+general configuration files.
 
 ## Continue to first boot
 

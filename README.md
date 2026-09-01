@@ -23,11 +23,9 @@ archives into the repository's `vendor-files/` directory; the preparation
 guide documents the layout and permissions. Otherwise transfer them after boot
 with the Windows helper.
 
-The first-boot preset does not set the hostname. Set it after login if desired:
-
-```bash
-sudo ./setup.sh base --hostname op03W
-```
+The first-boot generator asks for a hostname and creates a one-time
+`/root/provisioning.sh` hook to apply it after the first successful login.
+Armbian's preset file itself contains only documented first-boot variables.
 
 Package installation uses the existing apt cache. To explicitly refresh it:
 
