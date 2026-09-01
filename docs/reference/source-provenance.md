@@ -16,8 +16,8 @@ maintained copies and working references:
 | [`wuclark/orangepi-zero3w-setup`](https://github.com/wuclark/orangepi-zero3w-setup) | This setup, image, installer, and test automation | Maintained project repository |
 | [`wuclark/a733_npu_driver`](https://github.com/wuclark/a733_npu_driver) | A733 NPU bring-up, board scripts, NBG/vpm tests, and experiments | Maintained copy/working fork of the A733 NPU bring-up work |
 | [`wuclark/ai-sdk`](https://github.com/wuclark/ai-sdk) | VIPLite headers, libraries, examples, models, and conversion assets | Maintained copy of the A733 SDK source used to stage selected image-test assets |
-| [`wuclark/radxa-a7a-toolkit`](https://github.com/wuclark/radxa-a7a-toolkit) | Radxa A7A/A733 hardware, GPU, NPU, and utility references | Maintained related A733 toolkit |
-| [`wuclark/a733-powervr-fex`](https://github.com/wuclark/a733-powervr-fex) | PowerVR/FEX and A733 GPU investigation | Maintained related GPU research reference |
+| [`wuclark/radxa-a7a-toolkit`](https://github.com/wuclark/radxa-a7a-toolkit) | Radxa A7A/A733 hardware, GPU, NPU, and utility references | Working fork maintained for this project |
+| [`wuclark/a733-powervr-fex`](https://github.com/wuclark/a733-powervr-fex) | PowerVR/FEX and A733 GPU investigation | Working fork maintained for this project |
 
 The setup image builder consumes only the local `work/images/ai-sdk.tar.gz`
 snapshot and selected test files. It does not clone these repositories during
