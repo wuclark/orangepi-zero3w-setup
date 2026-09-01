@@ -21,4 +21,5 @@ sudo ./scripts/install-x11vnc.sh --listen-lan
 ```
 
 Services should bind to localhost and be reached through SSH tunneling. Direct
-LAN exposure is an opt-in exception. See [SSH tunneling](../remote/ssh-tunneling.md).
+LAN exposure is an opt-in exception. When x11vnc is installed, its tunnel
+command is shown in the login message. See [SSH tunneling](../remote/ssh-tunneling.md).

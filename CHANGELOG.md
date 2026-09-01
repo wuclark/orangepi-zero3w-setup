@@ -9,6 +9,13 @@
   update` unless explicitly requested.
 - Add cross-platform headless Armbian first-boot preset generators and an
   opt-in post-boot software menu.
+- Restrict first-boot preset generators to Armbian's documented variables;
+  hostname is configured after login with `setup.sh base --hostname`.
+- Document optional pre-boot copying of unchanged GPU/VPU archives onto the
+  prepared SD card, including ownership and permissions.
+- Document optional Debian Docker and Docker Compose installation and use.
+- Show the x11vnc SSH tunnel command in the login message when remote access is
+  configured.
 - Make `pvr-userspace.tar.gz` the recommended installer input.
 - Add optional `vpu-userspace.tar.gz` discovery and isolated VPU installation.
 - Validate archive paths and extract only into private staging directories.

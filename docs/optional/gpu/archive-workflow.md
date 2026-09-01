@@ -18,6 +18,13 @@ out of this Git repository.
 
 ## Transfer from Windows
 
+For a newly prepared SD card, the archives may instead be copied to the
+mounted card before first boot under
+`/home/orangepi/orangepi-zero3w-setup/vendor-files/`. See the [SD-card
+preparation guide](../../guide/00-prepare-sd-card.md#optionally-copy-vendor-archives-before-first-boot)
+for the required ownership and permissions. In either workflow, copy the
+tarballs unchanged and do not extract them into the target root filesystem.
+
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\windows\Copy-VendorArchives.ps1 `

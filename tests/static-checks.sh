@@ -24,6 +24,13 @@ grep -q 'AGENTS.md' "$REPO_ROOT/CLAUDE.md"
 grep -q 'scp.exe' "$REPO_ROOT/windows/Copy-PvrVendorRoot.ps1"
 grep -q 'PowerVR B-Series BXM-4-64 MC1' "$REPO_ROOT/docs/legacy/step-by-step-gpu-guide.md"
 grep -q 'spinning hardware-rendered vkcube' "$REPO_ROOT/TUTORIAL-ARTICLE.md"
+grep -q '95-zero3w-vnc-tunnel' "$REPO_ROOT/scripts/install-x11vnc.sh"
+
+if grep -qs 'PRESET_HOSTNAME' "$REPO_ROOT/scripts/create-headless-preset.sh" \
+    "$REPO_ROOT/windows/Prepare-HeadlessPreset.ps1"; then
+    echo 'Unsupported Armbian first-boot hostname preset found' >&2
+    exit 1
+fi
 
 if grep -Rqs '/etc/modules-load.d/pvrsrvkm.conf' "$REPO_ROOT/config"; then
     echo 'Unsafe modules-load configuration found' >&2

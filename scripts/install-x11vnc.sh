@@ -27,6 +27,8 @@ if [[ ! -f $USER_HOME/.vnc/passwd ]]; then
 fi
 chmod 600 "$USER_HOME/.vnc/passwd"
 chown "$TARGET_USER:$TARGET_USER" "$USER_HOME/.vnc/passwd"
+install -m 0755 "$SCRIPT_DIR/../config/95-zero3w-vnc-tunnel" \
+    /etc/update-motd.d/95-zero3w-vnc-tunnel
 
 cat > /etc/systemd/system/x11vnc.service <<EOF
 [Unit]

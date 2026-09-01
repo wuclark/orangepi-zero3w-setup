@@ -31,6 +31,19 @@ ssh -N -L 15900:127.0.0.1:5900 orangepi@BOARD_IP
 
 Then connect to `localhost::15900`.
 
+When the project configures x11vnc, the board's login message also prints a
+ready-to-copy tunnel command using the current login user and detected board
+address. The message is informational; it does not open a tunnel or expose
+VNC on the LAN. If the address shown there is not reachable from your client,
+replace it with the board's reachable IP or hostname:
+
+```powershell
+ssh -N -L 5900:127.0.0.1:5900 orangepi@BOARD_IP
+```
+
+Leave the SSH window open while the VNC viewer is connected to
+`127.0.0.1:5900` (or `localhost::5900` in TightVNC Viewer).
+
 `x11vnc` mirrors the existing X11 display. `wayvnc` serves a Wayland session.
 TightVNC/TigerVNC creates a separate virtual X11 desktop and does not mirror
 the HDMI session or directly serve Wayland.

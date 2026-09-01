@@ -22,3 +22,47 @@ To refresh package metadata, explicitly request it:
 ```bash
 sudo ./setup.sh packages --update
 ```
+
+## Docker and Docker Compose
+
+Docker is optional and is not installed by the base command. To install
+Debian's Docker Engine and Compose packages, run the package menu and choose
+option `4`:
+
+```bash
+sudo ./setup.sh packages
+```
+
+The Docker option installs `docker.io` and `docker-compose` from the Armbian
+Debian package sources. Refresh apt metadata first only when needed:
+
+```bash
+sudo ./setup.sh packages --update
+```
+
+Enable Docker and allow the regular login user to run it without `sudo`:
+
+```bash
+sudo systemctl enable --now docker
+sudo usermod -aG docker "$USER"
+```
+
+Log out and back in so the group membership takes effect. Verify both services
+before deploying an application:
+
+```bash
+docker version
+docker compose version
+```
+
+Run a Compose application from the directory containing its
+`compose.yaml` or `docker-compose.yml`:
+
+```bash
+docker compose up -d
+docker compose ps
+docker compose down
+```
+
+The Docker group grants root-equivalent access on the host. Use `sudo docker`
+instead if that privilege should not be delegated to the regular user.

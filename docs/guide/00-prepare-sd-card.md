@@ -172,17 +172,60 @@ ext4-capable tool to copy it to `root/.not_logged_in_yet`, and then safely
 eject the card. macOS's standard tools do not provide a safe writable ext4
 mount; use PowerShell 7 in a suitable environment or a Linux VM/live system.
 
+## Optionally copy vendor archives before first boot
+
+If the repository is already copied to the card at
+`/home/orangepi/orangepi-zero3w-setup`, you can also place the user-supplied
+archives on the card now. Keep them as unchanged tarballs; do not extract them
+into the Armbian root filesystem:
+
+```text
+/home/orangepi/orangepi-zero3w-setup/vendor-files/
+├── pvr-userspace.tar.gz
+└── vpu-userspace.tar.gz       # optional VPU userspace
+```
+
+On Linux, with the Armbian root partition mounted at `/mnt/armbian-root` and
+the archives in `./vendor-output/`:
+
+```bash
+sudo install -d -o root -g root -m 0755 \
+  /mnt/armbian-root/home/orangepi/orangepi-zero3w-setup/vendor-files
+sudo install -o root -g root -m 0644 \
+  ./vendor-output/pvr-userspace.tar.gz \
+  /mnt/armbian-root/home/orangepi/orangepi-zero3w-setup/vendor-files/
+sudo install -o root -g root -m 0644 \
+  ./vendor-output/vpu-userspace.tar.gz \
+  /mnt/armbian-root/home/orangepi/orangepi-zero3w-setup/vendor-files/
+```
+
+Omit the second `install` command when the optional VPU archive is unavailable.
+The archives are installer inputs, not executable files; root ownership with
+directory mode `0755` and file mode `0644` is appropriate. If an ext4-capable
+Windows tool assigns different ownership, correct it after first login:
+
+```bash
+sudo chown root:root ~/orangepi-zero3w-setup/vendor-files/*
+sudo chmod 0644 ~/orangepi-zero3w-setup/vendor-files/*
+```
+
+This step is optional. If the repository or archives are not placed on the
+card, use `windows/Copy-VendorArchives.ps1` after SSH becomes available.
+There is no supported NPU userspace archive workflow yet.
+
 ## What the preset scripts do
 
 `create-headless-preset.sh` and `Prepare-HeadlessPreset.ps1` are generators;
 they do not download, partition, or write the Armbian image. They prompt for:
 
-- hostname and username;
+- username;
 - root and user passwords; and
 - Wi-Fi SSID and password.
 
-They write Armbian's first-boot variables for Wi-Fi, DHCP, US Wi-Fi
-regulatory settings, `en_US.UTF-8`, and `America/Los_Angeles`. The Bash
+They write only Armbian's documented first-boot variables for Wi-Fi, DHCP, US
+Wi-Fi regulatory settings, `en_US.UTF-8`, and `America/Los_Angeles`. Hostname is
+not a documented first-boot preset variable, so set it after login with
+`sudo ./setup.sh base --hostname NAME`. The Bash
 generator validates the mount by checking for an `etc` directory, creates the
 destination with restrictive permissions, and uses mode `600`. The PowerShell
 generator uses a secure prompt for passwords while prompting, but the generated

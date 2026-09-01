@@ -5,7 +5,6 @@ param(
 )
 $ErrorActionPreference = "Stop"
 if ($RootMountPath) { $OutputFile = Join-Path $RootMountPath "root\.not_logged_in_yet" }
-$hostnameValue = Read-Host "Hostname [orangepi]"; if (-not $hostnameValue) { $hostnameValue = "orangepi" }
 $userName = Read-Host "Username [orangepi]"; if (-not $userName) { $userName = "orangepi" }
 $rootPassword = Read-Host "Root password" -AsSecureString
 $userPassword = Read-Host "User password" -AsSecureString
@@ -20,11 +19,10 @@ $rootPlain = Unsecure $rootPassword; $userPlain = Unsecure $userPassword; $wifiP
 function Escape-ConfigValue([string]$Value) {
     return $Value.Replace('\', '\\').Replace('"', '\"').Replace('$', '\$').Replace('`', '\`')
 }
-$hostnameValue = Escape-ConfigValue $hostnameValue; $userName = Escape-ConfigValue $userName
+$userName = Escape-ConfigValue $userName
 $rootPlain = Escape-ConfigValue $rootPlain; $userPlain = Escape-ConfigValue $userPlain
 $wifiSsid = Escape-ConfigValue $wifiSsid; $wifiPlain = Escape-ConfigValue $wifiPlain
 $content = @"
-PRESET_HOSTNAME="$hostnameValue"
 PRESET_NET_CHANGE_DEFAULTS="1"
 PRESET_NET_WIFI_ENABLED="1"
 PRESET_NET_WIFI_SSID="$wifiSsid"

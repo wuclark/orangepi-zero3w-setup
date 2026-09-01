@@ -6,14 +6,13 @@ set -Eeuo pipefail
 # --output to create the file for later copying to /root/.not_logged_in_yet.
 OUTPUT=
 ROOT_MOUNT=
-HOSTNAME_VALUE=orangepi
 USER_NAME=orangepi
 
 usage() {
     cat <<EOF
 Usage: $0 [--root-mount DIR | --output FILE]
 
-Prompts for the hostname, user, passwords, and Wi-Fi credentials. Passwords
+Prompts for the user, passwords, and Wi-Fi credentials. Passwords
 are written in plaintext because Armbian requires that for automatic first
 boot. Delete the generated file after the board has booted.
 EOF
@@ -28,19 +27,16 @@ while (($#)); do
 done
 [[ -n $ROOT_MOUNT || -n $OUTPUT ]] || { usage >&2; exit 2; }
 [[ -z $ROOT_MOUNT || -z $OUTPUT ]] || { echo 'Use only one output option.' >&2; exit 2; }
-read -r -p 'Hostname [orangepi]: ' answer; HOSTNAME_VALUE=${answer:-$HOSTNAME_VALUE}
 read -r -p 'Username [orangepi]: ' answer; USER_NAME=${answer:-$USER_NAME}
 read -r -s -p 'Root password: ' ROOT_PASSWORD; printf '\n'
 read -r -s -p 'User password: ' USER_PASSWORD; printf '\n'
 read -r -p 'Wi-Fi SSID: ' WIFI_SSID
 read -r -s -p 'Wi-Fi password: ' WIFI_PASSWORD; printf '\n'
-[[ $HOSTNAME_VALUE =~ ^[A-Za-z0-9][A-Za-z0-9.-]*$ ]] || { echo 'Invalid hostname.' >&2; exit 1; }
 [[ $USER_NAME =~ ^[a-z_][a-z0-9_-]*[$]?$ ]] || { echo 'Invalid username.' >&2; exit 1; }
 [[ -n $WIFI_SSID && -n $WIFI_PASSWORD ]] || { echo 'Wi-Fi values cannot be empty.' >&2; exit 1; }
 escape_config() {
     printf '%s' "$1" | sed 's/[\\"$`]/\\&/g'
 }
-HOSTNAME_VALUE=$(escape_config "$HOSTNAME_VALUE")
 USER_NAME=$(escape_config "$USER_NAME")
 ROOT_PASSWORD=$(escape_config "$ROOT_PASSWORD")
 USER_PASSWORD=$(escape_config "$USER_PASSWORD")
@@ -53,7 +49,6 @@ fi
 install -d -m 700 "$(dirname -- "$OUTPUT")"
 umask 077
 cat > "$OUTPUT" <<EOF
-PRESET_HOSTNAME="$HOSTNAME_VALUE"
 PRESET_NET_CHANGE_DEFAULTS="1"
 PRESET_NET_WIFI_ENABLED="1"
 PRESET_NET_WIFI_SSID="$WIFI_SSID"

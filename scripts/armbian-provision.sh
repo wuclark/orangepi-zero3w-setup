@@ -11,7 +11,7 @@ echo 'Optional software (nothing is selected by default):'
 echo '  1) Diagnostics: htop jq tmux'
 echo '  2) Build tools: git build-essential bc bison flex libssl-dev libelf-dev'
 echo '  3) Python tools: python3 python3-venv python3-pip'
-echo '  4) Docker: docker.io'
+echo '  4) Docker and Compose: docker.io docker-compose'
 read -r -p 'Choose numbers separated by spaces, or press Enter for none: ' choices
 [[ -n $choices ]] || { echo 'No optional software selected.'; exit 0; }
 packages=()
@@ -20,7 +20,7 @@ for choice in $choices; do
         1) packages+=(htop jq tmux) ;;
         2) packages+=(git build-essential bc bison flex libssl-dev libelf-dev) ;;
         3) packages+=(python3 python3-venv python3-pip) ;;
-        4) packages+=(docker.io) ;;
+        4) packages+=(docker.io docker-compose) ;;
         *) echo "Unknown choice: $choice" >&2; exit 2 ;;
     esac
 done

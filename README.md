@@ -18,6 +18,17 @@ sudo ./setup.sh base
 sudo ./setup.sh packages
 ```
 
+When preparing the card, you may pre-copy the unchanged GPU and optional VPU
+archives into the repository's `vendor-files/` directory; the preparation
+guide documents the layout and permissions. Otherwise transfer them after boot
+with the Windows helper.
+
+The first-boot preset does not set the hostname. Set it after login if desired:
+
+```bash
+sudo ./setup.sh base --hostname op03W
+```
+
 Package installation uses the existing apt cache. To explicitly refresh it:
 
 ```bash
@@ -31,6 +42,10 @@ Choose a GUI only when wanted. Available desktop profiles include X11 sessions
 ```bash
 sudo ./setup.sh desktop --profile openbox
 ```
+
+Docker and Docker Compose are optional. Choose option `4` in
+`sudo ./setup.sh packages`; see the [base-system guide](docs/guide/02-base-system.md#docker-and-docker-compose)
+for post-install group and verification steps.
 
 Remote access is a separate choice. SSH tunneling is the default:
 
