@@ -32,6 +32,7 @@ done < <(partx -g -o START,SECTORS -r "$OUTPUT_IMAGE")
 [[ -n $loop ]] || { echo 'ERROR: no ext4 root partition found' >&2; exit 1; }
 TARGET="$WORK/root/opt/orangepi-zero3w-setup"
 install -d -m 755 "$TARGET/vendor-files"
+chmod 755 "$(dirname "$TARGET")"
 tar -C /repo --exclude=.git --exclude=work --exclude=vendor-files -cf - . | tar -C "$TARGET" -xf -
 cp -a /repo/work/vendor-output/pvr-userspace.tar.gz "$TARGET/vendor-files/"
 for archive in vpu-userspace.tar.gz npu-userspace.tar.gz; do
