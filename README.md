@@ -30,6 +30,17 @@ first-boot preset and provisioning hook. The base and preloaded images remain
 unchanged; the final image contains credentials and must stay outside Git.
 Before writing the final image, run `scripts/validate-image-before-write.sh`
 against its path to verify the checksum and partition table.
+The same sequence can be driven from WSL2/Linux with `make image`; existing
+archives and derived images are reused automatically. `make test` runs the
+host checks. An existing credential-bearing final image requires
+`REBUILD=1 make image`, which preserves the old image before rebuilding.
+Run `make preset` first when you need to interactively create the local
+first-boot files; it never runs implicitly as part of `make image`.
+For a completely fresh build that cleans generated outputs, prompts for the
+preset, builds both image stages, and validates the result, run `make newsd`.
+Run `make help` for the complete SD-card-to-board handoff sequence.
+Use `make clean` to remove generated archives, derived images, metadata, and
+local first-boot files while preserving source/base images under `work/images/`.
 
 The first-boot generator asks for a hostname and creates a one-time
 `/root/provisioning.sh` hook to apply it after the first successful login.
@@ -138,6 +149,8 @@ On the board, validate and install one acceleration layer at a time with
 `scripts/board-acceleration-workflow.sh`. It records checks, installation
 results, reboot requirements, and evidence under
 `/var/log/orangepi-zero3w-setup/`.
+The equivalent Make targets are `board-gpu-*`, `board-vpu-*`, and
+`board-npu-precheck`/`board-npu-verify`.
 
 The legacy all-in-one GPU command remains available as `install.sh`; it builds
 or validates `pvrsrvkm.ko`, installs the matching runtime, and configures the

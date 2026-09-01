@@ -62,5 +62,21 @@ board-side NPU installer is implemented. Progress is appended to
 `/var/log/orangepi-zero3w-setup/acceleration-progress.log`, with per-step
 evidence files beside it. The orchestrator never reboots automatically.
 
+Equivalent Make targets are available on the board:
+
+```bash
+sudo make board-gpu-precheck
+sudo make board-gpu-install
+sudo reboot
+sudo make board-gpu-verify
+```
+
+Use the corresponding `board-vpu-*` targets for VPU. `board-npu-install`
+intentionally exits without installing anything.
+
 Keep real images, extracted roots, archives, logs, models, and test output under
 the ignored `work/` directory or outside the repository.
+
+The final `make newsd` summary is a handoff record only: it reports paths,
+hashes, selected non-secret settings, and whether credentials are set. It does
+not print passwords.

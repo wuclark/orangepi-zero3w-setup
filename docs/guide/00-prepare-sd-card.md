@@ -21,6 +21,10 @@ archives, create a separate preloaded image with:
 This produces the matching `-preloaded.img` beside the base image. Write only
 the preloaded output to the SD card.
 
+For the complete WSL2/Linux workflow, `make newsd` performs the clean,
+userspace extraction, interactive preset creation, two image stages, final
+summary, and validation. It preserves the source images under `work/images/`.
+
 To include first-boot settings in another derived image, create the local
 preset and provisioning hook, then run:
 

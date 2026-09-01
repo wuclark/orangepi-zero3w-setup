@@ -56,3 +56,17 @@ creates a `*-preloaded-firstboot.img` beside it. The repository is stored at
 `/opt/orangepi-zero3w-setup` and the first-boot hook creates a symlink to it
 under the selected user's home directory. Do not commit the preset or the
 resulting image because the preset contains credentials.
+
+After those files exist, `make image` runs the complete extraction, image
+staging, and pre-write validation sequence. It reuses existing non-empty
+archive and preloaded outputs instead of asking the extractor to overwrite
+them. Because the final image contains credentials, an existing final image
+requires `REBUILD=1 make image`; the old final image is moved aside first.
+
+`make preset` runs the interactive preset generator. It is separate from
+`make image` so image builds never prompt for or overwrite credentials.
+Use `make newsd` for the complete clean-and-build flow; it preserves the base
+images but removes generated outputs before prompting for new credentials.
+
+Use `make clean` to remove generated outputs and local first-boot files while
+preserving all source/base images under `work/images/`.

@@ -39,5 +39,12 @@
   user selected by the first-boot preset; add pre-write image validation.
 - Add a board-side GPU/VPU/NPU step runner with persistent progress and evidence
   logging; it never reboots automatically and refuses unvalidated NPU install.
+- Add Makefile targets for idempotent extraction, staged image creation,
+  pre-write validation, and host tests.
+- Add a scoped `make clean` for generated outputs that preserves source images.
+- Add explicit Make targets for each board GPU/VPU/NPU workflow phase.
+- Add an explicit interactive `make preset` target with credential-safe
+  replacement behavior.
+- Add `make newsd` for a clean, prompted, fully validated SD-card image build.
 - Add `ROADMAP.md` documenting the remaining extraction, NPU/VPU validation,
   installer, evidence, and documentation gates.
