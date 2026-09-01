@@ -254,6 +254,19 @@ sudo install -o root -g root -m 0644 \
 ```
 
 Omit the VPU or NPU command when that optional archive is unavailable.
+
+After first boot, the board-side VPU workflow installs the Cedar/OpenMAX
+userspace, `/etc/cedarc.conf`, GStreamer parser plugins, and the required udev
+rules. From the embedded repository directory run:
+
+```bash
+make board-vpu-precheck
+make board-vpu-install
+make board-vpu-verify
+```
+
+VPU verification downloads its H.264/H.265 test media outside the repository
+and runs headless decode pipelines into `fakesink`.
 The archives are installer inputs, not executable files; root ownership with
 directory mode `0755` and file mode `0644` is appropriate. If an ext4-capable
 Windows tool assigns different ownership, correct it after first login:

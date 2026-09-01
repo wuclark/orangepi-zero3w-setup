@@ -86,7 +86,8 @@ case "$LAYER" in
         "$SCRIPT_DIR/prepare-vendor-archives.sh" --pvr-tarball "$pvr_archive" \
             --vpu-tarball "$archive" --output "$stage" >/dev/null
         printf 'Installing GStreamer command-line tools from the existing apt cache.\n' | tee -a "$LOG"
-        apt-get install -y gstreamer1.0-tools 2>&1 | tee -a "$LOG"
+        apt-get install -y curl gstreamer1.0-tools gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good gstreamer1.0-plugins-bad 2>&1 | tee -a "$LOG"
         set +e
         "$SCRIPT_DIR/install-vpu-userspace.sh" --vendor-root "$stage/.zero3w-vpu" 2>&1 | tee -a "$LOG"
         result=${PIPESTATUS[0]}
@@ -100,6 +101,18 @@ case "$LAYER" in
 esac
 
 if ((result == 0)); then
+    if [[ $LAYER == vpu && $ACTION == verify ]]; then
+        decode_evidence="$evidence.decode.txt"
+        set +e
+        "$SCRIPT_DIR/test-vpu-decode.sh" --output "$decode_evidence" 2>&1 | tee -a "$LOG"
+        result=${PIPESTATUS[0]}
+        set -e
+        if ((result != 0)); then
+            record failed "VPU decode test failed; evidence=$decode_evidence"
+            exit "$result"
+        fi
+        record passed "VPU H.264/H.265 decode tests passed; evidence=$decode_evidence"
+    fi
     record passed "installation completed"
     if [[ $LAYER == gpu ]]; then
         printf 'GPU install completed. Reboot manually, then run --action verify.\n' | tee -a "$LOG"

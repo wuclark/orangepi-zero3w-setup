@@ -12,6 +12,7 @@ tar -C "$TMP/root" -czf "$TMP/pvr-userspace.tar.gz" usr
 mkdir -p "$TMP/vpu/usr/lib/aarch64-linux-gnu" "$TMP/vpu/etc/xdg"
 touch "$TMP/vpu/usr/lib/aarch64-linux-gnu/libcedar_test.so"
 printf 'hacks=test\n' > "$TMP/vpu/etc/xdg/gstomx.conf"
+printf 'loglevel=4\n' > "$TMP/vpu/etc/cedarc.conf"
 tar -C "$TMP/vpu" -czf "$TMP/vpu-userspace.tar.gz" .
 mkdir -p "$TMP/npu/usr/local/lib/npu"
 touch "$TMP/npu/usr/local/lib/npu/libVIPhal.so"
@@ -22,6 +23,7 @@ out=$($ROOT/scripts/prepare-vendor-archives.sh \
   --npu-tarball "$TMP/npu-userspace.tar.gz" --output "$TMP/out")
 [[ $out == "$TMP/out" && -f $TMP/out/usr/lib/libVK_IMG.so ]]
 [[ -f $TMP/out/.zero3w-vpu/usr/lib/aarch64-linux-gnu/libcedar_test.so ]]
+[[ -f $TMP/out/.zero3w-vpu/etc/cedarc.conf ]]
 [[ -f $TMP/out/.zero3w-npu/usr/local/lib/npu/libVIPhal.so ]]
 
 # The repository-owned extractor keeps GPU, VPU, and NPU archives isolated.
@@ -32,10 +34,12 @@ touch "$TMP/source/usr/lib/libVK_IMG.so" "$TMP/source/usr/local/lib/dri/pvr_dri.
 printf '/usr/lib/libVK_IMG.so\n/usr/local/lib/dri/pvr_dri.so\n' \
   > "$TMP/source/var/lib/dpkg/info/xserver-xorg-img-bxm.list"
 printf '/usr/lib/libcedarc.so\n' > "$TMP/source/var/lib/dpkg/info/libcedarc.list"
+printf 'loglevel=4\n' > "$TMP/source/etc/cedarc.conf"
 "$ROOT/scripts/extract-vendor-userspace.sh" \
   --source-root "$TMP/source" --output-dir "$TMP/generated" >/dev/null
 tar -tzf "$TMP/generated/pvr-userspace.tar.gz" | grep -q 'usr/lib/libVK_IMG.so'
 tar -tzf "$TMP/generated/vpu-userspace.tar.gz" | grep -q 'usr/lib/libcedarc.so'
+tar -tzf "$TMP/generated/vpu-userspace.tar.gz" | grep -q 'etc/cedarc.conf'
 tar -tzf "$TMP/generated/npu-userspace.tar.gz" | grep -q 'usr/lib/libvipcore.so'
 ! tar -tzf "$TMP/generated/npu-userspace.tar.gz" | grep -q 'libVK_IMG.so'
 

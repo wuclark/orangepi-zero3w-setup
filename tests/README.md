@@ -57,8 +57,10 @@ sudo reboot
 sudo ./scripts/board-acceleration-workflow.sh --layer gpu --action verify
 ```
 
-Repeat the same sequence for `vpu`. Use `npu` for precheck only until the
-board-side NPU installer is implemented. Progress is appended to
+Repeat the same sequence for `vpu`. VPU verification downloads test media and
+runs explicit H.264/H.265 OMX decode pipelines; use
+`make board-vpu-decode-test` to rerun those tests directly. Use `npu` for
+precheck only until the board-side NPU installer is implemented. Progress is appended to
 `/var/log/orangepi-zero3w-setup/acceleration-progress.log`, with per-step
 evidence files beside it. The orchestrator never reboots automatically.
 Prechecks record missing layers as a baseline and exit successfully; verify

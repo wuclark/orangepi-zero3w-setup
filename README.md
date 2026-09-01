@@ -153,6 +153,10 @@ The equivalent Make targets are `board-gpu-*`, `board-vpu-*`, and
 `board-npu-precheck`/`board-npu-verify`.
 Prechecks may report expected missing-layer warnings but still record a
 successful baseline; verification steps fail when required checks are absent.
+The VPU install also installs the Cedar configuration and GStreamer parser
+plugins; `board-vpu-verify` downloads cached 720p H.264/H.265 samples and runs
+headless hardware decode tests. Re-run only those media tests with
+`make board-vpu-decode-test`.
 Use `scripts/run-pvr-app.sh COMMAND` for EGL/GLES applications that must use
 the isolated PowerVR environment. Wayland requires a separate local-console
 test; see the GPU troubleshooting guide before switching sessions.

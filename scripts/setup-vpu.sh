@@ -4,12 +4,23 @@ set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"
 
-[[ ${1:---status} == --status ]] || die \
-    "VPU installation is not implemented until a real-board media runtime is validated."
 require_root
+case ${1:---status} in
+--status)
+    ;;
+--install)
+    exec "$SCRIPT_DIR/board-acceleration-workflow.sh" --layer vpu --action install --yes
+    ;;
+--verify)
+    exec "$SCRIPT_DIR/board-acceleration-workflow.sh" --layer vpu --action verify
+    ;;
+*)
+    die "Usage: sudo ./setup.sh vpu [--status|--install|--verify]"
+    ;;
+esac
 if [[ -e /dev/video0 ]]; then
-    log "Video device detected at /dev/video0; VPU acceleration remains untested."
+    log "Video device detected at /dev/video0."
 else
-    log "No /dev/video0 device detected. VPU support remains untested."
+    log "No /dev/video0 device detected; Cedar/OMX may still be available."
 fi
-log "Collect evidence with scripts/collect-diagnostics.sh before adding a VPU installer."
+log "Use --install for board-side userspace installation and --verify for decode tests."

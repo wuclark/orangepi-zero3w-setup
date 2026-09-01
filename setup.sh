@@ -13,7 +13,7 @@ Usage:
   sudo ./setup.sh desktop --profile PROFILE [options]
   sudo ./setup.sh remote --backend BACKEND [options]
   sudo ./setup.sh gpu [existing GPU installer options]
-  sudo ./setup.sh vpu [--status]
+  sudo ./setup.sh vpu [--status|--install|--verify]
   sudo ./setup.sh npu [--status]
   sudo ./setup.sh status
   sudo ./setup.sh reset

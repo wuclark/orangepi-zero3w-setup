@@ -9,6 +9,7 @@ REBUILD ?= no
 .PHONY: help extract preset preloaded firstboot image newsd summary validate test clean \
 	board-gpu-precheck board-gpu-install board-gpu-verify \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
+	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
@@ -40,6 +41,7 @@ help:
 		'make clean      Remove generated outputs but preserve source images' \
 		'make board-gpu-precheck/install/verify  Run GPU phases on the board' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
+		'make board-vpu-decode-test              Run downloaded H.264/H.265 VPU tests' \
 		'make board-npu-precheck/verify          Run supported NPU checks' \
 		'PowerVR app helper: ./scripts/run-pvr-app.sh COMMAND' \
 		'REBUILD=1 make image  Rebuild an existing derived image safely'
@@ -138,6 +140,9 @@ board-vpu-install:
 
 board-vpu-verify:
 	sudo $(BOARD_WORKFLOW) --layer vpu --action verify $(BOARD_ARGS)
+
+board-vpu-decode-test:
+	sudo ./scripts/test-vpu-decode.sh --output /var/log/orangepi-zero3w-setup/vpu-decode-test.txt
 
 board-npu-precheck:
 	sudo $(BOARD_WORKFLOW) --layer npu --action precheck $(BOARD_ARGS)

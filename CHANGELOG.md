@@ -43,6 +43,9 @@
   keeping post-install verification failures strict.
 - Install the GStreamer command-line tools during the explicit VPU install
   phase without refreshing apt metadata.
+- Install the VPU `cedarc.conf` configuration and GStreamer parser/runtime
+  packages, and add board-side H.264/H.265 OMX decode verification with
+  downloaded test media.
 - Add Makefile targets for idempotent extraction, staged image creation,
   pre-write validation, and host tests.
 - Add a scoped `make clean` for generated outputs that preserves source images.

@@ -79,6 +79,19 @@ Use the repository-generated outputs `pvr-userspace.tar.gz`,
 `vpu-userspace.tar.gz`, and optional `npu-userspace.tar.gz` unchanged. This
 preserves Linux metadata and avoids a fragile Windows extraction.
 
+On the board, VPU setup is available from the embedded repository without
+depending on the board user's home-directory name:
+
+```bash
+cd ~/orangepi-zero3w-setup
+make board-vpu-install
+make board-vpu-verify
+```
+
+The install phase places the Cedar/OpenMAX runtime and `/etc/cedarc.conf`,
+installs the GStreamer parser packages, and the verify phase downloads cached
+H.264/H.265 samples and runs explicit headless hardware-decoder pipelines.
+
 The repository includes `windows/Copy-VendorArchives.ps1`:
 
 ```powershell

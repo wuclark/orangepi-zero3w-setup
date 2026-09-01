@@ -38,6 +38,7 @@ copy_tree() {
 
 copy_tree usr/lib
 copy_tree usr/bin
+copy_tree etc/cedarc.conf
 copy_tree etc/xdg/gstomx.conf
 copy_tree etc/udev/rules.d/99-cedar-ve.rules
 

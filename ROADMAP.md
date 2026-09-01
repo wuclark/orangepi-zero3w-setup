@@ -18,7 +18,7 @@ specified in `AGENTS.md`.
 - [x] Scoped PowerVR launcher for EGL/GLES and Vulkan application tests.
 - [x] Real-image test of the Docker extractor using the pinned source images.
 - [ ] NPU userspace installation and runtime validation.
-- [ ] VPU runtime validation.
+- [x] Validate VPU H.264 and H.265 runtime decoding on the Orange Pi.
 - [ ] Investigate desktop GLX acceleration; resolve the `pvr`/Zink geometry
   shader limitation or document the exact unsupported boundary.
 - [ ] Validate Wayland EGL rendering on labwc/sway and determine whether the
@@ -40,7 +40,7 @@ specified in `AGENTS.md`.
   software stack.
 - [ ] Test GPU, VPU, and NPU independently on the Orange Pi.
 - [ ] Add a real GPU workload test: `vulkaninfo`, GLES/EGL, and `vkcube`.
-- [ ] Add a real VPU GStreamer decode/encode sample.
+- [x] Add real VPU GStreamer H.264/H.265 decode samples and board commands.
 - [ ] Add a pinned VIPLite `vpm_run` NPU inference sample.
 - [ ] Implement the board-side NPU installer only after its kernel/userspace
   ABI is confirmed.
