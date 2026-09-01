@@ -23,6 +23,14 @@ archives into the repository's `vendor-files/` directory; the preparation
 guide documents the layout and permissions. Otherwise transfer them after boot
 with the Windows helper.
 
+For a fully prepared card, the Docker workflow can create two reproducible
+derived images: `prepare-preloaded-image-docker.sh` embeds the repository and
+GPU/VPU/NPU archives, then `prepare-firstboot-image-docker.sh` adds the local
+first-boot preset and provisioning hook. The base and preloaded images remain
+unchanged; the final image contains credentials and must stay outside Git.
+Before writing the final image, run `scripts/validate-image-before-write.sh`
+against its path to verify the checksum and partition table.
+
 The first-boot generator asks for a hostname and creates a one-time
 `/root/provisioning.sh` hook to apply it after the first successful login.
 Armbian's preset file itself contains only documented first-boot variables.
@@ -125,6 +133,11 @@ Additional documentation:
 - [Architecture explanation](docs/reference/architecture.md)
 - [Hardware references](docs/reference/hardware.md)
 - [Troubleshooting and recovery](docs/reference/troubleshooting.md)
+
+On the board, validate and install one acceleration layer at a time with
+`scripts/board-acceleration-workflow.sh`. It records checks, installation
+results, reboot requirements, and evidence under
+`/var/log/orangepi-zero3w-setup/`.
 
 The legacy all-in-one GPU command remains available as `install.sh`; it builds
 or validates `pvrsrvkm.ko`, installs the matching runtime, and configures the

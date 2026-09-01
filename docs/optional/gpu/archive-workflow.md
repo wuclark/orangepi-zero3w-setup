@@ -21,6 +21,22 @@ vpu-userspace.tar.gz
 npu-userspace.tar.gz
 ```
 
+Verify generated archives from their output directory:
+
+```bash
+(cd work/vendor-output && sha256sum -c pvr-manifest.sha256 \
+  && sha256sum -c vpu-manifest.sha256 \
+  && sha256sum -c npu-manifest.sha256)
+```
+
+For the pinned source images, pass the recorded hashes explicitly:
+
+```bash
+GPU_VPU_SHA256=e088972c619c8d72e6f89cb699e2459b4b30cc8df160638b5bdc0010069dc3aa \
+NPU_SHA256=af6697c4f158f63ffdf55f5a17453ef3b9b2895f35b2891e6090d28f65faf264 \
+./scripts/extract-vendor-userspace-docker.sh
+```
+
 On Windows, use `windows/Extract-VendorUserspace.ps1` through WSL2. Mount or
 unpack the source images before running it; image mounting differs between
 Windows, WSL2, and native Linux.

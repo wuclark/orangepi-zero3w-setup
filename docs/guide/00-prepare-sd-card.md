@@ -5,6 +5,46 @@ separate computer before powering the board. The confirmed PVR path uses the
 official Armbian Debian 13 (Trixie), Minimal (CLI), arm64 image marked
 `vendor 6.6.98`; do not substitute a Current/mainline image.
 
+The current target image filename is:
+
+```text
+Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal.img.xz
+```
+
+Keep that compressed base image unchanged. After generating the vendor
+archives, create a separate preloaded image with:
+
+```bash
+./scripts/prepare-preloaded-image-docker.sh
+```
+
+This produces the matching `-preloaded.img` beside the base image. Write only
+the preloaded output to the SD card.
+
+To include first-boot settings in another derived image, create the local
+preset and provisioning hook, then run:
+
+```bash
+./scripts/create-headless-preset.sh --output ./not_logged_in_yet
+./scripts/prepare-firstboot-image-docker.sh
+```
+
+This consumes the preloaded image and creates a separate
+`-preloaded-firstboot.img`. Write that final image to the SD card. The preset
+contains passwords and Wi-Fi credentials; it is Git-ignored and should be
+deleted after first boot.
+
+Before writing, validate the exact final image:
+
+```bash
+./scripts/validate-image-before-write.sh \
+  work/images/armbian/Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal-preloaded-firstboot.img
+```
+
+The preloaded repository is kept at `/opt/orangepi-zero3w-setup`; after
+Armbian creates the selected user, `/root/provisioning.sh` links it into that
+user's home directory.
+
 ## What you need
 
 - Orange Pi Zero 3W with the supported 12 GB configuration

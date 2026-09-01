@@ -4,7 +4,10 @@ work/*
 !work/README.md
 !work/images/
 !work/images/.gitkeep
+!work/images/armbian/
+!work/images/armbian/.gitkeep
 !work/vendor-output/
+work/vendor-output/*
 !work/vendor-output/.gitkeep
 build-pvrsrvkm/
 gpu-bringup-logs/
@@ -15,6 +18,8 @@ headless-preset*
 *.so.*
 *.img
 *.img.xz
+*.img.sha256
+*.img.manifest.txt
 *.log
 *.strace
 *.tar

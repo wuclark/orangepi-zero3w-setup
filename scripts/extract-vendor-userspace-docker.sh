@@ -43,7 +43,11 @@ verify_hash() {
 }
 verify_hash GPU_VPU "$GPU_VPU_IMAGE" "$GPU_VPU_SHA256"
 verify_hash NPU "$NPU_IMAGE" "$NPU_SHA256"
-[[ ! -e $OUTPUT_DIR ]] || { echo "ERROR: output exists: $OUTPUT_DIR" >&2; exit 1; }
+if [[ -e $OUTPUT_DIR ]]; then
+    [[ -d $OUTPUT_DIR && -z $(find "$OUTPUT_DIR" -mindepth 1 ! -name .gitkeep -print -quit) ]] || {
+        echo "ERROR: output must be absent or empty: $OUTPUT_DIR" >&2; exit 1;
+    }
+fi
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 docker run --rm --privileged \

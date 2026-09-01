@@ -8,6 +8,11 @@ and optional `vpu-userspace.tar.gz` unchanged. The installer validates and
 stages them on Linux, avoiding Windows damage to symlinks or permissions. See
 `docs/optional/gpu/archive-workflow.md`; extracted `pvr-stage` trees are now a legacy option.
 
+For SD-card preparation, Docker can first create a separate `-preloaded.img`
+with the repository and generated GPU/VPU/NPU archives, then create a second
+`-preloaded-firstboot.img` containing the locally generated Armbian first-boot
+preset. This keeps the base image reusable while keeping credentials out of Git.
+
 The Orange Pi Zero 3W is a tiny Allwinner A733 board with a PowerVR B-Series
 BXM-4-64 GPU. The hardware is capable, but on a clean Armbian Debian 13 system,
 getting the proprietary PowerVR stack, X11 presentation, and a headless VNC

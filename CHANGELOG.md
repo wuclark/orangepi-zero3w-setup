@@ -31,5 +31,13 @@
   no NPU runtime or support claim is added yet.
 - Add a Docker/WSL2 image-based extraction wrapper with an ignored but tracked
   `work/` layout for source images and generated archives.
+- Add Docker preloading of the repository and generated GPU/VPU/NPU archives
+  into a separate Armbian image, with read-only image-content verification.
+- Add a second Docker image stage for local first-boot settings, preserving the
+  preloaded image as an intermediate artifact.
+- Store the preloaded repository at a stable `/opt` path and link it into the
+  user selected by the first-boot preset; add pre-write image validation.
+- Add a board-side GPU/VPU/NPU step runner with persistent progress and evidence
+  logging; it never reboots automatically and refuses unvalidated NPU install.
 - Add `ROADMAP.md` documenting the remaining extraction, NPU/VPU validation,
   installer, evidence, and documentation gates.

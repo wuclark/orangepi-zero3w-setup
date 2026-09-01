@@ -22,7 +22,7 @@ printf '/usr/lib/libcedarc.so\n' > "$TMP/source/var/lib/dpkg/info/libcedarc.list
 for component in pvr vpu npu; do
     archive="$TMP/output/${component}-userspace.tar.gz"
     [[ -s $archive && -s "$TMP/output/${component}-manifest.sha256" ]]
-    sha256sum -c "$TMP/output/${component}-manifest.sha256" >/dev/null
+    (cd "$TMP/output" && sha256sum -c "${component}-manifest.sha256") >/dev/null
     ! tar -tzf "$archive" | grep -q 'lib/modules/'
 done
 tar -tzf "$TMP/output/pvr-userspace.tar.gz" | grep -q 'libVK_IMG.so'

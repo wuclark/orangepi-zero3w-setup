@@ -48,7 +48,11 @@ done
 GPU_VPU_ROOT=$(cd -- "$GPU_VPU_ROOT" && pwd)
 NPU_ROOT=$(cd -- "$NPU_ROOT" && pwd)
 OUTPUT_DIR=${OUTPUT_DIR:-$(mktemp -d -t zero3w-vendor-output.XXXXXXXX)}
-[[ ! -e $OUTPUT_DIR ]] || { echo "ERROR: output exists: $OUTPUT_DIR" >&2; exit 1; }
+if [[ -e $OUTPUT_DIR ]]; then
+    [[ -d $OUTPUT_DIR && -z $(find "$OUTPUT_DIR" -mindepth 1 ! -name .gitkeep -print -quit) ]] || {
+        echo "ERROR: output must be absent or empty: $OUTPUT_DIR" >&2; exit 1;
+    }
+fi
 install -d -m 700 "$OUTPUT_DIR"
 
 WORK=$(mktemp -d -t zero3w-vendor-stage.XXXXXXXX)
@@ -112,6 +116,8 @@ for manifest in "$SOURCE_ROOT"/var/lib/dpkg/info/libcedarc*.list \
     copy_manifest_files "$manifest"
 done
 copy_path etc/xdg/gstomx.conf
+copy_path etc/cedarc.conf
+copy_path lib/udev/rules.d/99-sunxi-ve.rules etc/udev/rules.d/99-cedar-ve.rules
 copy_path etc/udev/rules.d/99-cedar-ve.rules
 
 CURRENT_STAGE=$NPU_STAGE
@@ -141,15 +147,16 @@ require_component() {
 }
 require_component pvr "$PVR_STAGE" usr/lib/libVK_IMG.so* usr/local/lib/dri/pvr_dri.so \
     usr/lib/aarch64-linux-gnu/dri/pvr_dri.so
-require_component vpu "$VPU_STAGE" usr/lib/libcedarc* usr/lib/aarch64-linux-gnu/libcedarc*
+require_component vpu "$VPU_STAGE" usr/lib/aarch64-linux-gnu/libvideoengine.so* \
+    usr/lib/aarch64-linux-gnu/libOmxVdec.so* usr/lib/libcedarc* usr/lib/aarch64-linux-gnu/libcedarc*
 require_component npu "$NPU_STAGE" usr/lib/libvip*.so* usr/lib/aarch64-linux-gnu/libvip*.so* \
     usr/lib/lib*vip*.so* usr/local/lib/npu/libVIPhal.so* usr/local/lib/npu/libNBGlinker.so*
 
 for component in pvr vpu npu; do
     tar -C "$WORK/$component" --sort=name --mtime='UTC 1970-01-01' \
         --owner=0 --group=0 --numeric-owner -czf "$OUTPUT_DIR/${component}-userspace.tar.gz" .
-    sha256sum "$OUTPUT_DIR/${component}-userspace.tar.gz" > \
-        "$OUTPUT_DIR/${component}-manifest.sha256"
+    (cd "$OUTPUT_DIR" && sha256sum "${component}-userspace.tar.gz" > \
+        "${component}-manifest.sha256")
 done
 for component in pvr vpu npu; do
     find "$WORK/$component" \( -type f -o -type l \) -printf "$component/%P\n" | sort
