@@ -41,6 +41,8 @@
   logging; it never reboots automatically and refuses unvalidated NPU install.
 - Treat expected missing-layer precheck warnings as a recorded baseline while
   keeping post-install verification failures strict.
+- Install the GStreamer command-line tools during the explicit VPU install
+  phase without refreshing apt metadata.
 - Add Makefile targets for idempotent extraction, staged image creation,
   pre-write validation, and host tests.
 - Add a scoped `make clean` for generated outputs that preserves source images.
