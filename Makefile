@@ -22,6 +22,7 @@ GIT_DEPTH ?= 1
 .PHONY: help version extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify board-gpu-sway-setup board-gpu-sway-verify board-gpu-weston-setup \
+	board-docker-install \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
@@ -75,6 +76,7 @@ help:
 		'make board-gpu-wayland-verify            Verify the Sway Wayland session and WayVNC' \
 		'make board-gpu-weston-setup              Install the explicit Weston PowerVR service path' \
 		'make board-gpu-x11-setup                 Switch to XFCE/Xorg and x11vnc' \
+		'make board-docker-install DOCKER_APT_UPDATE=1  Install Docker, Buildx, and Compose' \
 		'make wsl-vulkan-compute-deps             Install WSL/Ubuntu CPU Vulkan tools' \
 		'make wsl-vulkan-compute-test             Run benchmark with Lavapipe CPU Vulkan' \
 		'make board-diagnostics                  Capture board diagnostics' \
@@ -385,6 +387,9 @@ board-gpu-compute-deps:
 board-gpu-compute-test:
 	sudo ./scripts/run-vulkan-compute-benchmark.sh \
 		--output /var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt
+
+board-docker-install:
+	sudo ./scripts/install-docker.sh
 
 board-gpu-x11-setup:
 	sudo /usr/bin/systemctl disable --now weston-pvr.service 2>/dev/null || true
