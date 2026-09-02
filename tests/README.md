@@ -25,6 +25,12 @@ After extraction, the preboot image stages can be exercised with
 images and leave their inputs unchanged; the latter requires local,
 Git-ignored first-boot files.
 
+The host suite also has a Make target alias:
+
+```bash
+make tests
+```
+
 ## Board/post-boot tests
 
 After the archives and matching module have been installed on a recoverable
@@ -77,6 +83,23 @@ sudo make board-gpu-verify
 
 Use the corresponding `board-vpu-*` targets for VPU. `board-npu-install`
 intentionally exits without installing anything.
+
+For a single diagnostic pass without installation or reboot, select the layer:
+
+```bash
+sudo make board-test BOARD_LAYER=gpu
+sudo make board-test BOARD_LAYER=vpu
+sudo make board-test BOARD_LAYER=npu
+```
+
+`BOARD_LAYER=all` is also available when all three layers are intentionally
+installed. The per-layer test targets combine the existing verification steps:
+`make board-gpu-test` runs GPU post-install and runtime checks, `make
+board-vpu-test` also runs the H.264/H.265 decode tests, and `make
+board-npu-test` runs the NPU smoke test. Use `make board-diagnostics` to
+capture the broader pre/post hardware evidence. These targets never install,
+reboot, or change boot ordering; visible `vkcube` presentation remains a
+manual test.
 
 Keep real images, extracted roots, archives, logs, models, and test output under
 the ignored `work/` directory or outside the repository.

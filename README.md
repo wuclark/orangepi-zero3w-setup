@@ -52,7 +52,12 @@ For a completely fresh build that cleans generated outputs, prompts for the
 preset, builds both image stages, and validates the result, run `make newsd`.
 The normal `make summary` output redacts credentials; use
 `make show-unredacted` only for local troubleshooting.
-Run `make help` for the complete SD-card-to-board handoff sequence.
+Run `make help` for the complete SD-card-to-board handoff sequence. Run
+`make tests` for the host checks, or `sudo make board-test
+BOARD_LAYER=gpu|vpu|npu|all` for a selected diagnostic board pass. The
+per-layer `board-gpu-test`, `board-vpu-test`, and `board-npu-test` targets run
+the corresponding post-install checks. Use `sudo make board-diagnostics` for
+the broader evidence capture. These targets never install or reboot.
 Use `make clean` to remove generated archives, derived images, metadata, and
 local first-boot files while preserving source/base images under `work/images/`.
 

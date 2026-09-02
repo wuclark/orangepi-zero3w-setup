@@ -7,8 +7,12 @@ FINAL_POINTER := work/images/armbian/.last-final-image
 VENDOR_OUTPUT := work/vendor-output
 REBUILD ?= no
 VPU_TESTDATA_TAG ?= vpu-testdata-v1
+BOARD_LAYER ?=
+BOARD_TEST_OUTPUT ?= /var/log/orangepi-zero3w-setup/postboot-acceleration.txt
+BOARD_DIAGNOSTICS_OUTPUT ?= /var/log/orangepi-zero3w-setup/diagnostics.txt
 
-.PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test clean \
+.PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
+	board-test board-tests board-diagnostics board-gpu-test board-gpu-runtime-test board-vpu-test \
 	board-vpu-generate-videos \
 	board-vpu-fetch-videos release-vpu-test-videos \
 	board-gpu-precheck board-gpu-install board-gpu-verify \
@@ -44,15 +48,21 @@ help:
 		'make show-unredacted  Show the summary including local credentials' \
 		'make validate   Validate the final image before writing to SD' \
 		'make test       Run host/static/archive checks' \
+		'make tests      Alias for make test' \
 		'make clean      Remove generated outputs but preserve source images' \
 		'make board-gpu-precheck/install/verify  Run GPU phases on the board' \
+		'make board-gpu-test                     Run GPU checks and runtime validation' \
+		'make board-diagnostics                  Capture board diagnostics' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
+		'make board-vpu-test                     Run VPU checks and decode tests' \
 		'make board-vpu-decode-test              Run downloaded H.264/H.265 VPU tests' \
 		'make board-vpu-generate-videos           Generate local synthetic VPU test videos' \
 		'make board-vpu-fetch-videos              Fetch pinned individual VPU release assets' \
 		'make release-vpu-test-videos             Publish generated VPU assets to GitHub' \
 		'make board-npu-precheck/verify          Run supported NPU checks' \
 		'make board-npu-test                     Run NPU test and save evidence' \
+		'make board-test BOARD_LAYER=gpu|vpu|npu|all  Run diagnostic board checks' \
+		'make board-tests BOARD_LAYER=...        Alias for board-test' \
 		'make board-core-install/status          Install or inspect SSH/maintenance core' \
 		'make board-a733-sources                 Clone/update maintained A733 sources' \
 		'make npu-test-assets                    Stage selected A733 NPU test files' \
@@ -142,6 +152,21 @@ test:
 	@bash tests/host/test-preboot-extraction.sh
 	@git diff --check
 
+tests: test
+
+board-test:
+	@test -n '$(BOARD_LAYER)' || { echo 'ERROR: choose BOARD_LAYER=gpu, vpu, npu, or all.' >&2; exit 2; }
+	@case '$(BOARD_LAYER)' in \
+		gpu|vpu|npu|all) ;; \
+		*) echo 'ERROR: BOARD_LAYER must be gpu, vpu, npu, or all.' >&2; exit 2 ;; \
+	esac
+	sudo ./tests/board/test-postboot-acceleration.sh --$(BOARD_LAYER) --output '$(BOARD_TEST_OUTPUT)'
+
+board-tests: board-test
+
+board-diagnostics:
+	sudo ./scripts/collect-diagnostics.sh '$(BOARD_DIAGNOSTICS_OUTPUT)'
+
 clean:
 	@find $(VENDOR_OUTPUT) -mindepth 1 ! -name .gitkeep -exec rm -rf -- {} + 2>/dev/null || true
 	@rm -rf -- work/vendor-output-first-run
@@ -167,6 +192,12 @@ board-gpu-install:
 board-gpu-verify:
 	sudo $(BOARD_WORKFLOW) --layer gpu --action verify $(BOARD_ARGS)
 
+board-gpu-runtime-test:
+	sudo ./scripts/verify.sh
+
+board-gpu-test: board-gpu-verify board-gpu-runtime-test
+	@echo 'GPU diagnostic verification complete; run vkcube manually for visible presentation evidence.'
+
 board-vpu-precheck:
 	sudo $(BOARD_WORKFLOW) --layer vpu --action precheck $(BOARD_ARGS)
 
@@ -175,6 +206,8 @@ board-vpu-install:
 
 board-vpu-verify:
 	sudo $(BOARD_WORKFLOW) --layer vpu --action verify $(BOARD_ARGS)
+
+board-vpu-test: board-vpu-verify
 
 board-vpu-decode-test:
 	sudo ./scripts/test-vpu-decode.sh --output /var/log/orangepi-zero3w-setup/vpu-decode-test.txt
