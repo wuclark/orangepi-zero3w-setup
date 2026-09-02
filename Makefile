@@ -18,6 +18,7 @@ GIT_DEPTH ?= 1
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
+	board-gpu-wayland-setup board-gpu-wayland-verify \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
@@ -66,6 +67,8 @@ help:
 		'make board-gpu-test                     Run GPU checks and runtime validation' \
 		'make board-gpu-compute-deps              Install Vulkan compute build tools' \
 		'make board-gpu-compute-test              Run headless Vulkan compute benchmark' \
+		'make board-gpu-wayland-setup             Install verified Weston PowerVR service' \
+		'make board-gpu-wayland-verify            Verify Weston PowerVR service and EGL/GLES' \
 		'make wsl-vulkan-compute-deps             Install WSL/Ubuntu CPU Vulkan tools' \
 		'make wsl-vulkan-compute-test             Run benchmark with Lavapipe CPU Vulkan' \
 		'make board-diagnostics                  Capture board diagnostics' \
@@ -369,6 +372,13 @@ board-gpu-compute-deps:
 board-gpu-compute-test:
 	sudo ./scripts/run-vulkan-compute-benchmark.sh \
 		--output /var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt
+
+board-gpu-wayland-setup:
+	sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh
+	sudo ./scripts/20-install-weston-service.sh
+
+board-gpu-wayland-verify:
+	./scripts/99-verify.sh
 
 wsl-vulkan-compute-deps:
 	./scripts/install-wsl-vulkan-compute-deps.sh

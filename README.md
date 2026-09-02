@@ -81,6 +81,16 @@ prints a PASS/FAIL/SKIP summary. It is diagnostic only and never installs or
 reboots.
 For the optional compute benchmark, run `sudo make board-gpu-compute-deps` to
 install its build tools from the existing apt cache.
+For the Weston PowerVR service and hardware-accelerated compositor setup, see
+the [GPU and Wayland setup guide](docs/gpu-wayland-setup.md), or run
+`sudo make board-gpu-wayland-setup` followed by `make board-gpu-wayland-verify`.
+The direct script sequence is:
+
+```bash
+sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh
+sudo ./scripts/20-install-weston-service.sh
+./scripts/99-verify.sh
+```
 On WSL/Ubuntu, use `make wsl-vulkan-compute-deps` and
 `make wsl-vulkan-compute-test`; this explicitly selects Mesa’s CPU Lavapipe
 Vulkan driver and does not test the Orange Pi PowerVR hardware.

@@ -1,0 +1,32 @@
+[Unit]
+Description=Weston (PowerVR GL) on tty1
+After=systemd-user-sessions.service getty@tty1.service
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=@WESTON_USER@
+Group=@WESTON_USER@
+PAMName=login
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+UtmpIdentifier=tty1
+UtmpMode=user
+Environment=LD_LIBRARY_PATH=@PVR_MESA_LIB@
+Environment=LIBGL_DRIVERS_PATH=@PVR_MESA_DRI@
+Environment=PVR_DDK_DIR=@PVR_DDK_DIR@
+Environment=XDG_RUNTIME_DIR=/run/user/@WESTON_UID@
+Environment=WESTON_LOG=@WESTON_LOG@
+ExecStartPre=/bin/mkdir -p /run/user/@WESTON_UID@
+ExecStartPre=/bin/chown @WESTON_USER@:@WESTON_USER@ /run/user/@WESTON_UID@
+ExecStart=/usr/bin/dbus-run-session /usr/local/bin/weston-pvr-launch.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical.target
