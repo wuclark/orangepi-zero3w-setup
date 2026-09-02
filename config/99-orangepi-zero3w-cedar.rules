@@ -1,0 +1,2 @@
+# Allow desktop users in the video group to use the A733 Cedar VPU.
+KERNEL=="cedar_dev*", GROUP="video", MODE="0660"

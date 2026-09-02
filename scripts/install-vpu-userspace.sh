@@ -42,6 +42,12 @@ copy_tree etc/cedarc.conf
 copy_tree etc/xdg/gstomx.conf
 copy_tree etc/udev/rules.d/99-cedar-ve.rules
 
+# The vendor rule is not consistent across source images. Keep the desktop
+# access policy repository-owned so non-root media applications can open both
+# Cedar device nodes after udev creates them.
+install -m 644 "$SCRIPT_DIR/../config/99-orangepi-zero3w-cedar.rules" \
+    /etc/udev/rules.d/99-orangepi-zero3w-cedar.rules
+
 ldconfig
 udevadm control --reload-rules
 udevadm trigger

@@ -66,8 +66,10 @@ uses the files. Release fixtures are pinned by tag; do not use a mutable
 
 The VPU installer stages archives privately, installs FFmpeg, GStreamer tools,
 and parser plugins without running `apt update`, installs Cedar configuration and
-udev rules, reloads the device rules, and keeps timestamped backups. It does
-not install the GPU or NPU layers.
+udev rules, reloads the device rules, and keeps timestamped backups. Its
+repository-owned udev rule gives members of the `video` group access to
+`/dev/cedar_dev*` for desktop applications such as Terminology. It does not
+install the GPU or NPU layers.
 
 The proprietary archives, firmware, and generated test media remain excluded
 from Git. Real-board evidence must still include the kernel, device nodes,
