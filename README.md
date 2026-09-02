@@ -63,6 +63,12 @@ Desktop profiles can also be installed or switched through Make, for example
 desktop-switch DESKTOP_PROFILE=labwc`. Use `sudo make desktop-list` and
 `sudo make desktop-current` to inspect sessions; add `DESKTOP_REBOOT=1` when
 switching should reboot immediately.
+Remote backends are available through `sudo make remote-x11vnc`, `sudo make
+remote-wayvnc`, and `sudo make remote-tigervnc`, or the generic
+`sudo make remote REMOTE_BACKEND=x11vnc`. Use x11vnc with X11, wayvnc with an
+active Wayland session, and TigerVNC for a separate virtual X11 desktop. The
+remote targets install packages/configuration but do not expose services on
+the LAN or reboot the board.
 Use `make clean` to remove generated archives, derived images, metadata, and
 local first-boot files while preserving source/base images under `work/images/`.
 

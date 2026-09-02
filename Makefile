@@ -12,6 +12,8 @@ BOARD_TEST_OUTPUT ?= /var/log/orangepi-zero3w-setup/postboot-acceleration.txt
 BOARD_DIAGNOSTICS_OUTPUT ?= /var/log/orangepi-zero3w-setup/diagnostics.txt
 DESKTOP_PROFILE ?=
 DESKTOP_REBOOT ?= no
+REMOTE_BACKEND ?=
+REMOTE_USER ?=
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-gpu-test board-gpu-runtime-test board-vpu-test \
@@ -20,6 +22,7 @@ DESKTOP_REBOOT ?= no
 	desktop-sway desktop-labwc desktop-enlightenment-x11 desktop-enlightenment-wayland \
 	switch-openbox switch-xfce switch-i3 switch-icewm switch-fluxbox switch-sway switch-labwc \
 	switch-enlightenment-x11 switch-enlightenment-wayland \
+	remote remote-x11vnc remote-wayvnc remote-tigervnc remote-status \
 	board-vpu-generate-videos \
 	board-vpu-fetch-videos release-vpu-test-videos \
 	board-gpu-precheck board-gpu-install board-gpu-verify \
@@ -75,6 +78,9 @@ help:
 		'make desktop-list/current             List or show desktop sessions' \
 		'make desktop-<profile>               Install a named desktop profile' \
 		'make switch-<profile>                Switch to an installed profile' \
+		'make remote REMOTE_BACKEND=x11vnc   Install a remote backend' \
+		'make remote-x11vnc/wayvnc/tigervnc  Install a named remote backend' \
+		'make remote-status                   Show remote service status' \
 		'make board-core-install/status          Install or inspect SSH/maintenance core' \
 		'make board-a733-sources                 Clone/update maintained A733 sources' \
 		'make npu-test-assets                    Stage selected A733 NPU test files' \
@@ -241,6 +247,29 @@ switch-enlightenment-x11: DESKTOP_PROFILE := enlightenment-x11
 switch-enlightenment-x11: desktop-switch
 switch-enlightenment-wayland: DESKTOP_PROFILE := enlightenment-wayland
 switch-enlightenment-wayland: desktop-switch
+
+remote:
+	@test -n '$(REMOTE_BACKEND)' || { echo 'ERROR: choose REMOTE_BACKEND=x11vnc, wayvnc, or tigervnc.' >&2; exit 2; }
+	@case '$(REMOTE_BACKEND)' in \
+		x11vnc|wayvnc|tigervnc) ;; \
+		*) echo 'ERROR: REMOTE_BACKEND must be x11vnc, wayvnc, or tigervnc.' >&2; exit 2 ;; \
+	esac
+	@if [[ -n '$(REMOTE_USER)' ]]; then \
+		sudo ./setup.sh remote --backend '$(REMOTE_BACKEND)' --user '$(REMOTE_USER)'; \
+	else \
+		sudo ./setup.sh remote --backend '$(REMOTE_BACKEND)'; \
+	fi
+
+remote-x11vnc:
+	$(MAKE) remote REMOTE_BACKEND=x11vnc REMOTE_USER='$(REMOTE_USER)'
+remote-wayvnc:
+	$(MAKE) remote REMOTE_BACKEND=wayvnc REMOTE_USER='$(REMOTE_USER)'
+remote-tigervnc:
+	$(MAKE) remote REMOTE_BACKEND=tigervnc REMOTE_USER='$(REMOTE_USER)'
+
+remote-status:
+	sudo systemctl status x11vnc.service --no-pager -l || true
+	@echo 'wayvnc and TigerVNC are package-only targets; configure/start their session separately.'
 
 clean:
 	@find $(VENDOR_OUTPUT) -mindepth 1 ! -name .gitkeep -exec rm -rf -- {} + 2>/dev/null || true

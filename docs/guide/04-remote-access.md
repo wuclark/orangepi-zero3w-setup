@@ -13,6 +13,26 @@ Install a backend explicitly:
 sudo ./setup.sh remote --backend x11vnc
 ```
 
+The equivalent Make targets are:
+
+```bash
+sudo make remote-x11vnc
+sudo make remote-wayvnc
+sudo make remote-tigervnc
+```
+
+Or choose the backend generically:
+
+```bash
+sudo make remote REMOTE_BACKEND=x11vnc
+```
+
+`REMOTE_USER=name` can be supplied for x11vnc when the target user is not the
+login user. Use `sudo make remote-status` to inspect the configured x11vnc
+service. The wayvnc and TigerVNC targets install their packages only; they do
+not create or expose a service automatically because they require a selected
+Wayland compositor or virtual desktop session configuration.
+
 The x11vnc service binds to `127.0.0.1` by default. Direct LAN listening is
 available only when explicitly requested with the lower-level command:
 
