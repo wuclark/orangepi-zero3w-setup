@@ -4,6 +4,8 @@
 
 - Use shallow Git clones by default for A733 source synchronization, expose the
   full-history Make override, and document the SD-image SDK boundary.
+- Keep source-tree synchronization optional in the all-initial-setup targets;
+  acceleration installation uses staged archives and test assets instead.
 - Add the acceleration status snapshot and `make board-initial-setup` for the
   foundation plus GPU, VPU, and experimental NPU installers.
 - Add `make board-initial-setup-gui` for the complete XFCE/X11 and x11vnc

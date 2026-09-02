@@ -71,7 +71,7 @@ help:
 		'make board-diagnostics                  Capture board diagnostics' \
 		'make board-validation                  Run all installed-layer validations' \
 		'make board-foundation                  Install base, packages, core, sources' \
-		'make board-initial-setup               Install foundation and all acceleration layers' \
+		'make board-initial-setup               Install base, core, and all acceleration layers' \
 		'make board-initial-setup-gui           Add XFCE/X11, x11vnc, and enable LightDM' \
 		'make board-base/packages/core/sources  Run one foundation step' \
 		'  GIT_DEPTH=0 make board-sources       Use full Git history for sources' \
@@ -222,7 +222,9 @@ board-foundation:
 	$(MAKE) board-sources
 
 board-initial-setup:
-	$(MAKE) board-foundation
+	$(MAKE) board-base
+	$(MAKE) board-packages
+	$(MAKE) board-core
 	$(MAKE) board-acceleration-install
 
 board-initial-setup-gui:

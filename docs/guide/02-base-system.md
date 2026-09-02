@@ -37,9 +37,11 @@ installation, use:
 sudo make board-initial-setup
 ```
 
-This runs the foundation and acceleration installers in order without rebooting.
-Reboot once afterward, then run `sudo make board-validation`. The NPU step still
-requires its local test assets and remains experimental.
+This runs base, packages, core, and the acceleration installers in order without
+cloning the optional source trees or rebooting. Reboot once afterward, then run
+`sudo make board-validation`. The NPU step still requires its local test assets
+and remains experimental. Use `sudo make board-sources` separately when source
+trees are needed for development or inspection.
 
 For the complete initial setup with the default XFCE/X11 desktop and x11vnc:
 

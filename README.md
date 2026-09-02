@@ -64,8 +64,9 @@ individual `board-base`, `board-packages`, `board-core`, and `board-sources`
 targets are also available. Optional acceleration, desktop, and remote layers
 remain separate.
 For a complete initial board setup that also installs GPU, VPU, and experimental
-NPU acceleration, run `sudo make board-initial-setup`. It does not reboot; after
-it completes, reboot once and run `sudo make board-validation`.
+NPU acceleration, run `sudo make board-initial-setup`. It runs base, packages,
+core, and the acceleration installers; source-tree cloning is optional. It does
+not reboot; after it completes, reboot once and run `sudo make board-validation`.
 For the complete initial setup with a default XFCE/X11 desktop, x11vnc, and
 LightDM unmasked and enabled, run `sudo make board-initial-setup-gui`. The
 x11vnc setup prompts for its password and defaults to localhost/SSH-tunneled
@@ -91,6 +92,8 @@ switching should reboot immediately.
 To stop LightDM and prevent its autologin Wayland/X11 session from starting,
 run `sudo make lightdm-mask`; this also stops the current LightDM session.
 Restore it with `sudo make lightdm-unmask`, which unmasks and enables LightDM.
+Clone the maintained A733 source trees separately only when needed for source
+inspection or development with `sudo make board-sources`.
 Remote backends are available through `sudo make remote-x11vnc`, `sudo make
 remote-wayvnc`, and `sudo make remote-tigervnc`, or the generic
 `sudo make remote REMOTE_BACKEND=x11vnc`. Use x11vnc with X11, wayvnc with an
