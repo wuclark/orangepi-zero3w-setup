@@ -42,7 +42,9 @@ EOF
     printf '%s\n' "$profile" >"$STATE/desktop-profile"
     printf '%s\n' "${TYPE[$profile]}" >"$STATE/remote-type"
     echo "Default session set to $profile. Reboot to activate it."
-    [[ $reboot == --reboot ]] && systemctl reboot
+    if [[ $reboot == --reboot ]]; then
+        systemctl reboot
+    fi
 }
 
 case "${1:-}" in
