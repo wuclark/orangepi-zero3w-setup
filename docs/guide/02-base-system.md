@@ -25,8 +25,10 @@ sudo make board-foundation
 
 This runs `base`, the interactive `packages` menu, `core`, and `sources` in
 that order. To run one step separately, use `make board-base`, `make
-board-packages`, `make board-core`, or `make board-sources`. The package step
-uses the existing apt cache unless its explicit update option is selected.
+board-packages`, `make board-core`, or `make board-sources`. Source checkouts
+are shallow by default; use `sudo make board-sources GIT_DEPTH=0` when full Git
+history is required. The package step uses the existing apt cache unless its
+explicit update option is selected.
 
 For a complete initial board setup, including GPU, VPU, and experimental NPU
 installation, use:

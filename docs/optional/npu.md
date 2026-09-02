@@ -31,7 +31,17 @@ cd /opt/orangepi-zero3w-setup
 sudo ./scripts/sync-a733-sources.sh
 ```
 
-The resulting trees are independent of the login username:
+New source checkouts use a shallow Git clone by default to keep initial board
+setup fast. Set `GIT_DEPTH=0` when the full repository history is required:
+
+```bash
+sudo env GIT_DEPTH=0 ./scripts/sync-a733-sources.sh
+```
+
+The resulting trees are independent of the login username. The full `ai-sdk`
+tree is not copied into prepared SD images; image builds include only the
+selected, small `npu-test-assets.tar.gz` board-test bundle when it is generated
+from `work/images/ai-sdk.tar.gz`.
 
 ```text
 /opt/orangepi-zero3w-setup/sources/a733_npu_driver

@@ -14,6 +14,7 @@ DESKTOP_PROFILE ?=
 DESKTOP_REBOOT ?= no
 REMOTE_BACKEND ?=
 REMOTE_USER ?=
+GIT_DEPTH ?= 1
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
@@ -73,6 +74,7 @@ help:
 		'make board-initial-setup               Install foundation and all acceleration layers' \
 		'make board-initial-setup-gui           Add XFCE/X11, x11vnc, and enable LightDM' \
 		'make board-base/packages/core/sources  Run one foundation step' \
+		'  GIT_DEPTH=0 make board-sources       Use full Git history for sources' \
 		'make board-acceleration-install        Install GPU, VPU, and NPU layers' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
 		'make board-vpu-test                     Run VPU checks and decode tests' \
@@ -211,7 +213,7 @@ board-core:
 	sudo ./setup.sh core
 
 board-sources:
-	sudo ./setup.sh sources
+	sudo env GIT_DEPTH='$(GIT_DEPTH)' ./setup.sh sources
 
 board-foundation:
 	$(MAKE) board-base

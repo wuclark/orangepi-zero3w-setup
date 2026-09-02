@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo 'Run with sudo.' >&2; exit 1; }
 SOURCE_ROOT=${SOURCE_ROOT:-/opt/orangepi-zero3w-setup/sources}
+GIT_DEPTH=${GIT_DEPTH:-1}
 install -d -m 755 "$SOURCE_ROOT"
 
 declare -A repos=(
@@ -17,7 +18,11 @@ for name in "${!repos[@]}"; do
     if [[ -d "$destination/.git" ]]; then
         git -C "$destination" pull --ff-only
     elif [[ ! -e $destination ]]; then
-        git clone "${repos[$name]}" "$destination"
+        if [[ $GIT_DEPTH == 0 ]]; then
+            git clone "${repos[$name]}" "$destination"
+        else
+            git clone --depth "$GIT_DEPTH" "${repos[$name]}" "$destination"
+        fi
     else
         echo "ERROR: source destination exists but is not a Git checkout: $destination" >&2
         exit 1
