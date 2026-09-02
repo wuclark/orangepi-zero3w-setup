@@ -38,7 +38,9 @@ sudo make remote-wayvnc
 sudo make desktop-switch DESKTOP_PROFILE=labwc DESKTOP_REBOOT=1
 ```
 
-TigerVNC remains package-only because it requires a separate virtual desktop
+With the Weston target, wayvnc is currently view-only because Weston does not
+provide WayVNC’s virtual-pointer protocol; use the X11 target and x11vnc for
+remote input. TigerVNC remains package-only because it requires a separate virtual desktop
 session configuration. All remote targets default to SSH-tunneled localhost
 access and do not expose a service on the LAN.
 

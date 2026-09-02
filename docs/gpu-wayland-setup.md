@@ -137,8 +137,12 @@ or:
 ```
 
 When configured by `board-gpu-wayland-setup`, wayvnc waits for Weston’s
-Wayland socket and then serves that output. Its default configuration binds to
-localhost; use SSH tunneling rather than exposing the VNC port on the LAN.
+Wayland socket and then serves that output. Because Weston does not currently
+expose WayVNC’s virtual-pointer protocol, the launcher passes
+`--disable-input`: the Weston stream is view-only. Its default configuration
+binds to localhost; use SSH tunneling rather than exposing the VNC port on the
+LAN. Use the X11 target with x11vnc when remote mouse and keyboard control are
+required.
 
 The verifier checks `pvrsrvkm`, the card1 driver binding, Vulkan, the linker
 cache, the GLVND JSON, EGL/GLES, the Weston service, and the last `GL renderer`

@@ -25,7 +25,9 @@ start_wayvnc() {
             if [[ -n $socket ]]; then
                 export XDG_RUNTIME_DIR="$runtime"
                 export WAYLAND_DISPLAY=${socket##*/}
-                exec /usr/bin/wayvnc --config "$HOME/.config/wayvnc/config" >>"$WAYVNC_LOG" 2>&1
+                # Weston does not currently advertise zwlr_virtual_pointer_v1;
+                # WayVNC can still provide a view-only stream in this mode.
+                exec /usr/bin/wayvnc --disable-input --config "$HOME/.config/wayvnc/config" >>"$WAYVNC_LOG" 2>&1
             fi
             sleep 1
         done
