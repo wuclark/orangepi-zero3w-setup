@@ -58,6 +58,8 @@ BOARD_LAYER=gpu|vpu|npu|all` for a selected diagnostic board pass. The
 per-layer `board-gpu-test`, `board-vpu-test`, and `board-npu-test` targets run
 the corresponding post-install checks. Use `sudo make board-diagnostics` for
 the broader evidence capture. These targets never install or reboot.
+For the optional compute benchmark, run `sudo make board-gpu-compute-deps` to
+install its build tools from the existing apt cache.
 Desktop profiles can also be installed or switched through Make, for example
 `sudo make desktop-openbox`, `sudo make desktop-xfce`, or `sudo make
 desktop-switch DESKTOP_PROFILE=labwc`. Use `sudo make desktop-list` and

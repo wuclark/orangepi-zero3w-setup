@@ -34,6 +34,15 @@ The helper sets `LD_LIBRARY_PATH` and `LIBGL_DRIVERS_PATH` for only the child
 application. A plain `glxinfo -B` may still report Mesa `llvmpipe`; that is the
 separate desktop GLX path and is not evidence that Vulkan or EGL/GLES failed.
 
+The optional compute benchmark has an explicit dependency target:
+
+```bash
+sudo make board-gpu-compute-deps
+```
+
+It installs `g++`, `libvulkan-dev`, and either `glslc` or `glslangValidator`
+using the existing apt cache. It does not run `apt update`.
+
 ## Wayland validation
 
 Wayland is not active in the default LightDM/Openbox session. Test it from a
