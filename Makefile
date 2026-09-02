@@ -17,6 +17,11 @@ BOARD_REPORT_OUTPUT ?=
 BOARD_REPORTS_OUTPUT ?=
 REMOTE_REPO ?= ~/orangepi-zero3w-setup
 REPORT_DIR ?=
+BACKUP_DIR ?=
+BACKUP_SET ?=
+BACKUP_CONFIRM ?=
+RESTORE_SET ?=
+RESTORE_FORCE ?=
 DESKTOP_PROFILE ?=
 DESKTOP_REBOOT ?= no
 REMOTE_BACKEND ?=
@@ -40,7 +45,8 @@ GIT_DEPTH ?= 1
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets \
-	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports
+	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports \
+	backup-required backup-cache backup-sensitive backup-all restore
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -98,6 +104,11 @@ help:
 		'make board-report                     Collect one normalized board report' \
 		'make collect-boards BOARDS="user@board1 ..."  Collect reports over SSH (prompts if omitted)' \
 		'make compare-board-reports REPORT_DIR=...     Compare collected board reports' \
+		'make backup-required BACKUP_DIR=...          Back up external rebuild inputs' \
+		'make backup-cache BACKUP_DIR=...             Back up generated rebuild caches' \
+		'make backup-sensitive BACKUP_DIR=...         Back up credentials separately' \
+		'make backup-all BACKUP_DIR=...               Back up all input categories' \
+		'make restore BACKUP_DIR=... RESTORE_SET=...  Selectively restore a backup set' \
 		'make board-foundation                  Install base, packages, core, sources' \
 		'make board-initial-setup               Install base, core, and all acceleration layers' \
 		'make board-initial-setup-gui           Add XFCE/X11, x11vnc, and enable LightDM' \
@@ -256,6 +267,21 @@ collect-boards:
 
 compare-board-reports:
 	REPORT_DIR='$(REPORT_DIR)' ./scripts/compare-board-reports.sh
+
+backup-required:
+	BACKUP_SET=required BACKUP_DIR='$(BACKUP_DIR)' ./scripts/backup.sh
+
+backup-cache:
+	BACKUP_SET=cache BACKUP_DIR='$(BACKUP_DIR)' ./scripts/backup.sh
+
+backup-sensitive:
+	BACKUP_SET=sensitive BACKUP_CONFIRM='$(BACKUP_CONFIRM)' BACKUP_DIR='$(BACKUP_DIR)' ./scripts/backup.sh
+
+backup-all:
+	BACKUP_SET=all BACKUP_CONFIRM='$(BACKUP_CONFIRM)' BACKUP_DIR='$(BACKUP_DIR)' ./scripts/backup.sh
+
+restore:
+	BACKUP_DIR='$(BACKUP_DIR)' RESTORE_SET='$(RESTORE_SET)' RESTORE_FORCE='$(RESTORE_FORCE)' ./scripts/restore.sh
 
 board-base:
 	sudo ./setup.sh base

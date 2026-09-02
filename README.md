@@ -152,6 +152,35 @@ the LAN or reboot the board.
 Use `make clean` to remove generated archives, derived images, metadata, and
 local first-boot files while preserving source/base images under `work/images/`.
 
+Back up external build inputs before cleaning or moving the workspace:
+
+```bash
+make backup-required BACKUP_DIR=/mnt/backup/orangepi-zero3w
+make backup-cache BACKUP_DIR=/mnt/backup/orangepi-zero3w
+make backup-sensitive BACKUP_DIR=/mnt/backup/orangepi-zero3w
+```
+
+`backup-required` saves the Orange Pi, Radxa, and Armbian source images, the AI
+SDK, matching kernel source, and any supplied vendor-root/archive inputs.
+`backup-cache` saves generated vendor archives, test assets, VPU videos, and
+derived images. `backup-sensitive` separately saves the credential-bearing
+first-boot files and requires confirmation. `make backup-all BACKUP_DIR=...`
+runs all three categories. Every set includes a SHA-256 manifest.
+
+Restore only the category needed:
+
+```bash
+make restore BACKUP_DIR=/mnt/backup/orangepi-zero3w RESTORE_SET=required
+make restore BACKUP_DIR=/mnt/backup/orangepi-zero3w RESTORE_SET=cache
+make restore BACKUP_DIR=/mnt/backup/orangepi-zero3w RESTORE_SET=sensitive
+make restore BACKUP_DIR=/mnt/backup/orangepi-zero3w RESTORE_SET=all
+```
+
+Restore verifies the manifest first and asks for confirmation before writing.
+Sensitive restoration also requires the explicit `RESTORE SENSITIVE` phrase;
+`RESTORE_FORCE=1` bypasses prompts for controlled automation. Backups should be
+stored outside Git and sensitive backups should be encrypted.
+
 The first-boot generator asks for a hostname and creates a one-time
 `/root/provisioning.sh` hook to apply it after the first successful login.
 Armbian's preset file itself contains only documented first-boot variables.
