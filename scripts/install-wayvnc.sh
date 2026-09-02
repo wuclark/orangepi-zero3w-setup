@@ -18,6 +18,9 @@ USER_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 [[ -n $USER_HOME ]] || die "Cannot determine home directory for $TARGET_USER."
 
 apt-get install -y wayvnc
+install -d -m 755 /usr/local/libexec/orangepi-zero3w-setup
+install -m 755 "$SCRIPT_DIR/orangepi-session-launch" \
+    /usr/local/libexec/orangepi-zero3w-setup/session-launch
 install -d -o "$TARGET_USER" -g "$TARGET_USER" -m 700 \
     "$USER_HOME/.config/wayvnc" "$USER_HOME/.config/orangepi-zero3w-setup"
 if [[ ! -f "$USER_HOME/.config/wayvnc/config" ]]; then

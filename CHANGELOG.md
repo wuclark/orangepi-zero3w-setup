@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Make the WayVNC session hook create its state directory, use the resolved
+  executable path, and record startup failures instead of exiting silently.
+- Ensure the Makefile remote-wayvnc path installs the current session hook.
 - Name final credential-bearing SD images with a UTC creation timestamp and
   keep `make summary` and `make validate` pointed at the exact artifact.
 - Add timestamped progress messages to the Docker userspace extraction stages

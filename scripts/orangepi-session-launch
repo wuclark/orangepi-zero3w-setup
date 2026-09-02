@@ -8,10 +8,23 @@ import_later() {
         SWAYSOCK 2>/dev/null || true
 }
 start_wayvnc() {
-    [[ -f "$HOME/.config/orangepi-zero3w-setup/wayvnc-enabled" ]] || return 0
-    command -v wayvnc >/dev/null 2>&1 || return 0
+    local state_log wayvnc_bin runtime socket
     state_log="${XDG_STATE_HOME:-$HOME/.local/state}/orangepi-zero3w-setup-wayvnc.log"
     mkdir -p "$(dirname "$state_log")"
+    {
+        printf 'Starting WayVNC session hook at %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        printf 'HOME=%s XDG_RUNTIME_DIR=%s WAYLAND_DISPLAY=%s PATH=%s\n' \
+            "$HOME" "${XDG_RUNTIME_DIR:-}" "${WAYLAND_DISPLAY:-}" "$PATH"
+    } >>"$state_log" 2>&1
+    if [[ ! -f "$HOME/.config/orangepi-zero3w-setup/wayvnc-enabled" ]]; then
+        printf 'WayVNC is not enabled for this user.\n' >>"$state_log"
+        return 0
+    fi
+    wayvnc_bin=$(command -v wayvnc 2>/dev/null || true)
+    if [[ -z $wayvnc_bin ]]; then
+        printf 'WayVNC executable was not found in PATH.\n' >>"$state_log"
+        return 0
+    fi
     (
         runtime=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
         for _ in {1..60}; do
@@ -19,10 +32,13 @@ start_wayvnc() {
             if [[ -n $socket ]]; then
                 export XDG_RUNTIME_DIR="$runtime"
                 export WAYLAND_DISPLAY=${socket##*/}
-                exec wayvnc --config "$HOME/.config/wayvnc/config"
+                printf 'Starting %s with XDG_RUNTIME_DIR=%s WAYLAND_DISPLAY=%s\n' \
+                    "$wayvnc_bin" "$XDG_RUNTIME_DIR" "$WAYLAND_DISPLAY"
+                exec "$wayvnc_bin" --config "$HOME/.config/wayvnc/config"
             fi
             sleep 1
         done
+        printf 'Wayland socket was not found under %s after 60 seconds.\n' "$runtime"
     ) >"$state_log" 2>&1 &
 }
 
