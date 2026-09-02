@@ -29,6 +29,14 @@ grep -q '99-orangepi-zero3w-cedar.rules' "$REPO_ROOT/scripts/install-vpu-userspa
 grep -q 'KERNEL=="cedar_dev\*"' "$REPO_ROOT/config/99-orangepi-zero3w-cedar.rules"
 grep -q 'orangepi-tycat' "$REPO_ROOT/scripts/setup-desktop.sh"
 grep -q 'orangepi-play-video' "$REPO_ROOT/scripts/setup-desktop.sh"
+grep -q -- "--exclude='testdata/videos/\\*.mp4'" "$REPO_ROOT/scripts/prepare-preloaded-image-inner.sh"
+grep -q -- "--exclude='testdata/videos/\\*.md5'" "$REPO_ROOT/scripts/prepare-preloaded-image-inner.sh"
+grep -q -- "--exclude='testdata/videos/SHA256SUMS'" "$REPO_ROOT/scripts/prepare-preloaded-image-inner.sh"
+grep -q 'orange-pi-6.6-sun60iw2' "$REPO_ROOT/scripts/prepare-kernel-source.sh"
+grep -q 'kernel-source' "$REPO_ROOT/Makefile"
+grep -q 'Using embedded checkout' "$REPO_ROOT/scripts/build-pvrsrvkm.sh"
+grep -q -- '--decode-pair' "$REPO_ROOT/scripts/gen_test_videos.sh"
+grep -q 'board-vpu-generate-decode-videos' "$REPO_ROOT/Makefile"
 
 if grep -qs 'PRESET_HOSTNAME' "$REPO_ROOT/scripts/create-headless-preset.sh" \
     "$REPO_ROOT/windows/Prepare-HeadlessPreset.ps1"; then

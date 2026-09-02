@@ -39,6 +39,9 @@ derived images: `prepare-preloaded-image-docker.sh` embeds the repository and
 GPU/VPU/NPU archives, then `prepare-firstboot-image-docker.sh` adds the local
 first-boot preset and provisioning hook. The base and preloaded images remain
 unchanged; the final image contains credentials and must stay outside Git.
+The image build also stages a sparse checkout of the matching
+`linux-orangepi` PowerVR module source under `build-pvrsrvkm/`, allowing the
+board to build the module without a later source download.
 The final SD image is named with its UTC creation timestamp, such as
 `*-preloaded-firstboot-20260901T143012Z.img`. Before writing it, run
 `make validate` to verify the checksum and partition table.

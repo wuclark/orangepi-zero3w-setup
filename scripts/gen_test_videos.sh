@@ -6,6 +6,7 @@ REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
 OUTPUT_DIR="$REPO_ROOT/testdata/videos"
 ONLY=""
 FORCE=no
+DECODE_PAIR=no
 
 usage() {
     cat <<'EOF'
@@ -16,6 +17,7 @@ Generate synthetic H.264/H.265 VPU test videos under testdata/videos/.
 Options:
   --only SOURCE  Generate one source or combo: mandelbrot, testsrc, rgbtestsrc,
                  life, or combo
+  --decode-pair  Generate only the 720p H.264/H.265 files used by decode tests
   --force        Overwrite existing MP4 and framemd5 files
   -h, --help     Show this help
 EOF
@@ -24,6 +26,7 @@ EOF
 while (($#)); do
     case "$1" in
         --only) ONLY=${2:?missing source after --only}; shift 2 ;;
+        --decode-pair) DECODE_PAIR=yes; shift ;;
         --force) FORCE=yes; shift ;;
         -h|--help) usage; exit 0 ;;
         *) echo "ERROR: unknown argument: $1" >&2; usage >&2; exit 2 ;;
@@ -52,6 +55,10 @@ if [[ -n $ONLY ]]; then
         *) echo "ERROR: unsupported source '$ONLY'" >&2; exit 2 ;;
     esac
 fi
+[[ -z $ONLY || $DECODE_PAIR == no ]] || {
+    echo 'ERROR: --decode-pair cannot be combined with --only' >&2
+    exit 2
+}
 
 mkdir -p "$OUTPUT_DIR"
 
@@ -86,7 +93,15 @@ generate_file() {
     GENERATED+=("$output")
 }
 
+if [[ $DECODE_PAIR == yes ]]; then
+    generate_file 'mandelbrot-h264-720p-30fps' \
+        'mandelbrot=s=1280x720:r=30' h264 main 30
+    generate_file 'mandelbrot-h265-720p-30fps' \
+        'mandelbrot=s=1280x720:r=30' h265 main 30
+fi
+
 for source_pair in "${SOURCES[@]}"; do
+    [[ $DECODE_PAIR == yes ]] && continue
     source=${source_pair%%:*}
     extra_filter=${source_pair#*:}
     [[ -z $ONLY || $ONLY == "$source" ]] || continue

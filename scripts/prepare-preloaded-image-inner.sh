@@ -34,7 +34,15 @@ TARGET="$WORK/root/opt/orangepi-zero3w-setup"
 install -d -m 755 "$TARGET/vendor-files"
 chmod 755 "$(dirname "$TARGET")"
 progress 'Copying repository into the image'
-tar -C /repo --exclude=.git --exclude=work --exclude=vendor-files -cf - . | tar -C "$TARGET" -xf -
+# Generated VPU fixtures are intentionally kept outside Git and can consume
+# more space than the base image's root filesystem has available. The board
+# test downloads or generates them on demand after installation.
+tar -C /repo \
+    --exclude=.git --exclude=work --exclude=vendor-files \
+    --exclude='testdata/videos/*.mp4' \
+    --exclude='testdata/videos/*.md5' \
+    --exclude='testdata/videos/SHA256SUMS' \
+    -cf - . | tar -C "$TARGET" -xf -
 progress 'Copying vendor userspace archives into the image'
 cp -a /repo/work/vendor-output/pvr-userspace.tar.gz "$TARGET/vendor-files/"
 for archive in vpu-userspace.tar.gz npu-userspace.tar.gz; do

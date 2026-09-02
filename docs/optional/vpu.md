@@ -26,6 +26,16 @@ test prompts whether to generate them locally or download the pinned legacy
 samples under `/var/lib/orangepi-zero3w-setup/vpu-test-media`. The pipeline is
 headless and does not require X11.
 
+To generate only the two small synthetic files consumed by the decode test,
+run:
+
+```bash
+make board-vpu-generate-decode-videos
+```
+
+The existing `board-vpu-generate-videos` target intentionally generates the
+full fixture set for broader VPU coverage.
+
 ### VPU validation TODO
 
 The current test validates that Cedar opens the stream and reaches EOS. The

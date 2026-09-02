@@ -19,7 +19,7 @@ REMOTE_BACKEND ?=
 REMOTE_USER ?=
 GIT_DEPTH ?= 1
 
-.PHONY: help version docker-toolchain extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
+.PHONY: help version docker-toolchain kernel-source extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify board-gpu-sway-setup board-gpu-sway-verify board-gpu-weston-setup \
 	board-docker-install board-docker-verify \
@@ -30,7 +30,7 @@ GIT_DEPTH ?= 1
 	switch-openbox switch-xfce switch-i3 switch-icewm switch-fluxbox switch-sway switch-labwc \
 	switch-enlightenment-x11 switch-enlightenment-wayland \
 	remote remote-x11vnc remote-wayvnc remote-tigervnc remote-status \
-	board-vpu-generate-videos \
+	board-vpu-generate-videos board-vpu-generate-decode-videos \
 	board-vpu-fetch-videos release-vpu-test-videos \
 	board-gpu-precheck board-gpu-install board-gpu-verify \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
@@ -56,6 +56,7 @@ help:
 		'  Board log: /var/log/orangepi-zero3w-setup/acceleration-progress.log' \
 		'' \
 		'make extract    Generate vendor archives, or reuse existing output' \
+		'make kernel-source  Stage the matching PowerVR module source for the image' \
 		'make docker-toolchain  Build the pinned Docker extraction toolchain' \
 		'make version    Show release version and Git revision used in image names' \
 		'make preset     Interactively create local first-boot settings' \
@@ -93,6 +94,7 @@ help:
 		'make board-vpu-test                     Run VPU checks and decode tests' \
 		'make board-vpu-decode-test              Run downloaded H.264/H.265 VPU tests' \
 		'make board-vpu-generate-videos           Generate local synthetic VPU test videos' \
+		'make board-vpu-generate-decode-videos    Generate only the two decode-test videos' \
 		'make board-vpu-fetch-videos              Fetch pinned individual VPU release assets' \
 		'make release-vpu-test-videos             Publish generated VPU assets to GitHub' \
 		'make board-npu-precheck/verify          Run supported NPU checks' \
@@ -129,6 +131,9 @@ extract: docker-toolchain
 			--output $(VENDOR_OUTPUT)/npu-test-assets.tar.gz; \
 	fi
 
+kernel-source:
+	./scripts/prepare-kernel-source.sh
+
 preset:
 	@if [[ -e not_logged_in_yet || -e provisioning.sh ]]; then \
 		if [[ $(REBUILD) != 1 ]]; then \
@@ -140,7 +145,7 @@ preset:
 	fi
 	./scripts/create-headless-preset.sh --output ./not_logged_in_yet
 
-preloaded: extract docker-toolchain
+preloaded: extract kernel-source docker-toolchain
 	@if [[ -f $(PRELOADED) ]]; then \
 		echo 'Reusing existing preloaded image: $(PRELOADED)'; \
 	else \
@@ -464,6 +469,9 @@ board-vpu-decode-test:
 
 board-vpu-generate-videos:
 	sudo ./scripts/gen_test_videos.sh
+
+board-vpu-generate-decode-videos:
+	sudo ./scripts/gen_test_videos.sh --decode-pair
 
 board-vpu-fetch-videos:
 	sudo ./scripts/fetch-vpu-test-videos.sh --tag $(VPU_TESTDATA_TAG)

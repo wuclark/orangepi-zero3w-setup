@@ -51,19 +51,22 @@ KERNEL_DIR="/lib/modules/$KERNEL_RELEASE/build"
 mkdir -p "$WORK_DIR"
 SOURCE_DIR="$WORK_DIR/linux-orangepi"
 
-if [[ ! -d "$SOURCE_DIR/.git" ]]; then
+MODULE_ROOT="$SOURCE_DIR/bsp/modules/gpu/img-bxm/linux/rogue_km"
+BUILD_ROOT="$MODULE_ROOT/build/linux"
+
+if [[ ! -d "$SOURCE_DIR/.git" && ! -d "$BUILD_ROOT/sunxi_linux" ]]; then
     [[ -z "$(find "$WORK_DIR" -mindepth 1 -maxdepth 1 -print -quit)" ]] \
         || die "$WORK_DIR is not empty and lacks the expected checkout"
     log "Fetching the PowerVR module source"
     git clone --depth 1 --branch "$KERNEL_BRANCH" --filter=blob:none --sparse \
         "$KERNEL_REPO" "$SOURCE_DIR"
     git -C "$SOURCE_DIR" sparse-checkout set bsp/modules/gpu
+elif [[ -d "$BUILD_ROOT/sunxi_linux" && ! -d "$SOURCE_DIR/.git" ]]; then
+    log "Using embedded checkout: $SOURCE_DIR"
 else
     log "Using existing checkout: $SOURCE_DIR"
 fi
 
-MODULE_ROOT="$SOURCE_DIR/bsp/modules/gpu/img-bxm/linux/rogue_km"
-BUILD_ROOT="$MODULE_ROOT/build/linux"
 [[ -d "$BUILD_ROOT/sunxi_linux" ]] || die "PowerVR build tree not found in $MODULE_ROOT"
 
 STUB="$KERNEL_DIR/include/linux/sunxi-sid.h"
