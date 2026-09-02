@@ -51,7 +51,7 @@ if [[ -S /tmp/.X11-unix/X0 ]]; then
     if command -v xdpyinfo >/dev/null 2>&1; then
         EXTENSIONS=$(DISPLAY=:0 xdpyinfo 2>/dev/null)
         for extension in DRI2 DRI3 Present; do
-            if grep -qx "    $extension" <<<"$EXTENSIONS"; then
+            if grep -Eq "^[[:space:]]+$extension[[:space:]]*$" <<<"$EXTENSIONS"; then
                 pass "X11 exposes $extension"
             else
                 fail "X11 does not expose $extension"
@@ -71,6 +71,16 @@ if command -v eglinfo >/dev/null 2>&1; then
     fi
 fi
 
+if [[ -S /tmp/.X11-unix/X0 ]] && command -v glxinfo >/dev/null 2>&1; then
+    GLX_OUTPUT=$(DISPLAY=:0 glxinfo -B 2>&1 || true)
+    if grep -q 'llvmpipe' <<<"$GLX_OUTPUT"; then
+        warn "X11 GLX is using llvmpipe software rendering"
+    elif grep -qi 'PowerVR' <<<"$GLX_OUTPUT"; then
+        pass "X11 GLX reports PowerVR"
+    else
+        warn "X11 GLX renderer could not be confirmed"
+    fi
+fi
+
 printf '\nSummary: %d passed, %d warnings, %d failed\n' "$PASS" "$WARN" "$FAIL"
 ((FAIL == 0))
-
