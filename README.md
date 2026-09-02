@@ -63,6 +63,10 @@ interactive package, core maintenance, and A733 sources setup in order. The
 individual `board-base`, `board-packages`, `board-core`, and `board-sources`
 targets are also available. Optional acceleration, desktop, and remote layers
 remain separate.
+To install all three acceleration layers in sequence, use
+`sudo make board-acceleration-install`. This runs the GPU, VPU, and
+experimental NPU installers but does not reboot; reboot once after it finishes,
+then run `sudo make board-validation`.
 After installing the desired layers, `sudo make board-validation` runs the
 available GPU, Vulkan compute, VPU decode, NPU, X11, and x11vnc checks and
 prints a PASS/FAIL/SKIP summary. It is diagnostic only and never installs or

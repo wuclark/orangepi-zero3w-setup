@@ -81,6 +81,16 @@ To run the smoke test independently and write a stable evidence file, use:
 make board-npu-test
 ```
 
+To install all acceleration layers in sequence, including the experimental NPU
+layer, run:
+
+```bash
+sudo make board-acceleration-install
+```
+
+This performs GPU, VPU, and NPU installation without rebooting. Reboot once
+after it completes, then run `sudo make board-validation`.
+
 The evidence records the kernel, driver `vermagic`, runtime/model/input
 hashes, device permissions, loaded module, runner output, and result.
 

@@ -81,8 +81,9 @@ sudo reboot
 sudo make board-gpu-verify
 ```
 
-Use the corresponding `board-vpu-*` targets for VPU. `board-npu-install`
-intentionally exits without installing anything.
+Use the corresponding `board-vpu-*` targets for VPU. The NPU install target
+requires the experimental userspace and test archives and should only be used
+after the NPU ABI has been confirmed on the target board.
 
 For a single diagnostic pass without installation or reboot, select the layer:
 
