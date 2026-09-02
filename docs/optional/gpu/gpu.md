@@ -84,8 +84,10 @@ wayland-info
 ./scripts/run-pvr-app.sh eglinfo -B
 ```
 
-The Wayland EGL platform must report the PowerVR renderer. Separately check
-the Vulkan surface capability:
+On the current Orange Pi test board, Weston itself can use the PowerVR
+renderer, but the vendor EGL client test fails because the shipped EGL build
+contains `Wayland platform not built`. See the [acceleration status](../../reference/acceleration-status.md)
+for the exact boundary. Separately check the Vulkan surface capability:
 
 ```bash
 vulkaninfo | grep -F VK_KHR_wayland_surface

@@ -276,9 +276,12 @@ DISPLAY=:0 ./scripts/run-pvr-app.sh vkcube
 ```
 
 This keeps the vendor environment scoped to the tested process. Wayland EGL
-must be tested in a real labwc or sway session; Wayland Vulkan additionally
+must be tested in a real labwc or sway session. On the current board, Weston
+can render with PowerVR but the vendor EGL client platform is not built, so
+native PowerVR Wayland clients remain blocked. Wayland Vulkan additionally
 requires `VK_KHR_wayland_surface`, which is not advertised by the current
-verified Vulkan ICD.
+verified Vulkan ICD. See the [acceleration status](docs/reference/acceleration-status.md)
+for the current evidence and roadmap.
 
 ## Creating a headless but real X11 desktop
 

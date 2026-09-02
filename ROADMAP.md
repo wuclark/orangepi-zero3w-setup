@@ -16,13 +16,18 @@ specified in `AGENTS.md`.
 - [x] Board-side one-layer-at-a-time runner with persistent progress and
   per-step evidence logs.
 - [x] Scoped PowerVR launcher for EGL/GLES and Vulkan application tests.
+- [x] Confirm Weston DRM compositor rendering with the PowerVR DDK on HDMI.
+- [x] Confirm the current vendor EGL userspace lacks a built Wayland client
+  platform; record the native client failure and software fallback.
 - [x] Real-image test of the Docker extractor using the pinned source images.
 - [ ] NPU userspace installation and runtime validation.
 - [x] Validate VPU H.264 and H.265 runtime decoding on the Orange Pi.
 - [ ] Investigate desktop GLX acceleration; resolve the `pvr`/Zink geometry
   shader limitation or document the exact unsupported boundary.
-- [ ] Validate Wayland EGL rendering on labwc/sway and determine whether the
-  Vulkan ICD can gain safe `VK_KHR_wayland_surface` presentation support.
+- [ ] Obtain or build a licensed ARM/A733 PowerVR userspace with a working
+  Wayland EGL client platform; do not mix the kernel module from another board.
+- [ ] Validate native PowerVR Wayland client rendering and determine whether
+  the Vulkan ICD can gain safe `VK_KHR_wayland_surface` presentation support.
 - [x] Add Docker preloading of the setup repository and generated archives into
   a separate Armbian target image.
 - [x] Build and verify a preloaded image from the current Armbian base image;

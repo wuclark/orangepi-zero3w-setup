@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the acceleration status snapshot and `make board-initial-setup` for the
+  foundation plus GPU, VPU, and experimental NPU installers.
+- Add `make board-initial-setup-gui` for the complete XFCE/X11 and x11vnc
+  setup with LightDM unmasked and enabled.
 - Add `make lightdm-mask` and `make lightdm-unmask` for reversible control of
   the LightDM-managed desktop session.
 - Make the WayVNC session hook create its state directory, use the resolved

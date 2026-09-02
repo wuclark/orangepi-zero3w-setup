@@ -28,6 +28,27 @@ that order. To run one step separately, use `make board-base`, `make
 board-packages`, `make board-core`, or `make board-sources`. The package step
 uses the existing apt cache unless its explicit update option is selected.
 
+For a complete initial board setup, including GPU, VPU, and experimental NPU
+installation, use:
+
+```bash
+sudo make board-initial-setup
+```
+
+This runs the foundation and acceleration installers in order without rebooting.
+Reboot once afterward, then run `sudo make board-validation`. The NPU step still
+requires its local test assets and remains experimental.
+
+For the complete initial setup with the default XFCE/X11 desktop and x11vnc:
+
+```bash
+sudo make board-initial-setup-gui
+```
+
+This includes `board-initial-setup`, unmasks and enables LightDM, installs
+XFCE/X11, and configures x11vnc. It prompts for the VNC password and does not
+reboot. Reboot once afterward, then run `sudo make board-validation`.
+
 To refresh package metadata, explicitly request it:
 
 ```bash

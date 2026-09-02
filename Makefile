@@ -16,7 +16,7 @@ REMOTE_BACKEND ?=
 REMOTE_USER ?=
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
-	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
+	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
@@ -70,6 +70,8 @@ help:
 		'make board-diagnostics                  Capture board diagnostics' \
 		'make board-validation                  Run all installed-layer validations' \
 		'make board-foundation                  Install base, packages, core, sources' \
+		'make board-initial-setup               Install foundation and all acceleration layers' \
+		'make board-initial-setup-gui           Add XFCE/X11, x11vnc, and enable LightDM' \
 		'make board-base/packages/core/sources  Run one foundation step' \
 		'make board-acceleration-install        Install GPU, VPU, and NPU layers' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
@@ -216,6 +218,17 @@ board-foundation:
 	$(MAKE) board-packages
 	$(MAKE) board-core
 	$(MAKE) board-sources
+
+board-initial-setup:
+	$(MAKE) board-foundation
+	$(MAKE) board-acceleration-install
+
+board-initial-setup-gui:
+	$(MAKE) board-initial-setup
+	$(MAKE) lightdm-unmask
+	$(MAKE) desktop-xfce
+	$(MAKE) remote-x11vnc REMOTE_USER='$(REMOTE_USER)'
+	sudo systemctl enable lightdm.service
 
 board-acceleration-install:
 	$(MAKE) board-gpu-install
