@@ -51,7 +51,7 @@ if [[ -S /tmp/.X11-unix/X0 ]]; then
     if command -v xdpyinfo >/dev/null 2>&1; then
         EXTENSIONS=$(DISPLAY=:0 xdpyinfo 2>/dev/null)
         for extension in DRI2 DRI3 Present; do
-            if grep -Eq "^[[:space:]]+$extension[[:space:]]*$" <<<"$EXTENSIONS"; then
+            if grep -qw "$extension" <<<"$EXTENSIONS"; then
                 pass "X11 exposes $extension"
             else
                 fail "X11 does not expose $extension"
