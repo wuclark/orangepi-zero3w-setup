@@ -58,6 +58,11 @@ BOARD_LAYER=gpu|vpu|npu|all` for a selected diagnostic board pass. The
 per-layer `board-gpu-test`, `board-vpu-test`, and `board-npu-test` targets run
 the corresponding post-install checks. Use `sudo make board-diagnostics` for
 the broader evidence capture. These targets never install or reboot.
+For the initial board foundation, `sudo make board-foundation` runs the base,
+interactive package, core maintenance, and A733 sources setup in order. The
+individual `board-base`, `board-packages`, `board-core`, and `board-sources`
+targets are also available. Optional acceleration, desktop, and remote layers
+remain separate.
 After installing the desired layers, `sudo make board-validation` runs the
 available GPU, Vulkan compute, VPU decode, NPU, X11, and x11vnc checks and
 prints a PASS/FAIL/SKIP summary. It is diagnostic only and never installs or

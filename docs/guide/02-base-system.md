@@ -17,6 +17,17 @@ Optional packages are installed only when requested:
 sudo ./setup.sh packages
 ```
 
+From the repository directory, the same foundation sequence is available as:
+
+```bash
+sudo make board-foundation
+```
+
+This runs `base`, the interactive `packages` menu, `core`, and `sources` in
+that order. To run one step separately, use `make board-base`, `make
+board-packages`, `make board-core`, or `make board-sources`. The package step
+uses the existing apt cache unless its explicit update option is selected.
+
 To refresh package metadata, explicitly request it:
 
 ```bash
