@@ -65,5 +65,12 @@ printf '\n===== SUMMARY =====\n'
 printf '%s\n' "${SUMMARY[@]}"
 printf 'Totals: pass=%d fail=%d skip=%d\n' "$PASS" "$FAIL" "$SKIP"
 printf 'Evidence saved to %s\n' "$OUTPUT"
+if ! command -v glslc >/dev/null 2>&1 && ! command -v glslangValidator >/dev/null 2>&1; then
+    printf 'ACTION: install the Vulkan compute tools, then rerun validation:\n'
+    printf '  sudo make board-gpu-compute-deps\n'
+fi
+if ! systemctl is-enabled --quiet x11vnc.service 2>/dev/null; then
+    printf 'OPTIONAL: install and enable x11vnc if remote X11 validation is desired:\n'
+    printf '  sudo make remote-x11vnc\n'
+fi
 ((FAIL == 0))
-

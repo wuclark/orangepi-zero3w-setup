@@ -50,6 +50,9 @@ export DEBIAN_FRONTEND=noninteractive
 read -r -a package_list <<<"${PACKAGES[$PROFILE]}"
 apt-get install -y --no-install-recommends "${package_list[@]}"
 install -m 755 "$SCRIPT_DIR/orangepi-session" /usr/local/sbin/orangepi-session
+install -d -m 755 /etc/X11/Xresources
+install -m 644 "$SCRIPT_DIR/../config/90-orangepi-xterm" \
+    /etc/X11/Xresources/90-orangepi-xterm
 
 CONF=/etc/lightdm/lightdm.conf.d/50-orangepi-zero3w-setup.conf
 ORIGINAL_TARGET=$(systemctl get-default 2>/dev/null || printf '%s\n' multi-user.target)

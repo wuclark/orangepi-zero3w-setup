@@ -1,0 +1,5 @@
+! Defaults for visible xterm text on the Orange Pi desktop profiles.
+XTerm*foreground: white
+XTerm*background: black
+XTerm*faceName: Monospace
+XTerm*faceSize: 12

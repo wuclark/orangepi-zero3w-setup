@@ -84,7 +84,7 @@ fi
 if [[ -S /tmp/.X11-unix/X0 ]] && command -v glxinfo >/dev/null 2>&1; then
     GLX_OUTPUT=$(x11_run glxinfo -B 2>&1 || true)
     if grep -q 'llvmpipe' <<<"$GLX_OUTPUT"; then
-        warn "X11 GLX is using llvmpipe software rendering"
+        warn "X11 GLX uses llvmpipe (known limitation; Vulkan/EGL PowerVR are unaffected)"
     elif grep -qi 'PowerVR' <<<"$GLX_OUTPUT"; then
         pass "X11 GLX reports PowerVR"
     else

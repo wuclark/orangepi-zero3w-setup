@@ -39,6 +39,11 @@ grep -q -- '--decode-pair' "$REPO_ROOT/scripts/gen_test_videos.sh"
 grep -q 'board-vpu-generate-decode-videos' "$REPO_ROOT/Makefile"
 grep -q 'VENDOR_FILES_ROOT' "$REPO_ROOT/scripts/board-acceleration-workflow.sh"
 grep -q '/opt/orangepi-zero3w-setup/vendor-files' "$REPO_ROOT/scripts/board-acceleration-workflow.sh"
+grep -q 'sudo make board-gpu-compute-deps' "$REPO_ROOT/scripts/board-validation.sh"
+grep -q 'sudo make remote-x11vnc' "$REPO_ROOT/scripts/board-validation.sh"
+grep -q 'known limitation; Vulkan/EGL PowerVR are unaffected' "$REPO_ROOT/scripts/verify.sh"
+grep -q '90-orangepi-xterm' "$REPO_ROOT/scripts/setup-desktop.sh"
+grep -q 'XTerm\*foreground: white' "$REPO_ROOT/config/90-orangepi-xterm"
 
 if grep -qs 'PRESET_HOSTNAME' "$REPO_ROOT/scripts/create-headless-preset.sh" \
     "$REPO_ROOT/windows/Prepare-HeadlessPreset.ps1"; then

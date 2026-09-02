@@ -9,6 +9,11 @@
 - Add a VPU target to generate only the two small decode-test video fixtures.
 - Let board acceleration targets find embedded vendor archives when invoked from
   a separate checkout.
+- Print remediation commands for missing Vulkan compute tools and optional
+  x11vnc validation in the board-validation summary.
+- Label the expected X11 GLX llvmpipe result as a known limitation that does
+  not affect PowerVR Vulkan or EGL.
+- Install visible xterm color and font defaults with desktop profiles.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before

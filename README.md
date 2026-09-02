@@ -89,7 +89,9 @@ then run `sudo make board-validation`.
 After installing the desired layers, `sudo make board-validation` runs the
 available GPU, Vulkan compute, VPU decode, NPU, X11, and x11vnc checks and
 prints a PASS/FAIL/SKIP summary. It is diagnostic only and never installs or
-reboots.
+reboots. If the compute shader compiler is missing, the summary prints the
+exact `sudo make board-gpu-compute-deps` remediation; an x11vnc skip is called
+out as optional.
 For the optional compute benchmark, run `sudo make board-gpu-compute-deps` to
 install its build tools from the existing apt cache.
 For the default Sway/Wayland and WayVNC setup, see the [GPU and Wayland setup
@@ -114,6 +116,8 @@ Desktop profiles can also be installed or switched through Make, for example
 desktop-switch DESKTOP_PROFILE=labwc`. Use `sudo make desktop-list` and
 `sudo make desktop-current` to inspect sessions; add `DESKTOP_REBOOT=1` when
 switching should reboot immediately.
+Desktop setup installs visible white-on-black xterm defaults under
+`/etc/X11/Xresources/90-orangepi-xterm`.
 To stop LightDM and prevent its autologin Wayland/X11 session from starting,
 run `sudo make lightdm-mask`; this also stops the current LightDM session.
 Restore it with `sudo make lightdm-unmask`, which unmasks and enables LightDM.
