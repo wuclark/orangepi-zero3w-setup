@@ -22,7 +22,7 @@ GIT_DEPTH ?= 1
 .PHONY: help version extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify board-gpu-sway-setup board-gpu-sway-verify board-gpu-weston-setup \
-	board-docker-install \
+	board-docker-install board-docker-verify \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
@@ -77,6 +77,7 @@ help:
 		'make board-gpu-weston-setup              Install the explicit Weston PowerVR service path' \
 		'make board-gpu-x11-setup                 Switch to XFCE/Xorg and x11vnc' \
 		'make board-docker-install DOCKER_APT_UPDATE=1  Install Docker, Buildx, and Compose' \
+		'make board-docker-verify                         Verify Docker, Compose, Buildx, and containers' \
 		'make wsl-vulkan-compute-deps             Install WSL/Ubuntu CPU Vulkan tools' \
 		'make wsl-vulkan-compute-test             Run benchmark with Lavapipe CPU Vulkan' \
 		'make board-diagnostics                  Capture board diagnostics' \
@@ -390,6 +391,9 @@ board-gpu-compute-test:
 
 board-docker-install:
 	sudo env DOCKER_APT_UPDATE='$(DOCKER_APT_UPDATE)' DOCKER_USER='$(DOCKER_USER)' ./scripts/install-docker.sh
+
+board-docker-verify:
+	./scripts/verify-docker.sh
 
 board-gpu-x11-setup:
 	sudo /usr/bin/systemctl disable --now weston-pvr.service 2>/dev/null || true

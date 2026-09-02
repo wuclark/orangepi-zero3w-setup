@@ -70,6 +70,7 @@ remain separate.
 Optional Docker support for board-side containers is available with
 `sudo make board-docker-install DOCKER_APT_UPDATE=1`; it installs Docker
 Engine, Buildx, and Compose and is not required for the GPU/display layers.
+After logging in again, verify it with `make board-docker-verify`.
 For a complete initial board setup that also installs GPU, VPU, and experimental
 NPU acceleration, run `sudo make board-initial-setup`. It runs base, packages,
 core, and the acceleration installers; source-tree cloning is optional. It does

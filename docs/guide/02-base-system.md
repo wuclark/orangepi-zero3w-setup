@@ -61,34 +61,29 @@ sudo ./setup.sh packages --update
 
 ## Docker and Docker Compose
 
-Docker is optional and is not installed by the base command. To install
-Debian's Docker Engine and Compose packages, run the package menu and choose
-option `4`:
+Docker is optional and is not installed by the base command. On the board, use
+`sudo make board-docker-install DOCKER_APT_UPDATE=1` to install the official
+Docker Engine, Buildx, and Compose packages:
+
+```bash
+sudo make board-docker-install DOCKER_APT_UPDATE=1
+```
+
+Log in again so the Docker group is active, then run the repository verifier:
+
+```bash
+make board-docker-verify
+```
+
+The verifier checks the client and daemon, architecture, Compose, Buildx, and
+an actual `hello-world` container. The installer enables Docker and adds the
+selected login user to the `docker` group. If package metadata was refreshed
+separately, omit `DOCKER_APT_UPDATE=1`; the default is not to run `apt update`.
+
+For the older Debian package-menu path, choose option `4` from:
 
 ```bash
 sudo ./setup.sh packages
-```
-
-The Docker option installs `docker.io` and `docker-compose` from the Armbian
-Debian package sources. Refresh apt metadata first only when needed:
-
-```bash
-sudo ./setup.sh packages --update
-```
-
-Enable Docker and allow the regular login user to run it without `sudo`:
-
-```bash
-sudo systemctl enable --now docker
-sudo usermod -aG docker "$USER"
-```
-
-Log out and back in so the group membership takes effect. Verify both services
-before deploying an application:
-
-```bash
-docker version
-docker compose version
 ```
 
 Run a Compose application from the directory containing its
