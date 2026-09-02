@@ -22,6 +22,7 @@ Environment=LIBGL_DRIVERS_PATH=@PVR_MESA_DRI@
 Environment=PVR_DDK_DIR=@PVR_DDK_DIR@
 Environment=XDG_RUNTIME_DIR=/run/user/@WESTON_UID@
 Environment=WESTON_LOG=@WESTON_LOG@
+Environment=WAYVNC_LOG=@WESTON_HOME@/.local/state/orangepi-zero3w-setup-wayvnc-weston.log
 ExecStartPre=/bin/mkdir -p /run/user/@WESTON_UID@
 ExecStartPre=/bin/chown @WESTON_USER@:@WESTON_USER@ /run/user/@WESTON_UID@
 ExecStart=/usr/bin/dbus-run-session /usr/local/bin/weston-pvr-launch.sh

@@ -26,12 +26,14 @@ sed \
     -e "s|@PVR_MESA_LIB@|$PVR_MESA_LIB|g" \
     -e "s|@PVR_MESA_DRI@|$PVR_MESA_DRI|g" \
     -e "s|@PVR_DDK_DIR@|$PVR_DDK_DIR|g" \
+    -e "s|@WESTON_HOME@|$WESTON_HOME|g" \
     -e "s|@WESTON_LOG@|$WESTON_LOG|g" \
     "$SCRIPT_DIR/../systemd/weston-pvr.service" >"$UNIT_TMP"
 install -m 0644 "$UNIT_TMP" /etc/systemd/system/weston-pvr.service
 
 # Start each deployment check with a fresh, user-writable log so a stale
 # successful renderer line cannot mask a failed or software-rendered restart.
+/usr/bin/systemctl stop weston-pvr.service 2>/dev/null || true
 install -o "$WESTON_USER" -g "$WESTON_USER" -m 0644 /dev/null "$WESTON_LOG"
 /usr/bin/systemctl disable --now lightdm.service 2>/dev/null || true
 /usr/bin/systemctl disable --now x11vnc.service 2>/dev/null || true
@@ -39,10 +41,14 @@ install -o "$WESTON_USER" -g "$WESTON_USER" -m 0644 /dev/null "$WESTON_LOG"
 /usr/bin/systemctl unmask weston-pvr.service 2>/dev/null || true
 /usr/bin/systemctl daemon-reload
 /usr/bin/systemctl enable --now weston-pvr.service
-sleep 3
 
 [[ -f $WESTON_LOG ]] || { echo "ERROR: Weston log was not created: $WESTON_LOG" >&2; exit 1; }
-last_renderer=$(/usr/bin/tac "$WESTON_LOG" | /usr/bin/grep -m1 'GL renderer:' || true)
+last_renderer=''
+for _ in {1..10}; do
+    last_renderer=$(/usr/bin/tac "$WESTON_LOG" | /usr/bin/grep -m1 'GL renderer:' || true)
+    [[ -n $last_renderer ]] && break
+    sleep 1
+done
 if [[ $last_renderer != *PowerVR* ]]; then
     echo "ERROR: latest Weston renderer is not PowerVR: ${last_renderer:-not found}" >&2
     /usr/bin/systemctl status weston-pvr.service --no-pager -l >&2 || true
