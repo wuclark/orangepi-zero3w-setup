@@ -74,3 +74,15 @@ Wayland session entries, but still require board testing.
 Do not run the linked session-manager installer on this Debian image. It targets
 Ubuntu 22.04 and runs its own `apt update`; use this repository's commands so
 the existing apt cache and delayed GPU module ordering are preserved.
+
+To prevent the graphical autologin session from starting, mask LightDM:
+
+```bash
+sudo make lightdm-mask
+```
+
+This also stops the current LightDM session. Restore normal graphical boot with:
+
+```bash
+sudo make lightdm-unmask
+```

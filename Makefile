@@ -18,6 +18,7 @@ REMOTE_USER ?=
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
+	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
 	desktop-sway desktop-labwc desktop-enlightenment-x11 desktop-enlightenment-wayland \
 	switch-openbox switch-xfce switch-i3 switch-icewm switch-fluxbox switch-sway switch-labwc \
@@ -84,6 +85,8 @@ help:
 		'make desktop DESKTOP_PROFILE=openbox    Install a desktop profile' \
 		'make desktop-switch DESKTOP_PROFILE=xfce  Switch installed session' \
 		'make desktop-list/current             List or show desktop sessions' \
+		'make lightdm-mask                    Mask LightDM and stop its session' \
+		'make lightdm-unmask                  Unmask and re-enable LightDM' \
 		'make desktop-<profile>               Install a named desktop profile' \
 		'make switch-<profile>                Switch to an installed profile' \
 		'make remote REMOTE_BACKEND=x11vnc   Install a remote backend' \
@@ -239,10 +242,17 @@ desktop-current:
 
 desktop-rollback:
 	@if [[ '$(DESKTOP_REBOOT)' == 1 || '$(DESKTOP_REBOOT)' == yes ]]; then \
-		sudo ./scripts/orangepi-session rollback --reboot; \
+		 sudo ./scripts/orangepi-session rollback --reboot; \
 	else \
 		sudo ./scripts/orangepi-session rollback; \
 	fi
+
+lightdm-mask:
+	sudo systemctl mask --now lightdm.service
+
+lightdm-unmask:
+	sudo systemctl unmask lightdm.service
+	sudo systemctl enable lightdm.service
 
 desktop-openbox: DESKTOP_PROFILE := openbox
 desktop-openbox: desktop

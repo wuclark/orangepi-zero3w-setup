@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `make lightdm-mask` and `make lightdm-unmask` for reversible control of
+  the LightDM-managed desktop session.
 - Make the WayVNC session hook create its state directory, use the resolved
   executable path, and record startup failures instead of exiting silently.
 - Ensure the Makefile remote-wayvnc path installs the current session hook.

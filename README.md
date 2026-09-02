@@ -81,6 +81,9 @@ Desktop profiles can also be installed or switched through Make, for example
 desktop-switch DESKTOP_PROFILE=labwc`. Use `sudo make desktop-list` and
 `sudo make desktop-current` to inspect sessions; add `DESKTOP_REBOOT=1` when
 switching should reboot immediately.
+To stop LightDM and prevent its autologin Wayland/X11 session from starting,
+run `sudo make lightdm-mask`; this also stops the current LightDM session.
+Restore it with `sudo make lightdm-unmask`, which unmasks and enables LightDM.
 Remote backends are available through `sudo make remote-x11vnc`, `sudo make
 remote-wayvnc`, and `sudo make remote-tigervnc`, or the generic
 `sudo make remote REMOTE_BACKEND=x11vnc`. Use x11vnc with X11, wayvnc with an
