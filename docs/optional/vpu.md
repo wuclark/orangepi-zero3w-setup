@@ -46,6 +46,27 @@ planned stronger validation is:
 The generated media should remain local test input and must not be committed
 to Git unless a separately documented reproducibility policy is adopted.
 
+### Wayland presentation status
+
+The Cedar decoder passes the headless H.264/H.265 tests, but its zero-copy
+DMA-BUF output is not currently accepted by the tested Terminology or
+GStreamer Wayland presentation path. `waylandsink` supports both ordinary
+`video/x-raw` and `video/x-raw(memory:DMABuf)` input, so a compatible
+compositor/sink combination is possible in principle. Sway and labwc use
+wlroots, which has DMA-BUF support in its renderer, while Weston is the
+reference implementation used by GStreamer's Wayland sink. Check the actual
+session before claiming support:
+
+```bash
+wayland-info | grep -Ei 'linux_dmabuf|dmabuf'
+```
+
+On this board, the tested session reported that `zwp_linux_dmabuf_v1` could
+not be bound, so visible playback currently uses software decoding through
+`orangepi-play-video` or `orangepi-tycat`. Do not broaden the Wayland support
+claim until a hardware-decoded frame is visibly presented and survives a
+reboot test.
+
 The generated files can be uploaded individually to a pinned GitHub Release
 after generation:
 

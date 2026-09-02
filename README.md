@@ -110,7 +110,10 @@ sudo ./setup.sh desktop --profile openbox
 
 The Sway and labwc profiles include the `foot` terminal and `wofi`
 application launcher for opening programs in the otherwise minimal Wayland
-session.
+session, plus `mpv` for normal video playback. Use `orangepi-tycat VIDEO` for
+Terminology previews; it disables the vendor OMX decoder because its zero-copy
+output is not currently rendered correctly by Terminology. Use
+`orangepi-play-video VIDEO` for a clean Wayland video window.
 
 Docker and Docker Compose are optional. Choose option `4` in
 `sudo ./setup.sh packages`; see the [base-system guide](docs/guide/02-base-system.md#docker-and-docker-compose)

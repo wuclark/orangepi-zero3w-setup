@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [[ ! -x /usr/bin/tycat ]]; then
+    echo 'ERROR: /usr/bin/tycat is not installed.' >&2
+    exit 127
+fi
+
+# Terminology currently cannot present the Allwinner OMX decoder's zero-copy
+# output. Keep the system command unchanged and force software decode here.
+if [[ -n ${GST_PLUGIN_FEATURE_RANK:-} ]]; then
+    export GST_PLUGIN_FEATURE_RANK="$GST_PLUGIN_FEATURE_RANK,omxh264dec:NONE,omxhevcvideodec:NONE"
+else
+    export GST_PLUGIN_FEATURE_RANK='omxh264dec:NONE,omxhevcvideodec:NONE'
+fi
+exec /usr/bin/tycat "$@"

@@ -29,7 +29,11 @@ sudo make desktop-labwc
 The Sway and labwc profiles include `foot` as a terminal and `wofi` as an
 application launcher. In Sway, `Super+Enter` opens the terminal when using the
 default configuration; run `wofi --show drun` from the terminal to browse
-installed applications.
+installed applications. The profiles also install `mpv`; use
+`orangepi-play-video FILE` for Wayland playback. Use `orangepi-tycat FILE` for
+Terminology previews; this wrapper forces software decoding because
+Terminology does not currently render the vendor OMX decoder's zero-copy
+output.
 
 To switch among installed profiles:
 

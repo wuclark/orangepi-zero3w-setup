@@ -27,6 +27,8 @@ grep -q 'spinning hardware-rendered vkcube' "$REPO_ROOT/TUTORIAL-ARTICLE.md"
 grep -q '95-zero3w-vnc-tunnel' "$REPO_ROOT/scripts/install-x11vnc.sh"
 grep -q '99-orangepi-zero3w-cedar.rules' "$REPO_ROOT/scripts/install-vpu-userspace.sh"
 grep -q 'KERNEL=="cedar_dev\*"' "$REPO_ROOT/config/99-orangepi-zero3w-cedar.rules"
+grep -q 'orangepi-tycat' "$REPO_ROOT/scripts/setup-desktop.sh"
+grep -q 'orangepi-play-video' "$REPO_ROOT/scripts/setup-desktop.sh"
 
 if grep -qs 'PRESET_HOSTNAME' "$REPO_ROOT/scripts/create-headless-preset.sh" \
     "$REPO_ROOT/windows/Prepare-HeadlessPreset.ps1"; then

@@ -320,7 +320,10 @@ proven PowerVR/X11 support claim until they have real-board presentation and
 reboot evidence.
 
 The Wayland profiles also install the lightweight `foot` terminal and `wofi`
-application launcher; they do not provide a full panel or desktop shell.
+application launcher, plus `mpv` for video playback; they do not provide a
+full panel or desktop shell. `orangepi-tycat` forces software decoding for
+Terminology previews because its current vendor OMX zero-copy path does not
+render correctly.
 
 ## Proving that acceleration is real
 

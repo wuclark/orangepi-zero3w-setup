@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if ! command -v mpv >/dev/null 2>&1; then
+    echo 'ERROR: mpv is not installed.' >&2
+    exit 127
+fi
+
+# Use the reliable Wayland shared-memory output path. Cedar hardware decode
+# remains available through the explicit GStreamer validation pipeline.
+exec mpv --hwdec=no --vo=wlshm "$@"

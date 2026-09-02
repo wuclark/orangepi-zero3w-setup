@@ -14,7 +14,8 @@ Profiles: openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11,
           enlightenment-wayland
 
 Installs only the selected desktop and LightDM. Sway and labwc also install
-the `foot` terminal and `wofi` application launcher. It does not run apt update.
+the `foot` terminal, `wofi` application launcher, and `mpv` video player. It
+does not run apt update.
 Run `sudo apt update` explicitly first when the package cache is not current.
 No remote-access service is installed here.
 EOF
@@ -38,8 +39,8 @@ declare -A PACKAGES=(
     [i3]='lightdm lightdm-gtk-greeter i3 xterm dbus-x11'
     [icewm]='lightdm lightdm-gtk-greeter icewm xterm dbus-x11'
     [fluxbox]='lightdm lightdm-gtk-greeter fluxbox xterm dbus-x11'
-    [sway]='lightdm sway wayland-protocols xwayland foot wofi'
-    [labwc]='lightdm labwc wayland-protocols xwayland foot wofi'
+    [sway]='lightdm sway wayland-protocols xwayland foot wofi mpv'
+    [labwc]='lightdm labwc wayland-protocols xwayland foot wofi mpv'
     [enlightenment-x11]='lightdm enlightenment xterm dbus-x11'
     [enlightenment-wayland]='lightdm enlightenment wayland-protocols xwayland'
 )
@@ -66,6 +67,12 @@ case "$PROFILE" in
 esac
 install -d -m 755 /usr/local/libexec/orangepi-zero3w-setup
 install -m 755 "$SCRIPT_DIR/orangepi-session-launch" /usr/local/libexec/orangepi-zero3w-setup/session-launch
+case "$PROFILE" in
+    sway|labwc)
+        install -m 755 "$SCRIPT_DIR/orangepi-tycat" /usr/local/bin/orangepi-tycat
+        install -m 755 "$SCRIPT_DIR/orangepi-play-video" /usr/local/bin/orangepi-play-video
+        ;;
+esac
 install_session_file() {
     local profile=$1 type=$2
     local directory
