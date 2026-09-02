@@ -109,6 +109,11 @@ available power sensors.
 Use `sudo make board-storage-health` for a read-only storage report covering
 mounts, space, block devices, MMC health data, SMART support, and kernel I/O
 errors.
+Use `make board-report` to collect one normalized report from the current board.
+From a workstation, use `make collect-boards` to collect reports over SSH; it
+prompts for space-separated `user@host` values when `BOARDS` is omitted. Set
+`REMOTE_REPO=~/tmp/orangepi-zero3w-setup` when the checkout is elsewhere. Compare
+the collected results with `make compare-board-reports REPORT_DIR=...`.
 For the default Sway/Wayland and WayVNC setup, see the [GPU and Wayland setup
 guide](docs/gpu-wayland-setup.md), or run `sudo make board-gpu-wayland-setup`
 followed by `make board-gpu-wayland-verify`. The explicit Weston PowerVR

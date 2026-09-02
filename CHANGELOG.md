@@ -34,6 +34,8 @@
   the LightDM-managed X11 display.
 - Make board validation safe when invoked through either `make` or `sudo make`
   by avoiding a nested sudo that loses the X11 session context.
+- Add normalized board reports, SSH collection for multiple boards, and report
+  comparison Make targets.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before

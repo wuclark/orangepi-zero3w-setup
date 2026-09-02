@@ -13,6 +13,10 @@ VPU_TESTDATA_TAG ?= vpu-testdata-v1
 BOARD_LAYER ?=
 BOARD_TEST_OUTPUT ?= /var/log/orangepi-zero3w-setup/postboot-acceleration.txt
 BOARD_DIAGNOSTICS_OUTPUT ?= /var/log/orangepi-zero3w-setup/diagnostics.txt
+BOARD_REPORT_OUTPUT ?=
+BOARD_REPORTS_OUTPUT ?=
+REMOTE_REPO ?= ~/orangepi-zero3w-setup
+REPORT_DIR ?=
 DESKTOP_PROFILE ?=
 DESKTOP_REBOOT ?= no
 REMOTE_BACKEND ?=
@@ -36,7 +40,7 @@ GIT_DEPTH ?= 1
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets \
-	board-core-install board-core-status board-a733-sources board-status
+	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -91,6 +95,9 @@ help:
 		'make board-diagnostics                  Capture board diagnostics' \
 		'make board-status                       Show read-only board setup status' \
 		'make board-validation                  Run all installed-layer validations' \
+		'make board-report                     Collect one normalized board report' \
+		'make collect-boards BOARDS="user@board1 ..."  Collect reports over SSH (prompts if omitted)' \
+		'make compare-board-reports REPORT_DIR=...     Compare collected board reports' \
 		'make board-foundation                  Install base, packages, core, sources' \
 		'make board-initial-setup               Install base, core, and all acceleration layers' \
 		'make board-initial-setup-gui           Add XFCE/X11, x11vnc, and enable LightDM' \
@@ -240,6 +247,15 @@ board-validation:
 
 board-status:
 	sudo ./scripts/board-status.sh
+
+board-report:
+	if [ "$$(id -u)" -eq 0 ]; then BOARD_REPORT_OUTPUT='$(BOARD_REPORT_OUTPUT)' ./scripts/board-report.sh; else sudo BOARD_REPORT_OUTPUT='$(BOARD_REPORT_OUTPUT)' ./scripts/board-report.sh; fi
+
+collect-boards:
+	BOARDS='$(BOARDS)' REMOTE_REPO='$(REMOTE_REPO)' BOARD_REPORTS_OUTPUT='$(BOARD_REPORTS_OUTPUT)' ./scripts/collect-board-reports.sh
+
+compare-board-reports:
+	REPORT_DIR='$(REPORT_DIR)' ./scripts/compare-board-reports.sh
 
 board-base:
 	sudo ./setup.sh base
