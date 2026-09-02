@@ -11,11 +11,6 @@ while (($#)); do
 done
 [[ -f $GPU_VPU_IMAGE && -f $NPU_IMAGE && -n $OUTPUT_DIR ]] || { echo 'ERROR: image arguments missing' >&2; exit 2; }
 progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
-progress 'Refreshing the temporary container package index'
-apt-get update >/dev/null
-progress 'Installing temporary image-mount and archive tools'
-DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    e2fsprogs gzip mount p7zip-full tar util-linux xz-utils >/dev/null
 WORK=$(mktemp -d -p /tmp zero3w-image.XXXXXXXX)
 cleanup() {
     progress 'Unmounting temporary source filesystems'

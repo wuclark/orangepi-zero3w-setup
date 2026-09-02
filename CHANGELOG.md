@@ -17,6 +17,10 @@
 - Complete the Sway/X11 switching cleanup and remove stale default-session documentation.
 - Make the Sway/WayVNC verifier print hidden process-check failures.
 - Add a one-command Docker, Compose, Buildx, and container verification target.
+- Pin the default Docker image used by the extraction and image-preparation
+  stages to an immutable official Debian digest.
+- Move temporary extraction-tool installation into a versioned Docker image so
+  extraction and image preparation do not refresh apt at runtime.
 - Pass Docker repository update and user options through the Make target.
 - Show the current login user, detected board address, and local port 15900 in the VNC login banner.
 - Use shallow Git clones by default for A733 source synchronization, expose the

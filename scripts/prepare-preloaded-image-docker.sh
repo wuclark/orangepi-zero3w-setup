@@ -5,8 +5,9 @@ BASE_IMAGE=${BASE_IMAGE:-}
 BASE_IMAGE_DIR=${BASE_IMAGE_DIR:-$REPO_ROOT/work/images/armbian}
 BASE_IMAGE_BASENAME=Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal
 OUTPUT_DIR=${OUTPUT_DIR:-$REPO_ROOT/work/images/armbian}
-DOCKER_IMAGE=${DOCKER_IMAGE:-debian:bookworm-slim}
+DOCKER_IMAGE=${DOCKER_IMAGE:-orangepi-zero3w-setup/extraction-toolchain:bookworm-20260824}
 command -v docker >/dev/null 2>&1 || { echo 'ERROR: docker is required' >&2; exit 1; }
+docker image inspect "$DOCKER_IMAGE" >/dev/null 2>&1 || { echo "ERROR: Docker toolchain image is missing: $DOCKER_IMAGE; run make docker-toolchain" >&2; exit 1; }
 if [[ -z $BASE_IMAGE ]]; then
     for candidate in \
         "$BASE_IMAGE_DIR/$BASE_IMAGE_BASENAME.img.xz" \

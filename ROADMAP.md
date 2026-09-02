@@ -57,9 +57,11 @@ specified in `AGENTS.md`.
   preprocessing metadata.
 - [ ] Implement the board-side NPU installer only after its kernel/userspace
   ABI is confirmed.
-- [ ] Pin the Docker extraction environment instead of installing unpinned
-  packages at every run.
-- [ ] Push the latest local commit after review.
+- [x] Pin the default Docker base image used by extraction and image
+  preparation to an immutable official Debian digest.
+- [x] Pin the temporary Debian package set by replacing runtime package
+  installation with a versioned extraction image.
+- [x] Push the latest local commit after review.
 
 ## Next implementation steps
 

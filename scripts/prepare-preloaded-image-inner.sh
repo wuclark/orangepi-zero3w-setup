@@ -11,13 +11,9 @@ while (($#)); do
     esac
 done
 [[ -f $BASE_IMAGE && -n $BASE_FORMAT && -n $OUTPUT_IMAGE ]] || { echo 'ERROR: image arguments missing' >&2; exit 2; }
-progress 'Refreshing the temporary container package index'
-apt-get update -qq
-progress 'Installing temporary image-mount and archive tools'
-DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends e2fsprogs gzip mount tar util-linux xz-utils >/dev/null
 case "$BASE_FORMAT" in
     xz) progress 'Decompressing base image'; xz -dc -- "$BASE_IMAGE" > "$OUTPUT_IMAGE";;
-    7z) progress 'Extracting base image'; apt-get install -y -qq --no-install-recommends p7zip-full >/dev/null; 7z x -so -- "$BASE_IMAGE" '*.img' > "$OUTPUT_IMAGE";;
+    7z) progress 'Extracting base image'; 7z x -so -- "$BASE_IMAGE" '*.img' > "$OUTPUT_IMAGE";;
     *) progress 'Copying base image'; cp -- "$BASE_IMAGE" "$OUTPUT_IMAGE";;
 esac
 WORK=$(mktemp -d -p /tmp zero3w-preload.XXXXXXXX)

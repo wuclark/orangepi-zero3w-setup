@@ -3,10 +3,11 @@ set -Eeuo pipefail
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 IMAGE_DIR=${IMAGE_DIR:-$REPO_ROOT/work/images}
 OUTPUT_DIR=${OUTPUT_DIR:-$REPO_ROOT/work/vendor-output}
-DOCKER_IMAGE=${DOCKER_IMAGE:-debian:bookworm-slim}
+DOCKER_IMAGE=${DOCKER_IMAGE:-orangepi-zero3w-setup/extraction-toolchain:bookworm-20260824}
 GPU_VPU_SHA256=${GPU_VPU_SHA256:-}
 NPU_SHA256=${NPU_SHA256:-}
 command -v docker >/dev/null 2>&1 || { echo 'ERROR: docker is required' >&2; exit 1; }
+docker image inspect "$DOCKER_IMAGE" >/dev/null 2>&1 || { echo "ERROR: Docker toolchain image is missing: $DOCKER_IMAGE; run make docker-toolchain" >&2; exit 1; }
 progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
 find_image() {
     local label=$1 explicit=$2 pattern item

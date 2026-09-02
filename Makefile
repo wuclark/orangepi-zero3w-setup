@@ -19,7 +19,7 @@ REMOTE_BACKEND ?=
 REMOTE_USER ?=
 GIT_DEPTH ?= 1
 
-.PHONY: help version extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
+.PHONY: help version docker-toolchain extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify board-gpu-sway-setup board-gpu-sway-verify board-gpu-weston-setup \
 	board-docker-install board-docker-verify \
@@ -56,6 +56,7 @@ help:
 		'  Board log: /var/log/orangepi-zero3w-setup/acceleration-progress.log' \
 		'' \
 		'make extract    Generate vendor archives, or reuse existing output' \
+		'make docker-toolchain  Build the pinned Docker extraction toolchain' \
 		'make version    Show release version and Git revision used in image names' \
 		'make preset     Interactively create local first-boot settings' \
 		'make preloaded  Create the archive-preloaded Armbian image' \
@@ -114,7 +115,10 @@ help:
 		'PowerVR app helper: ./scripts/run-pvr-app.sh COMMAND' \
 		'REBUILD=1 make image  Rebuild an existing derived image safely'
 
-extract:
+docker-toolchain:
+	./scripts/build-docker-toolchain.sh
+
+extract: docker-toolchain
 	@if [[ -f $(VENDOR_OUTPUT)/pvr-userspace.tar.gz && -f $(VENDOR_OUTPUT)/vpu-userspace.tar.gz && -f $(VENDOR_OUTPUT)/npu-userspace.tar.gz ]]; then \
 		echo 'Reusing existing vendor archives in $(VENDOR_OUTPUT)'; \
 	else \
@@ -136,14 +140,14 @@ preset:
 	fi
 	./scripts/create-headless-preset.sh --output ./not_logged_in_yet
 
-preloaded: extract
+preloaded: extract docker-toolchain
 	@if [[ -f $(PRELOADED) ]]; then \
 		echo 'Reusing existing preloaded image: $(PRELOADED)'; \
 	else \
 		./scripts/prepare-preloaded-image-docker.sh; \
 	fi
 
-firstboot: preloaded
+firstboot: preloaded docker-toolchain
 	@test -n '$(RELEASE_VERSION)' || { echo 'ERROR: VERSION is empty.' >&2; exit 1; }
 	@[[ '$(RELEASE_VERSION)' =~ ^[0-9]+\.[0-9]+\.[0-9]+$$ ]] || { echo 'ERROR: VERSION must contain MAJOR.MINOR.PATCH.' >&2; exit 1; }
 	@test -f not_logged_in_yet || { echo 'ERROR: create not_logged_in_yet first.' >&2; exit 1; }

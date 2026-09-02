@@ -4,6 +4,16 @@ The tests are split by where they are safe to run.
 
 ## Host/pre-boot tests
 
+The Docker extraction and image-preparation stages use a local versioned
+toolchain image. Build it once with:
+
+```bash
+make docker-toolchain
+```
+
+The image is based on an immutable Debian digest and contains the complete
+temporary mount/archive tool set; the stages do not run `apt` at runtime.
+
 Run these on Linux or WSL2 before copying archives to the board:
 
 ```bash

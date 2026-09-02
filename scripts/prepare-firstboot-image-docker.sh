@@ -7,7 +7,7 @@ PRELOADED_BASENAME=Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal-pr
 PRESET_FILE=${PRESET_FILE:-$REPO_ROOT/not_logged_in_yet}
 PROVISIONING_FILE=${PROVISIONING_FILE:-$REPO_ROOT/provisioning.sh}
 OUTPUT_DIR=${OUTPUT_DIR:-$IMAGE_DIR}
-DOCKER_IMAGE=${DOCKER_IMAGE:-debian:bookworm-slim}
+DOCKER_IMAGE=${DOCKER_IMAGE:-orangepi-zero3w-setup/extraction-toolchain:bookworm-20260824}
 
 usage() {
     cat <<EOF
@@ -20,6 +20,7 @@ EOF
 }
 if [[ ${1:-} == -h || ${1:-} == --help ]]; then usage; exit 0; fi
 command -v docker >/dev/null 2>&1 || { echo 'ERROR: docker is required' >&2; exit 1; }
+docker image inspect "$DOCKER_IMAGE" >/dev/null 2>&1 || { echo "ERROR: Docker toolchain image is missing: $DOCKER_IMAGE; run make docker-toolchain" >&2; exit 1; }
 if [[ -z $INPUT_IMAGE ]]; then
     for candidate in \
         "$IMAGE_DIR/$PRELOADED_BASENAME.img" \
