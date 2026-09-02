@@ -43,6 +43,16 @@ sudo make board-gpu-compute-deps
 It installs `g++`, `libvulkan-dev`, and either `glslc` or `glslangValidator`
 using the existing apt cache. It does not run `apt update`.
 
+After installing the dependencies, run the headless compute benchmark:
+
+```bash
+sudo make board-gpu-compute-test
+```
+
+It compiles the repository’s vector-add and matrix-multiply shaders, checks
+their results against CPU references, and records GPU timestamp durations in
+`/var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt`.
+
 ## Wayland validation
 
 Wayland is not active in the default LightDM/Openbox session. Test it from a

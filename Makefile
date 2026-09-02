@@ -16,7 +16,7 @@ REMOTE_BACKEND ?=
 REMOTE_USER ?=
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
-	board-test board-tests board-diagnostics board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-vpu-test \
+	board-test board-tests board-diagnostics board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test board-vpu-test \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
 	desktop-sway desktop-labwc desktop-enlightenment-x11 desktop-enlightenment-wayland \
@@ -63,6 +63,7 @@ help:
 		'make board-gpu-precheck/install/verify  Run GPU phases on the board' \
 		'make board-gpu-test                     Run GPU checks and runtime validation' \
 		'make board-gpu-compute-deps              Install Vulkan compute build tools' \
+		'make board-gpu-compute-test              Run headless Vulkan compute benchmark' \
 		'make board-diagnostics                  Capture board diagnostics' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
 		'make board-vpu-test                     Run VPU checks and decode tests' \
@@ -305,6 +306,10 @@ board-gpu-test: board-gpu-verify board-gpu-runtime-test
 
 board-gpu-compute-deps:
 	sudo ./scripts/install-vulkan-compute-deps.sh
+
+board-gpu-compute-test:
+	sudo ./scripts/run-vulkan-compute-benchmark.sh \
+		--output /var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt
 
 board-vpu-precheck:
 	sudo $(BOARD_WORKFLOW) --layer vpu --action precheck $(BOARD_ARGS)
