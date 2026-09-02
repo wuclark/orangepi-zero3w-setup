@@ -28,9 +28,17 @@ else
     glslangValidator -V -o "$SHADER_DIR/matrix_mul.comp.spv" "$REPO_ROOT/benchmarks/vulkan/matrix_mul.comp"
 fi
 g++ -O2 -std=c++17 "$REPO_ROOT/benchmarks/vulkan/vulkan-compute-benchmark.cpp" -lvulkan -o "$BUILD_DIR/vulkan-compute-benchmark"
-result=$("$BUILD_DIR/vulkan-compute-benchmark" --shader-dir "$SHADER_DIR" "${BENCHMARK_ARGS[@]}" 2>&1 | tee /dev/stderr)
+run_log=$(mktemp -t zero3w-vulkan-compute.XXXXXXXX)
+trap 'rm -f -- "$run_log"' EXIT
+set +e
+"$BUILD_DIR/vulkan-compute-benchmark" --shader-dir "$SHADER_DIR" "${BENCHMARK_ARGS[@]}" >"$run_log" 2>&1
+run_status=$?
+set -e
+cat "$run_log"
+result=$(<"$run_log")
 if [[ -n $OUTPUT ]]; then
     install -d -m 755 "$(dirname "$OUTPUT")"
     { echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)"; echo "$result"; } > "$OUTPUT"
     echo "Evidence saved to $OUTPUT"
 fi
+exit "$run_status"
