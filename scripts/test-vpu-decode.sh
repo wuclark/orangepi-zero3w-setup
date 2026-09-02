@@ -4,6 +4,7 @@ set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"
 require_root
+REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
 
 MEDIA_DIR=/var/lib/orangepi-zero3w-setup/vpu-test-media
 OUTPUT=""
@@ -21,14 +22,14 @@ done
 
 H264_URL=https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4
 H265_URL=https://test-videos.co.uk/vids/bigbuckbunny/mp4/h265/720/Big_Buck_Bunny_720_10s_5MB.mp4
-H264_FILE="$MEDIA_DIR/jellyfish-h264.mp4"
-H265_FILE="$MEDIA_DIR/bigbuckbunny-h265.mp4"
+H264_FILE="$REPO_ROOT/testdata/videos/mandelbrot-h264-720p-30fps.mp4"
+H265_FILE="$REPO_ROOT/testdata/videos/mandelbrot-h265-720p-30fps.mp4"
+MEDIA_SOURCE=generated
 WORK=$(mktemp -d -t zero3w-vpu-test.XXXXXXXX)
 trap 'rm -rf -- "$WORK"' EXIT
 
 install -d -m 755 "$MEDIA_DIR"
 [[ -f /etc/cedarc.conf ]] || die "/etc/cedarc.conf is missing; reinstall the VPU userspace"
-command -v curl >/dev/null || die "curl is required to download VPU test media"
 command -v gst-launch-1.0 >/dev/null || die "gstreamer1.0-tools is required"
 gst-inspect-1.0 h264parse >/dev/null || die "gstreamer1.0-plugins-bad h264parse is required"
 gst-inspect-1.0 h265parse >/dev/null || die "gstreamer1.0-plugins-bad h265parse is required"
@@ -59,8 +60,28 @@ run_decode() {
     fi
 }
 
-download "$H264_URL" "$H264_FILE"
-download "$H265_URL" "$H265_FILE"
+if [[ ! -s $H264_FILE || ! -s $H265_FILE ]]; then
+    if [[ ! -t 0 ]]; then
+        die "Synthetic test videos are missing; run 'sudo ./scripts/gen_test_videos.sh' first"
+    fi
+    printf '%s\n' 'Synthetic VPU test videos are not present.'
+    read -r -p 'Generate local videos [G], download legacy samples [D], or cancel [C]? [G/d/c] ' choice
+    case "${choice:-g}" in
+        g|G)
+            "$REPO_ROOT/scripts/gen_test_videos.sh"
+            [[ -s $H264_FILE && -s $H265_FILE ]] || die 'Synthetic video generation did not produce the required 720p files'
+            ;;
+        d|D)
+            MEDIA_SOURCE=downloaded
+            H264_FILE="$MEDIA_DIR/jellyfish-h264.mp4"
+            H265_FILE="$MEDIA_DIR/bigbuckbunny-h265.mp4"
+            command -v curl >/dev/null || die "curl is required to download VPU test media"
+            download "$H264_URL" "$H264_FILE"
+            download "$H265_URL" "$H265_FILE"
+            ;;
+        *) die 'VPU test media setup canceled' ;;
+    esac
+fi
 run_decode H264 "$H264_FILE" omxh264dec h264parse "$WORK/h264.log"
 run_decode H265 "$H265_FILE" omxhevcvideodec h265parse "$WORK/h265.log"
 
@@ -69,9 +90,10 @@ if [[ -n $OUTPUT ]]; then
     {
         echo "cedarc_conf=$(sha256sum /etc/cedarc.conf)"
         echo "h264_file=$(sha256sum "$H264_FILE")"
-        echo "h264_url=$H264_URL"
+        echo "media_source=$MEDIA_SOURCE"
+        [[ $MEDIA_SOURCE == downloaded ]] && echo "h264_url=$H264_URL"
         echo "h265_file=$(sha256sum "$H265_FILE")"
-        echo "h265_url=$H265_URL"
+        [[ $MEDIA_SOURCE == downloaded ]] && echo "h265_url=$H265_URL"
         echo "h264_result=PASS"
         echo "h265_result=PASS"
         echo "h264_log="; cat "$WORK/h264.log"

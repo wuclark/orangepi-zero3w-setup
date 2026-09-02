@@ -96,8 +96,8 @@ case "$LAYER" in
         trap 'rm -rf -- "$stage"' EXIT
         "$SCRIPT_DIR/prepare-vendor-archives.sh" --pvr-tarball "$pvr_archive" \
             --vpu-tarball "$archive" --output "$stage" >/dev/null
-        printf 'Installing GStreamer command-line tools from the existing apt cache.\n' | tee -a "$LOG"
-        apt-get install -y curl gstreamer1.0-tools gstreamer1.0-plugins-base \
+        printf 'Installing VPU test and GStreamer tools from the existing apt cache.\n' | tee -a "$LOG"
+        apt-get install -y curl ffmpeg gstreamer1.0-tools gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good gstreamer1.0-plugins-bad 2>&1 | tee -a "$LOG"
         set +e
         "$SCRIPT_DIR/install-vpu-userspace.sh" --vendor-root "$stage/.zero3w-vpu" 2>&1 | tee -a "$LOG"

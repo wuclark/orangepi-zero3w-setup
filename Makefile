@@ -6,8 +6,11 @@ FINAL_WORK := $(BASE)-preloaded-firstboot.img
 FINAL_POINTER := work/images/armbian/.last-final-image
 VENDOR_OUTPUT := work/vendor-output
 REBUILD ?= no
+VPU_TESTDATA_TAG ?= vpu-testdata-v1
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test clean \
+	board-vpu-generate-videos \
+	board-vpu-fetch-videos release-vpu-test-videos \
 	board-gpu-precheck board-gpu-install board-gpu-verify \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
@@ -45,6 +48,9 @@ help:
 		'make board-gpu-precheck/install/verify  Run GPU phases on the board' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
 		'make board-vpu-decode-test              Run downloaded H.264/H.265 VPU tests' \
+		'make board-vpu-generate-videos           Generate local synthetic VPU test videos' \
+		'make board-vpu-fetch-videos              Fetch pinned individual VPU release assets' \
+		'make release-vpu-test-videos             Publish generated VPU assets to GitHub' \
 		'make board-npu-precheck/verify          Run supported NPU checks' \
 		'make board-npu-test                     Run NPU test and save evidence' \
 		'make board-core-install/status          Install or inspect SSH/maintenance core' \
@@ -172,6 +178,15 @@ board-vpu-verify:
 
 board-vpu-decode-test:
 	sudo ./scripts/test-vpu-decode.sh --output /var/log/orangepi-zero3w-setup/vpu-decode-test.txt
+
+board-vpu-generate-videos:
+	sudo ./scripts/gen_test_videos.sh
+
+board-vpu-fetch-videos:
+	sudo ./scripts/fetch-vpu-test-videos.sh --tag $(VPU_TESTDATA_TAG)
+
+release-vpu-test-videos:
+	./scripts/publish-vpu-test-videos.sh --tag $(VPU_TESTDATA_TAG)
 
 board-npu-precheck:
 	sudo $(BOARD_WORKFLOW) --layer npu --action precheck $(BOARD_ARGS)

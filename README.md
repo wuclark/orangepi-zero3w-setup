@@ -171,9 +171,12 @@ image; the full SDK remains outside the image.
 Prechecks may report expected missing-layer warnings but still record a
 successful baseline; verification steps fail when required checks are absent.
 The VPU install also installs the Cedar configuration and GStreamer parser
-plugins; `board-vpu-verify` downloads cached 720p H.264/H.265 samples and runs
-headless hardware decode tests. Re-run only those media tests with
-`make board-vpu-decode-test`.
+plugins; `board-vpu-generate-videos` creates local synthetic 720p/1080p
+H.264/H.265 samples, and `board-vpu-verify` uses the generated 720p samples
+for headless hardware decode tests, falling back to cached downloads if they
+are absent. Re-run only those media tests with `make board-vpu-decode-test`.
+The individual generated fixtures can be fetched from a pinned GitHub Release
+with `make board-vpu-fetch-videos VPU_TESTDATA_TAG=vpu-testdata-v1`.
 Use `scripts/run-pvr-app.sh COMMAND` for EGL/GLES applications that must use
 the isolated PowerVR environment. Wayland requires a separate local-console
 test; see the GPU troubleshooting guide before switching sessions.

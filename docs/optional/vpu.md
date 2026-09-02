@@ -18,12 +18,13 @@ make board-vpu-verify
 make board-vpu-decode-test
 ```
 
-Verification downloads pinned 720p H.264/H.265 MP4 samples to
-`/var/lib/orangepi-zero3w-setup/vpu-test-media`, runs the explicit
-`omxh264dec` and `omxhevcvideodec` pipelines into `fakesink`, and records
-checksums and logs under `/var/log/orangepi-zero3w-setup/`. Network access is
-required for the first verification run. The pipeline is headless and does
-not require X11.
+Verification uses the locally generated 720p H.264/H.265 MP4 samples under
+`testdata/videos/` when available, runs the explicit `omxh264dec` and
+`omxhevcvideodec` pipelines into `fakesink`, and records checksums and logs
+under `/var/log/orangepi-zero3w-setup/`. If the generated files are absent, the
+test prompts whether to generate them locally or download the pinned legacy
+samples under `/var/lib/orangepi-zero3w-setup/vpu-test-media`. The pipeline is
+headless and does not require X11.
 
 ### VPU validation TODO
 
@@ -45,8 +46,26 @@ planned stronger validation is:
 The generated media should remain local test input and must not be committed
 to Git unless a separately documented reproducibility policy is adopted.
 
-The VPU installer stages archives privately, installs GStreamer tools and
-parser plugins without running `apt update`, installs Cedar configuration and
+The generated files can be uploaded individually to a pinned GitHub Release
+after generation:
+
+```bash
+make release-vpu-test-videos VPU_TESTDATA_TAG=vpu-testdata-v1
+```
+
+This requires `gh auth login` and is an explicit publishing operation. A board
+can retrieve and verify those individual assets with:
+
+```bash
+make board-vpu-fetch-videos VPU_TESTDATA_TAG=vpu-testdata-v1
+```
+
+The fetch script verifies the release's `SHA256SUMS` before the decode test
+uses the files. Release fixtures are pinned by tag; do not use a mutable
+`latest` URL for evidence.
+
+The VPU installer stages archives privately, installs FFmpeg, GStreamer tools,
+and parser plugins without running `apt update`, installs Cedar configuration and
 udev rules, reloads the device rules, and keeps timestamped backups. It does
 not install the GPU or NPU layers.
 

@@ -78,5 +78,9 @@
   the current VIPLite check remains execution-only.
 - Add a roadmap and documentation plan for expanded VPU stream coverage and
   hardware-versus-software frame comparison.
+- Add local synthetic VPU video generation, prefer those assets during decode
+  tests, and install FFmpeg during the explicit VPU install phase.
+- Add explicit Make targets and scripts for publishing individual VPU fixtures
+  to a pinned GitHub Release and fetching/verifying them on a board.
 - Redact credentials from the default SD-image summary and add the explicit
   `make show-unredacted` troubleshooting target.

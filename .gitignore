@@ -1,5 +1,8 @@
 vendor-root/
 vendor-files/
+testdata/videos/*.mp4
+testdata/videos/*.md5
+testdata/videos/SHA256SUMS
 work/*
 !work/README.md
 !work/images/
