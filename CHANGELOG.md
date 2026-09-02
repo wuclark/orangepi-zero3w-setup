@@ -4,6 +4,8 @@
 
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
+- Have the Weston installer stop competing LightDM and x11vnc services before
+  taking ownership of the DRM console.
 - Use shallow Git clones by default for A733 source synchronization, expose the
   full-history Make override, and document the SD-image SDK boundary.
 - Keep source-tree synchronization optional in the all-initial-setup targets;

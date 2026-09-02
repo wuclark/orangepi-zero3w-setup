@@ -40,9 +40,11 @@ sudo make board-gpu-wayland-setup
 make board-gpu-wayland-verify
 ```
 
-The setup target does not install proprietary files or rebuild the kernel
-module. It fails if EGL/GLES or the latest Weston log falls back to llvmpipe or
-softpipe.
+The setup target disables LightDM, x11vnc, and the tty1 getty so they cannot
+compete with Weston for the DRM device. It does not install proprietary files
+or rebuild the kernel module. It fails if EGL/GLES or the latest Weston log
+falls back to llvmpipe or softpipe. Use the existing LightDM enable/unmask path
+when returning to an X11 desktop.
 
 ## Debugging history and fixes
 
