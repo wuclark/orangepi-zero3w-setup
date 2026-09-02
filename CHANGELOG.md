@@ -14,6 +14,10 @@
 - Label the expected X11 GLX llvmpipe result as a known limitation that does
   not affect PowerVR Vulkan or EGL.
 - Install visible xterm color and font defaults with desktop profiles.
+- Add headless system benchmarks for CPU, compression, crypto, memory, optional
+  storage, and optional network performance.
+- Include the two small VPU decode fixtures in preloaded images when available,
+  while excluding the larger fixture collection.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before

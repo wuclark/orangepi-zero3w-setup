@@ -94,6 +94,10 @@ exact `sudo make board-gpu-compute-deps` remediation; an x11vnc skip is called
 out as optional.
 For the optional compute benchmark, run `sudo make board-gpu-compute-deps` to
 install its build tools from the existing apt cache.
+For a broader display-free system baseline, install its tools with `sudo make
+board-system-benchmark-deps`, then run `sudo make board-system-benchmark`.
+This covers CPU, 7-Zip, OpenSSL, and memory bandwidth; add `--storage` to opt
+into the 256 MiB fio test or `--network HOST` to test against an iperf3 server.
 For the default Sway/Wayland and WayVNC setup, see the [GPU and Wayland setup
 guide](docs/gpu-wayland-setup.md), or run `sudo make board-gpu-wayland-setup`
 followed by `make board-gpu-wayland-verify`. The explicit Weston PowerVR

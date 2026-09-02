@@ -43,6 +43,16 @@ tar -C /repo \
     --exclude='testdata/videos/*.md5' \
     --exclude='testdata/videos/SHA256SUMS' \
     -cf - . | tar -C "$TARGET" -xf -
+decode_fixture_dir="$TARGET/testdata/videos"
+for fixture in \
+    mandelbrot-h264-720p-30fps.mp4 mandelbrot-h264-720p-30fps.md5 \
+    mandelbrot-h265-720p-30fps.mp4 mandelbrot-h265-720p-30fps.md5
+do
+    if [[ -s "/repo/testdata/videos/$fixture" ]]; then
+        install -d -m 755 "$decode_fixture_dir"
+        cp -a "/repo/testdata/videos/$fixture" "$decode_fixture_dir/"
+    fi
+done
 progress 'Copying vendor userspace archives into the image'
 cp -a /repo/work/vendor-output/pvr-userspace.tar.gz "$TARGET/vendor-files/"
 for archive in vpu-userspace.tar.gz npu-userspace.tar.gz; do

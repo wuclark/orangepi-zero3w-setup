@@ -23,7 +23,9 @@ the preloaded output to the SD card.
 
 The image contains the setup repository and vendor archives, but excludes
 generated VPU video fixtures under `testdata/videos/`. Those large, Git-ignored
-files are generated or fetched on the board only when running VPU tests.
+files are generated or fetched on the board only when running VPU tests. If
+present on the build host, the two small 720p Mandelbrot decode fixtures and
+their checksums are included for offline VPU verification.
 The matching sparse `linux-orangepi` PowerVR module source is staged into the
 image during `make image`/`make newsd`, so the board does not need to fetch it
 before building `pvrsrvkm.ko`.

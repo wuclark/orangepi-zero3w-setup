@@ -32,7 +32,7 @@ GIT_DEPTH ?= 1
 	remote remote-x11vnc remote-wayvnc remote-tigervnc remote-status \
 	board-vpu-generate-videos board-vpu-generate-decode-videos \
 	board-vpu-fetch-videos release-vpu-test-videos \
-	board-gpu-precheck board-gpu-install board-gpu-verify \
+	board-gpu-precheck board-gpu-install board-gpu-verify board-headless-benchmark board-system-benchmark board-system-benchmark-deps \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets \
@@ -74,6 +74,9 @@ help:
 		'make board-gpu-test                     Run GPU checks and runtime validation' \
 		'make board-gpu-compute-deps              Install Vulkan compute build tools' \
 		'make board-gpu-compute-test              Run headless Vulkan compute benchmark' \
+		'make board-headless-benchmark             Run GPU, VPU, and NPU headless benchmarks' \
+		'make board-system-benchmark               Run CPU, compression, crypto, and memory benchmarks' \
+		'make board-system-benchmark-deps          Install system benchmark tools' \
 		'make board-gpu-wayland-setup             Install Sway and WayVNC as the default Wayland path' \
 		'make board-gpu-wayland-verify            Verify the Sway Wayland session and WayVNC' \
 		'make board-gpu-weston-setup              Install the explicit Weston PowerVR service path' \
@@ -397,6 +400,15 @@ board-gpu-compute-deps:
 board-gpu-compute-test:
 	sudo ./scripts/run-vulkan-compute-benchmark.sh \
 		--output /var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt
+
+board-headless-benchmark:
+	sudo ./scripts/board-headless-benchmark.sh
+
+board-system-benchmark-deps:
+	sudo ./scripts/install-system-benchmark-deps.sh
+
+board-system-benchmark:
+	sudo ./scripts/board-system-benchmark.sh
 
 board-docker-install:
 	sudo env DOCKER_APT_UPDATE='$(DOCKER_APT_UPDATE)' DOCKER_USER='$(DOCKER_USER)' ./scripts/install-docker.sh
