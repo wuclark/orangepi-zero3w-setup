@@ -31,9 +31,10 @@ ssh -N -L 15900:127.0.0.1:5900 orangepi@BOARD_IP
 
 Then connect to `localhost::15900`.
 
-When the project configures x11vnc, the board's login message also prints a
-ready-to-copy tunnel command using the current login user and detected board
-address. The message is informational; it does not open a tunnel or expose
+When the project configures x11vnc or WayVNC, the board's login message also
+prints a ready-to-copy tunnel command using the current login user and detected
+board address. It uses local port `15900` to avoid colliding with other VNC
+tunnels. The message is informational; it does not open a tunnel or expose
 VNC on the LAN. If the address shown there is not reachable from your client,
 replace it with the board's reachable IP or hostname:
 

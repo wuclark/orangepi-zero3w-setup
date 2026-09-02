@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 if systemctl is-enabled --quiet x11vnc.service 2>/dev/null ||
-    systemctl is-active --quiet x11vnc.service 2>/dev/null; then
+    systemctl is-active --quiet x11vnc.service 2>/dev/null ||
+    [[ -f "$HOME/.config/orangepi-zero3w-setup/wayvnc-enabled" ]]; then
     board_address=$(hostname -I 2>/dev/null | awk '{print $1}')
     board_address=${board_address:-$(hostname -s)}
     printf '\nVNC over SSH tunnel (run on your client):\n'
-    printf '  ssh -N -L 5900:127.0.0.1:5900 %s@%s\n' "$(id -un)" "$board_address"
-    printf '  Then connect your VNC viewer to 127.0.0.1:5900\n'
+    printf '  ssh -N -o ExitOnForwardFailure=yes -L 15900:127.0.0.1:5900 %s@%s\n' "$(id -un)" "$board_address"
+    printf '  Then connect your VNC viewer to 127.0.0.1:15900\n'
 fi

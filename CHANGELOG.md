@@ -14,6 +14,7 @@
 - Make Sway with WayVNC the default Wayland setup; retain Weston as an explicit target.
 - Add an opt-in board Docker, Buildx, and Compose installation target.
 - Pass Docker repository update and user options through the Make target.
+- Show the current login user, detected board address, and local port 15900 in the VNC login banner.
 - Use shallow Git clones by default for A733 source synchronization, expose the
   full-history Make override, and document the SD-image SDK boundary.
 - Keep source-tree synchronization optional in the all-initial-setup targets;
