@@ -44,8 +44,13 @@ else
     echo 'smartctl unavailable or root device is not a block device.'
 fi
 if command -v mmc >/dev/null 2>&1 && [[ $root_device == /dev/mmcblk* ]]; then
-    echo "mmc_extcsd_device=$root_device"
-    mmc extcsd read "$root_device" 2>&1 | grep -E 'DEVICE_LIFE_TIME|PRE_EOL_INFO|LIFE_TIME' || true
+    media_type=$(cat "/sys/block/${root_device##*/}/device/type" 2>/dev/null || true)
+    if [[ $media_type == MMC || $media_type == eMMC ]]; then
+        echo "mmc_extcsd_device=$root_device"
+        mmc extcsd read "$root_device" 2>&1 | grep -E 'DEVICE_LIFE_TIME|PRE_EOL_INFO|LIFE_TIME' || true
+    else
+        echo "mmc_extcsd=skipped (device type is ${media_type:-SD}; EXT_CSD is eMMC-only)"
+    fi
 else
     echo 'mmc-utils unavailable or root device is not MMC.'
 fi

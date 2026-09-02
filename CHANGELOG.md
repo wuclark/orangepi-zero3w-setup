@@ -24,6 +24,10 @@
   headless benchmark commands.
 - Add a read-only storage-health report for block devices, MMC data, SMART, and
   storage-related kernel errors.
+- Avoid issuing eMMC-only EXT_CSD commands against SD cards in storage health
+  checks.
+- Report the installed NPU runner at its supported path instead of requiring it
+  to be on the shell PATH.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before

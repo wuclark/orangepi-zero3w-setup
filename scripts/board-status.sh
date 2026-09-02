@@ -46,9 +46,14 @@ status 'Desktop profile' "$(cat /etc/orangepi-zero3w-setup/state/desktop-profile
 status 'Remote backend' "$(cat /etc/orangepi-zero3w-setup/state/remote-type 2>/dev/null || echo none)"
 
 printf '\n===== TOOLS =====\n'
-for tool in vulkaninfo eglinfo glxinfo gst-launch-1.0 vpm_run sysbench fio iperf3; do
+for tool in vulkaninfo eglinfo glxinfo gst-launch-1.0 sysbench fio iperf3; do
     command_status "$tool" "$tool"
 done
+if [[ -x /opt/orangepi-zero3w-setup/npu-test/bin/vpm_run ]]; then
+    status 'vpm_run' 'installed (/opt/orangepi-zero3w-setup/npu-test/bin/vpm_run)'
+else
+    status 'vpm_run' 'not installed'
+fi
 
 printf '\n===== SETUP DATA =====\n'
 status 'Setup config' "$([[ -f /etc/orangepi-zero3w-setup/config ]] && echo present || echo absent)"
