@@ -196,22 +196,22 @@ desktop:
 desktop-switch:
 	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=<installed-profile>.' >&2; exit 2; }
 	@if [[ '$(DESKTOP_REBOOT)' == 1 || '$(DESKTOP_REBOOT)' == yes ]]; then \
-		sudo orangepi-session set '$(DESKTOP_PROFILE)' --reboot; \
+		sudo ./scripts/orangepi-session set '$(DESKTOP_PROFILE)' --reboot; \
 	else \
-		sudo orangepi-session set '$(DESKTOP_PROFILE)'; \
+		sudo ./scripts/orangepi-session set '$(DESKTOP_PROFILE)'; \
 	fi
 
 desktop-list:
-	orangepi-session list
+	sudo ./scripts/orangepi-session list
 
 desktop-current:
-	orangepi-session current
+	sudo ./scripts/orangepi-session current
 
 desktop-rollback:
 	@if [[ '$(DESKTOP_REBOOT)' == 1 || '$(DESKTOP_REBOOT)' == yes ]]; then \
-		sudo orangepi-session rollback --reboot; \
+		sudo ./scripts/orangepi-session rollback --reboot; \
 	else \
-		sudo orangepi-session rollback; \
+		sudo ./scripts/orangepi-session rollback; \
 	fi
 
 desktop-openbox: DESKTOP_PROFILE := openbox
