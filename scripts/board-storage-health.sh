@@ -56,8 +56,16 @@ else
 fi
 
 printf '\n===== STORAGE KERNEL MESSAGES =====\n'
-dmesg --color=never 2>/dev/null | grep -Ei 'mmc|sd[a-z]|I/O error|buffer I/O|EXT[234]-fs error|read-only' | tail -100 || \
-    echo 'No matching storage errors found or dmesg is unavailable.'
+root_block=${root_device##*/}
+root_card=$(basename "$(readlink "/sys/class/block/$root_block/device" 2>/dev/null || true)" 2>/dev/null || true)
+root_host=${root_card%%:*}
+if [[ $root_block == mmcblk* ]]; then
+    dmesg --color=never 2>/dev/null | grep -Ei "(${root_block}|${root_host}:|I/O error|buffer I/O|EXT[234]-fs error|read-only)" | tail -100 || \
+        echo "No matching messages for root device $root_device found."
+else
+    dmesg --color=never 2>/dev/null | grep -Ei 'sd[a-z]|I/O error|buffer I/O|EXT[234]-fs error|read-only' | tail -100 || \
+        echo 'No matching storage errors found or dmesg is unavailable.'
+fi
 
 printf '\n===== SUMMARY =====\n'
 echo 'Read-only storage health report complete.'

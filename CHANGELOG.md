@@ -28,6 +28,8 @@
   checks.
 - Report the installed NPU runner at its supported path instead of requiring it
   to be on the shell PATH.
+- Limit storage kernel-message reporting to the root device instead of mixing
+  in unused MMC controllers and Wi-Fi SDIO messages.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before
