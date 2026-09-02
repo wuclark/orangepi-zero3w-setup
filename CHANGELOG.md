@@ -111,3 +111,4 @@
   to a pinned GitHub Release and fetching/verifying them on a board.
 - Redact credentials from the default SD-image summary and add the explicit
   `make show-unredacted` troubleshooting target.
+- Fix the X11 GPU target when a previously installed Weston unit file exists.

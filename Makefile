@@ -376,7 +376,7 @@ board-gpu-compute-test:
 
 board-gpu-x11-setup:
 	sudo /usr/bin/systemctl disable --now weston-pvr.service 2>/dev/null || true
-	sudo /usr/bin/systemctl mask weston-pvr.service
+	sudo /usr/bin/systemctl mask --force weston-pvr.service
 	sudo /usr/bin/systemctl unmask lightdm.service
 	sudo /usr/bin/systemctl enable getty@tty1.service
 	$(MAKE) desktop-xfce
