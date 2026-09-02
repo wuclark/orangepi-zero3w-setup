@@ -18,6 +18,12 @@
   storage, and optional network performance.
 - Include the two small VPU decode fixtures in preloaded images when available,
   while excluding the larger fixture collection.
+- Add a read-only comprehensive `board-status` report for board setup state.
+- Add a PowerVR kernel/module ABI check for safe use after kernel changes.
+- Add thermal, frequency, throttling, and available power-sensor logging around
+  headless benchmark commands.
+- Add a read-only storage-health report for block devices, MMC data, SMART, and
+  storage-related kernel errors.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before

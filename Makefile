@@ -32,11 +32,11 @@ GIT_DEPTH ?= 1
 	remote remote-x11vnc remote-wayvnc remote-tigervnc remote-status \
 	board-vpu-generate-videos board-vpu-generate-decode-videos \
 	board-vpu-fetch-videos release-vpu-test-videos \
-	board-gpu-precheck board-gpu-install board-gpu-verify board-headless-benchmark board-system-benchmark board-system-benchmark-deps \
+	board-gpu-precheck board-gpu-install board-gpu-verify board-gpu-abi-check board-headless-benchmark board-system-benchmark board-system-benchmark-deps board-thermal-monitor board-storage-health \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets \
-	board-core-install board-core-status board-a733-sources
+	board-core-install board-core-status board-a733-sources board-status
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -74,9 +74,12 @@ help:
 		'make board-gpu-test                     Run GPU checks and runtime validation' \
 		'make board-gpu-compute-deps              Install Vulkan compute build tools' \
 		'make board-gpu-compute-test              Run headless Vulkan compute benchmark' \
+		'make board-gpu-abi-check                 Check kernel/module ABI before GPU use' \
 		'make board-headless-benchmark             Run GPU, VPU, and NPU headless benchmarks' \
 		'make board-system-benchmark               Run CPU, compression, crypto, and memory benchmarks' \
 		'make board-system-benchmark-deps          Install system benchmark tools' \
+		'make board-thermal-monitor                Monitor temperature/power during a command' \
+		'make board-storage-health                 Run read-only storage health checks' \
 		'make board-gpu-wayland-setup             Install Sway and WayVNC as the default Wayland path' \
 		'make board-gpu-wayland-verify            Verify the Sway Wayland session and WayVNC' \
 		'make board-gpu-weston-setup              Install the explicit Weston PowerVR service path' \
@@ -86,6 +89,7 @@ help:
 		'make wsl-vulkan-compute-deps             Install WSL/Ubuntu CPU Vulkan tools' \
 		'make wsl-vulkan-compute-test             Run benchmark with Lavapipe CPU Vulkan' \
 		'make board-diagnostics                  Capture board diagnostics' \
+		'make board-status                       Show read-only board setup status' \
 		'make board-validation                  Run all installed-layer validations' \
 		'make board-foundation                  Install base, packages, core, sources' \
 		'make board-initial-setup               Install base, core, and all acceleration layers' \
@@ -233,6 +237,9 @@ board-diagnostics:
 
 board-validation:
 	sudo ./scripts/board-validation.sh
+
+board-status:
+	sudo ./scripts/board-status.sh
 
 board-base:
 	sudo ./setup.sh base
@@ -388,6 +395,9 @@ board-gpu-install:
 board-gpu-verify:
 	sudo $(BOARD_WORKFLOW) --layer gpu --action verify $(BOARD_ARGS)
 
+board-gpu-abi-check:
+	sudo ./scripts/board-gpu-abi-check.sh
+
 board-gpu-runtime-test:
 	sudo ./scripts/verify.sh
 
@@ -409,6 +419,12 @@ board-system-benchmark-deps:
 
 board-system-benchmark:
 	sudo ./scripts/board-system-benchmark.sh
+
+board-thermal-monitor:
+	sudo ./scripts/board-thermal-monitor.sh -- ./scripts/board-headless-benchmark.sh
+
+board-storage-health:
+	sudo ./scripts/board-storage-health.sh
 
 board-docker-install:
 	sudo env DOCKER_APT_UPDATE='$(DOCKER_APT_UPDATE)' DOCKER_USER='$(DOCKER_USER)' ./scripts/install-docker.sh

@@ -92,12 +92,23 @@ prints a PASS/FAIL/SKIP summary. It is diagnostic only and never installs or
 reboots. If the compute shader compiler is missing, the summary prints the
 exact `sudo make board-gpu-compute-deps` remediation; an x11vnc skip is called
 out as optional.
+Use `sudo make board-status` for a read-only summary of board identity, kernel,
+devices, firmware, services, installed tools, vendor archives, and recent logs.
+Run `sudo make board-gpu-abi-check` before GPU use after kernel or module
+changes; it verifies the running kernel, module `vermagic`, headers, firmware,
+and delayed-load service.
 For the optional compute benchmark, run `sudo make board-gpu-compute-deps` to
 install its build tools from the existing apt cache.
 For a broader display-free system baseline, install its tools with `sudo make
 board-system-benchmark-deps`, then run `sudo make board-system-benchmark`.
 This covers CPU, 7-Zip, OpenSSL, and memory bandwidth; add `--storage` to opt
 into the 256 MiB fio test or `--network HOST` to test against an iperf3 server.
+Use `sudo make board-thermal-monitor` to run the headless acceleration suite
+while recording temperatures, CPU frequencies, throttling counters, and
+available power sensors.
+Use `sudo make board-storage-health` for a read-only storage report covering
+mounts, space, block devices, MMC health data, SMART support, and kernel I/O
+errors.
 For the default Sway/Wayland and WayVNC setup, see the [GPU and Wayland setup
 guide](docs/gpu-wayland-setup.md), or run `sudo make board-gpu-wayland-setup`
 followed by `make board-gpu-wayland-verify`. The explicit Weston PowerVR

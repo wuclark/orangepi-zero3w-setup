@@ -18,6 +18,7 @@ Usage:
   sudo ./setup.sh core [--update|--status]
   sudo ./setup.sh sources
   sudo ./setup.sh status
+  sudo ./setup.sh board-status
   sudo ./setup.sh reset
   sudo ./setup.sh uninstall
 
@@ -39,6 +40,7 @@ case "$command_name" in
     vpu) exec "$REPO_ROOT/scripts/setup-vpu.sh" "$@" ;;
     npu) exec "$REPO_ROOT/scripts/setup-npu.sh" "$@" ;;
     status) exec "$REPO_ROOT/scripts/setup-status.sh" "$@" ;;
+    board-status) exec "$REPO_ROOT/scripts/board-status.sh" "$@" ;;
     reset) exec "$REPO_ROOT/scripts/setup-reset.sh" "$@" ;;
     uninstall) exec "$REPO_ROOT/scripts/setup-uninstall.sh" "$@" ;;
     help|-h|--help) usage ;;
