@@ -17,6 +17,28 @@ sudo ./setup.sh desktop --profile openbox
 sudo ./setup.sh desktop --profile labwc
 ```
 
+The same operations are available through Make. These targets install the
+selected profile but do not reboot:
+
+```bash
+sudo make desktop-openbox
+sudo make desktop-xfce
+sudo make desktop-labwc
+```
+
+To switch among installed profiles:
+
+```bash
+sudo make desktop-list
+sudo make desktop-current
+sudo make desktop-switch DESKTOP_PROFILE=xfce
+sudo make desktop-switch DESKTOP_PROFILE=labwc DESKTOP_REBOOT=1
+```
+
+There are also `desktop-<profile>` and `switch-<profile>` targets for every
+profile listed below. Installation and switching remain separate so a session
+change cannot unexpectedly reboot the board.
+
 Each invocation installs the requested profile and leaves previously installed
 profiles available. LightDM uses explicit project session entries, so the
 profiles can be switched without reinstalling them:

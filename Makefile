@@ -10,9 +10,16 @@ VPU_TESTDATA_TAG ?= vpu-testdata-v1
 BOARD_LAYER ?=
 BOARD_TEST_OUTPUT ?= /var/log/orangepi-zero3w-setup/postboot-acceleration.txt
 BOARD_DIAGNOSTICS_OUTPUT ?= /var/log/orangepi-zero3w-setup/diagnostics.txt
+DESKTOP_PROFILE ?=
+DESKTOP_REBOOT ?= no
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-gpu-test board-gpu-runtime-test board-vpu-test \
+	desktop desktop-switch desktop-list desktop-current desktop-rollback \
+	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
+	desktop-sway desktop-labwc desktop-enlightenment-x11 desktop-enlightenment-wayland \
+	switch-openbox switch-xfce switch-i3 switch-icewm switch-fluxbox switch-sway switch-labwc \
+	switch-enlightenment-x11 switch-enlightenment-wayland \
 	board-vpu-generate-videos \
 	board-vpu-fetch-videos release-vpu-test-videos \
 	board-gpu-precheck board-gpu-install board-gpu-verify \
@@ -63,6 +70,11 @@ help:
 		'make board-npu-test                     Run NPU test and save evidence' \
 		'make board-test BOARD_LAYER=gpu|vpu|npu|all  Run diagnostic board checks' \
 		'make board-tests BOARD_LAYER=...        Alias for board-test' \
+		'make desktop DESKTOP_PROFILE=openbox    Install a desktop profile' \
+		'make desktop-switch DESKTOP_PROFILE=xfce  Switch installed session' \
+		'make desktop-list/current             List or show desktop sessions' \
+		'make desktop-<profile>               Install a named desktop profile' \
+		'make switch-<profile>                Switch to an installed profile' \
 		'make board-core-install/status          Install or inspect SSH/maintenance core' \
 		'make board-a733-sources                 Clone/update maintained A733 sources' \
 		'make npu-test-assets                    Stage selected A733 NPU test files' \
@@ -166,6 +178,69 @@ board-tests: board-test
 
 board-diagnostics:
 	sudo ./scripts/collect-diagnostics.sh '$(BOARD_DIAGNOSTICS_OUTPUT)'
+
+desktop:
+	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
+	sudo ./setup.sh desktop --profile '$(DESKTOP_PROFILE)'
+
+desktop-switch:
+	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=<installed-profile>.' >&2; exit 2; }
+	@if [[ '$(DESKTOP_REBOOT)' == 1 || '$(DESKTOP_REBOOT)' == yes ]]; then \
+		sudo orangepi-session set '$(DESKTOP_PROFILE)' --reboot; \
+	else \
+		sudo orangepi-session set '$(DESKTOP_PROFILE)'; \
+	fi
+
+desktop-list:
+	orangepi-session list
+
+desktop-current:
+	orangepi-session current
+
+desktop-rollback:
+	@if [[ '$(DESKTOP_REBOOT)' == 1 || '$(DESKTOP_REBOOT)' == yes ]]; then \
+		sudo orangepi-session rollback --reboot; \
+	else \
+		sudo orangepi-session rollback; \
+	fi
+
+desktop-openbox: DESKTOP_PROFILE := openbox
+desktop-openbox: desktop
+desktop-xfce: DESKTOP_PROFILE := xfce
+desktop-xfce: desktop
+desktop-i3: DESKTOP_PROFILE := i3
+desktop-i3: desktop
+desktop-icewm: DESKTOP_PROFILE := icewm
+desktop-icewm: desktop
+desktop-fluxbox: DESKTOP_PROFILE := fluxbox
+desktop-fluxbox: desktop
+desktop-sway: DESKTOP_PROFILE := sway
+desktop-sway: desktop
+desktop-labwc: DESKTOP_PROFILE := labwc
+desktop-labwc: desktop
+desktop-enlightenment-x11: DESKTOP_PROFILE := enlightenment-x11
+desktop-enlightenment-x11: desktop
+desktop-enlightenment-wayland: DESKTOP_PROFILE := enlightenment-wayland
+desktop-enlightenment-wayland: desktop
+
+switch-openbox: DESKTOP_PROFILE := openbox
+switch-openbox: desktop-switch
+switch-xfce: DESKTOP_PROFILE := xfce
+switch-xfce: desktop-switch
+switch-i3: DESKTOP_PROFILE := i3
+switch-i3: desktop-switch
+switch-icewm: DESKTOP_PROFILE := icewm
+switch-icewm: desktop-switch
+switch-fluxbox: DESKTOP_PROFILE := fluxbox
+switch-fluxbox: desktop-switch
+switch-sway: DESKTOP_PROFILE := sway
+switch-sway: desktop-switch
+switch-labwc: DESKTOP_PROFILE := labwc
+switch-labwc: desktop-switch
+switch-enlightenment-x11: DESKTOP_PROFILE := enlightenment-x11
+switch-enlightenment-x11: desktop-switch
+switch-enlightenment-wayland: DESKTOP_PROFILE := enlightenment-wayland
+switch-enlightenment-wayland: desktop-switch
 
 clean:
 	@find $(VENDOR_OUTPUT) -mindepth 1 ! -name .gitkeep -exec rm -rf -- {} + 2>/dev/null || true

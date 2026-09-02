@@ -58,6 +58,11 @@ BOARD_LAYER=gpu|vpu|npu|all` for a selected diagnostic board pass. The
 per-layer `board-gpu-test`, `board-vpu-test`, and `board-npu-test` targets run
 the corresponding post-install checks. Use `sudo make board-diagnostics` for
 the broader evidence capture. These targets never install or reboot.
+Desktop profiles can also be installed or switched through Make, for example
+`sudo make desktop-openbox`, `sudo make desktop-xfce`, or `sudo make
+desktop-switch DESKTOP_PROFILE=labwc`. Use `sudo make desktop-list` and
+`sudo make desktop-current` to inspect sessions; add `DESKTOP_REBOOT=1` when
+switching should reboot immediately.
 Use `make clean` to remove generated archives, derived images, metadata, and
 local first-boot files while preserving source/base images under `work/images/`.
 
