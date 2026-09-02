@@ -7,7 +7,7 @@ board's localhost interface.
 For x11vnc or wayvnc on board port `5900`, open Windows PowerShell and run:
 
 ```powershell
-ssh -N -L 5900:127.0.0.1:5900 orangepi@BOARD_IP
+ssh -N -o ExitOnForwardFailure=yes -L 15900:127.0.0.1:5900 orangepi@BOARD_IP
 ```
 
 Leave that window open. In TightVNC Viewer, connect to:
@@ -43,7 +43,7 @@ ssh -N -L 5900:127.0.0.1:5900 orangepi@BOARD_IP
 ```
 
 Leave the SSH window open while the VNC viewer is connected to
-`127.0.0.1:5900` (or `localhost::5900` in TightVNC Viewer).
+`127.0.0.1:15900` (or `localhost::15900` in TightVNC Viewer).
 
 `x11vnc` mirrors the existing X11 display. `wayvnc` serves a Wayland session.
 TightVNC/TigerVNC creates a separate virtual X11 desktop and does not mirror

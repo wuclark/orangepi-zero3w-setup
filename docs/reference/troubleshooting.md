@@ -61,7 +61,7 @@ GLX may still remain on llvmpipe.
 
 ## Testing Wayland
 
-The default session is X11. Test `labwc` or `sway` from the local HDMI console
+The default GPU Wayland target selects Sway. Test `labwc` or `sway` from the local HDMI console
 after selecting the profile and rebooting. In the Wayland session check
 `wayland-info` and run `./scripts/run-pvr-app.sh eglinfo -B`. Also check
 `vulkaninfo` for `VK_KHR_wayland_surface`; without that extension, do not claim

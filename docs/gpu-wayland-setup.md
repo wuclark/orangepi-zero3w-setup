@@ -1,6 +1,6 @@
 # PowerVR GPU and hardware-accelerated Wayland
 
-This guide records the current Weston bring-up path on the Orange Pi Zero 3W
+This guide records the current Sway-default Wayland and Weston bring-up paths on the Orange Pi Zero 3W
 (Allwinner A733) with Armbian/Debian Trixie and the vendor
 `6.6.98-vendor-sun60iw2` kernel. It assumes the matching PowerVR userspace has
 already been grafted under `/opt/pvr-ddk-24.2`, `pvrsrvkm` is loaded, and the
@@ -19,9 +19,9 @@ readlink -f /sys/class/drm/card1/device/driver
 
 ## Quick setup
 
-Run these on the board. The first script updates the linker cache and GLVND;
-the second installs a tty1-bound Weston service; the third is a repeatable
-diagnostic check:
+For the default Sway path, use the Make target below. The direct scripts are
+the explicit Weston path: the first updates the linker cache and GLVND, the
+second installs a tty1-bound Weston service, and the third verifies Weston:
 
 ```bash
 sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh
@@ -149,9 +149,11 @@ virtual-pointer protocol needed for remote input. Its default configuration
 binds to localhost; use SSH tunneling rather than exposing the VNC port on the
 LAN. The Weston path is not compatible with this WayVNC version.
 
-The verifier checks `pvrsrvkm`, the card1 driver binding, Vulkan, the linker
-cache, the GLVND JSON, EGL/GLES, the Weston service, and the last `GL renderer`
-entry in the service log. It reports HDMI connection status as informational.
+The Sway verifier checks the session, LightDM, WayVNC, and the Wayland socket.
+The Weston verifier checks `pvrsrvkm`, the card1 driver binding, Vulkan, the
+linker cache, the GLVND JSON, EGL/GLES, the Weston service, and the last
+`GL renderer` entry in the service log. It reports HDMI connection status as
+informational.
 
 The current known limitation is native PowerVR Wayland client EGL: the
 shipped vendor `libEGL.so` contains `Wayland platform not built`, so

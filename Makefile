@@ -406,11 +406,13 @@ board-gpu-x11-setup:
 
 board-gpu-sway-setup:
 	sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh
+	sudo /usr/bin/systemctl disable --now x11vnc.service 2>/dev/null || true
 	sudo /usr/bin/systemctl disable --now weston-pvr.service 2>/dev/null || true
 	if sudo /usr/bin/test -f /etc/systemd/system/weston-pvr.service && ! sudo /usr/bin/test -L /etc/systemd/system/weston-pvr.service; then \
 		sudo /usr/bin/mv /etc/systemd/system/weston-pvr.service /etc/systemd/system/weston-pvr.service.disabled; \
 	fi
 	sudo /usr/bin/systemctl mask weston-pvr.service
+	sudo /usr/bin/systemctl unmask lightdm.service
 	$(MAKE) desktop-sway
 	$(MAKE) remote-wayvnc REMOTE_USER='$(REMOTE_USER)'
 	sudo ./scripts/orangepi-session set sway
