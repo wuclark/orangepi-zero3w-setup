@@ -85,11 +85,10 @@ prints a PASS/FAIL/SKIP summary. It is diagnostic only and never installs or
 reboots.
 For the optional compute benchmark, run `sudo make board-gpu-compute-deps` to
 install its build tools from the existing apt cache.
-For the Weston PowerVR service and hardware-accelerated compositor setup, see
-the [GPU and Wayland setup guide](docs/gpu-wayland-setup.md), or run
-`sudo make board-gpu-wayland-setup` followed by `make board-gpu-wayland-verify`.
-The Weston target also installs and configures wayvnc for the active Weston
-socket; it remains localhost-only and uses SSH tunneling by default.
+For the default Sway/Wayland and WayVNC setup, see the [GPU and Wayland setup
+guide](docs/gpu-wayland-setup.md), or run `sudo make board-gpu-wayland-setup`
+followed by `make board-gpu-wayland-verify`. The explicit Weston PowerVR
+service remains available with `sudo make board-gpu-weston-setup`.
 The direct script sequence is:
 
 ```bash
@@ -116,7 +115,7 @@ inspection or development with `sudo make board-sources`.
 Remote backends are available through `sudo make remote-x11vnc`, `sudo make
 remote-wayvnc`, and `sudo make remote-tigervnc`, or the generic
 `sudo make remote REMOTE_BACKEND=x11vnc`. Use x11vnc with X11, wayvnc with an
-active Wayland session, and TigerVNC for a separate virtual X11 desktop. The
+active Sway/Wayland session, and TigerVNC for a separate virtual X11 desktop. The
 remote targets install packages/configuration but do not expose services on
 the LAN or reboot the board.
 Use `make clean` to remove generated archives, derived images, metadata, and

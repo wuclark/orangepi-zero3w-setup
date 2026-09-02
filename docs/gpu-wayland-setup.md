@@ -33,11 +33,17 @@ Set `PVR_DDK_DIR=/opt/another-ddk` before any script when the DDK is installed
 under a different directory. Set `WESTON_USER=name` for a different login
 user when installing the service.
 
-Equivalent Make targets are available on the board:
+The default Make target selects Sway with WayVNC:
 
 ```bash
 sudo make board-gpu-wayland-setup
 make board-gpu-wayland-verify
+```
+
+The tested Weston compositor path remains available explicitly:
+
+```bash
+sudo make board-gpu-weston-setup
 ```
 
 To return to the established XFCE/Xorg path, use:
@@ -46,14 +52,15 @@ To return to the established XFCE/Xorg path, use:
 sudo make board-gpu-x11-setup
 ```
 
-The two setup targets are mutually exclusive: the X11 target masks Weston,
-while the Weston installer disables LightDM, x11vnc, and the tty1 getty.
+The X11, Sway, and Weston setup targets are mutually exclusive. The X11
+target masks Weston and enables LightDM/XFCE; the default Wayland target masks
+the Weston service, installs Sway and WayVNC, selects Sway in LightDM, and
+restarts LightDM; the Weston target disables LightDM, x11vnc, and the tty1
+getty.
 
-The setup target configures wayvnc, and disables LightDM, x11vnc, and the tty1 getty so they cannot
-compete with Weston for the DRM device. It does not install proprietary files
-or rebuild the kernel module. It fails if EGL/GLES or the latest Weston log
-falls back to llvmpipe or softpipe. Use the existing LightDM enable/unmask path
-when returning to an X11 desktop.
+The Sway setup configures wayvnc and uses the normal LightDM session path. It
+does not install proprietary files or rebuild the kernel module. Use the X11
+target for XFCE/x11vnc or the Weston target for the tty1-bound compositor.
 
 ## Debugging history and fixes
 
@@ -136,13 +143,11 @@ or:
 ./scripts/99-verify.sh
 ```
 
-When configured by `board-gpu-wayland-setup`, wayvnc waits for Weston’s
-Wayland socket and then serves that output. Because Weston does not currently
-expose WayVNC’s virtual-pointer protocol, the launcher passes
-`--disable-input`: the Weston stream is view-only. Its default configuration
+When configured by `board-gpu-wayland-setup`, wayvnc starts from the Sway
+session hook after the Wayland socket becomes available. Sway provides the
+virtual-pointer protocol needed for remote input. Its default configuration
 binds to localhost; use SSH tunneling rather than exposing the VNC port on the
-LAN. Use the X11 target with x11vnc when remote mouse and keyboard control are
-required.
+LAN. The Weston path is not compatible with this WayVNC version.
 
 The verifier checks `pvrsrvkm`, the card1 driver binding, Vulkan, the linker
 cache, the GLVND JSON, EGL/GLES, the Weston service, and the last `GL renderer`

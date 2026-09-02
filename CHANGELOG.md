@@ -11,6 +11,7 @@
 - Configure wayvnc from the Weston setup target and start it after the Weston
   Wayland socket becomes available.
 - Add release version and Git revision identifiers to generated final image names.
+- Make Sway with WayVNC the default Wayland setup; retain Weston as an explicit target.
 - Use shallow Git clones by default for A733 source synchronization, expose the
   full-history Make override, and document the SD-image SDK boundary.
 - Keep source-tree synchronization optional in the all-initial-setup targets;

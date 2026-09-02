@@ -21,7 +21,7 @@ GIT_DEPTH ?= 1
 
 .PHONY: help version extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
-	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify \
+	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify board-gpu-sway-setup board-gpu-sway-verify board-gpu-weston-setup \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
@@ -71,8 +71,9 @@ help:
 		'make board-gpu-test                     Run GPU checks and runtime validation' \
 		'make board-gpu-compute-deps              Install Vulkan compute build tools' \
 		'make board-gpu-compute-test              Run headless Vulkan compute benchmark' \
-		'make board-gpu-wayland-setup             Install verified Weston PowerVR service' \
-		'make board-gpu-wayland-verify            Verify Weston PowerVR service and EGL/GLES' \
+		'make board-gpu-wayland-setup             Install Sway and WayVNC as the default Wayland path' \
+		'make board-gpu-wayland-verify            Verify the Sway Wayland session and WayVNC' \
+		'make board-gpu-weston-setup              Install the explicit Weston PowerVR service path' \
 		'make board-gpu-x11-setup                 Switch to XFCE/Xorg and x11vnc' \
 		'make wsl-vulkan-compute-deps             Install WSL/Ubuntu CPU Vulkan tools' \
 		'make wsl-vulkan-compute-test             Run benchmark with Lavapipe CPU Vulkan' \
@@ -398,13 +399,30 @@ board-gpu-x11-setup:
 	$(MAKE) remote-x11vnc REMOTE_USER='$(REMOTE_USER)'
 	sudo /usr/bin/systemctl restart x11vnc.service
 
-board-gpu-wayland-setup:
+board-gpu-sway-setup:
+	sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh
+	sudo /usr/bin/systemctl disable --now weston-pvr.service 2>/dev/null || true
+	if sudo /usr/bin/test -f /etc/systemd/system/weston-pvr.service && ! sudo /usr/bin/test -L /etc/systemd/system/weston-pvr.service; then \
+		sudo /usr/bin/mv /etc/systemd/system/weston-pvr.service /etc/systemd/system/weston-pvr.service.disabled; \
+	fi
+	sudo /usr/bin/systemctl mask weston-pvr.service
+	$(MAKE) desktop-sway
+	$(MAKE) remote-wayvnc REMOTE_USER='$(REMOTE_USER)'
+	sudo ./scripts/orangepi-session set sway
+	sudo /usr/bin/systemctl enable --now lightdm.service
+	sudo /usr/bin/systemctl restart lightdm.service
+
+board-gpu-wayland-setup: board-gpu-sway-setup
+
+board-gpu-weston-setup:
 	sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh
 	$(MAKE) remote-wayvnc REMOTE_USER='$(REMOTE_USER)'
 	sudo ./scripts/20-install-weston-service.sh
 
 board-gpu-wayland-verify:
-	./scripts/99-verify.sh
+	./scripts/98-verify-sway-wayvnc.sh
+
+board-gpu-sway-verify: board-gpu-wayland-verify
 
 wsl-vulkan-compute-deps:
 	./scripts/install-wsl-vulkan-compute-deps.sh
