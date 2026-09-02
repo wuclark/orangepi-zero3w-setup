@@ -29,10 +29,7 @@ require_root
 TARGET_USER=$(resolve_real_user "$TARGET_USER")
 case "$BACKEND" in
     x11vnc) exec "$SCRIPT_DIR/install-x11vnc.sh" --user "$TARGET_USER" ;;
-    wayvnc)
-        apt-get install -y wayvnc
-        log "wayvnc installed; no service was exposed."
-        ;;
+    wayvnc) exec "$SCRIPT_DIR/install-wayvnc.sh" --user "$TARGET_USER" ;;
     tigervnc)
         apt-get install -y tigervnc-standalone-server tigervnc-tools
         log "TigerVNC installed; no service was exposed."

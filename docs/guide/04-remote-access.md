@@ -29,9 +29,18 @@ sudo make remote REMOTE_BACKEND=x11vnc
 
 `REMOTE_USER=name` can be supplied for x11vnc when the target user is not the
 login user. Use `sudo make remote-status` to inspect the configured x11vnc
-service. The wayvnc and TigerVNC targets install their packages only; they do
-not create or expose a service automatically because they require a selected
-Wayland compositor or virtual desktop session configuration.
+service. The wayvnc target also creates a localhost-only configuration and a
+session hook for the selected user. Switch that user to labwc or sway, then
+reboot or log in again for wayvnc to start:
+
+```bash
+sudo make remote-wayvnc
+sudo make desktop-switch DESKTOP_PROFILE=labwc DESKTOP_REBOOT=1
+```
+
+TigerVNC remains package-only because it requires a separate virtual desktop
+session configuration. All remote targets default to SSH-tunneled localhost
+access and do not expose a service on the LAN.
 
 The x11vnc service binds to `127.0.0.1` by default. Direct LAN listening is
 available only when explicitly requested with the lower-level command:
