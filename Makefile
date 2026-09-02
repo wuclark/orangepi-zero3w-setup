@@ -383,8 +383,9 @@ board-gpu-x11-setup:
 	sudo /usr/bin/systemctl unmask lightdm.service
 	sudo /usr/bin/systemctl enable getty@tty1.service
 	$(MAKE) desktop-xfce
-	$(MAKE) remote-x11vnc REMOTE_USER='$(REMOTE_USER)'
 	sudo /usr/bin/systemctl enable --now lightdm.service
+	$(MAKE) remote-x11vnc REMOTE_USER='$(REMOTE_USER)'
+	sudo /usr/bin/systemctl restart x11vnc.service
 
 board-gpu-wayland-setup:
 	sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh

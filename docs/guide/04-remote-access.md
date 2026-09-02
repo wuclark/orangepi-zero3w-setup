@@ -51,6 +51,18 @@ available only when explicitly requested with the lower-level command:
 sudo ./scripts/install-x11vnc.sh --listen-lan
 ```
 
+The `board-gpu-x11-setup` target starts LightDM before configuring x11vnc and
+restarts x11vnc after Xorg display `:0` exists. This ordering is important:
+running x11vnc before LightDM creates `/tmp/.X11-unix/X0` can result in a VNC
+client connecting and then being gracefully disconnected. To repair an
+already-installed system, run:
+
+```bash
+sudo systemctl enable --now lightdm.service
+sudo systemctl restart x11vnc.service
+sudo systemctl status x11vnc.service --no-pager
+```
+
 Services should bind to localhost and be reached through SSH tunneling. Direct
 LAN exposure is an opt-in exception. When x11vnc is installed, its tunnel
 command is shown in the login message. See [SSH tunneling](../remote/ssh-tunneling.md).

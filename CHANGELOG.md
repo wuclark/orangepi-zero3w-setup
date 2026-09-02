@@ -113,3 +113,4 @@
   `make show-unredacted` troubleshooting target.
 - Fix the X11 GPU target when a previously installed Weston unit file exists.
 - Preserve the disabled Weston unit while switching to the X11 target.
+- Start LightDM before x11vnc in the X11 GPU setup target.
