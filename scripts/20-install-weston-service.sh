@@ -31,15 +31,32 @@ sed \
     "$SCRIPT_DIR/../systemd/weston-pvr.service" >"$UNIT_TMP"
 install -m 0644 "$UNIT_TMP" /etc/systemd/system/weston-pvr.service
 
+# Stop an older instance before replacing its log.  A Weston process that is
+# still attached to tty1 must not make deployment wait indefinitely.
+echo "Stopping any existing Weston service..."
+/usr/bin/systemctl stop --no-block weston-pvr.service 2>/dev/null || true
+for _ in {1..15}; do
+    /usr/bin/systemctl is-active --quiet weston-pvr.service || break
+    /usr/bin/sleep 1
+done
+if /usr/bin/systemctl is-active --quiet weston-pvr.service; then
+    echo 'Existing Weston service did not stop cleanly; terminating its cgroup.' >&2
+    /usr/bin/systemctl kill --kill-who=all --signal=TERM weston-pvr.service 2>/dev/null || true
+    /usr/bin/sleep 1
+    /usr/bin/systemctl kill --kill-who=all --signal=KILL weston-pvr.service 2>/dev/null || true
+    /usr/bin/systemctl reset-failed weston-pvr.service 2>/dev/null || true
+fi
+
 # Start each deployment check with a fresh, user-writable log so a stale
 # successful renderer line cannot mask a failed or software-rendered restart.
-/usr/bin/systemctl stop weston-pvr.service 2>/dev/null || true
 install -o "$WESTON_USER" -g "$WESTON_USER" -m 0644 /dev/null "$WESTON_LOG"
+echo "Disabling conflicting display services..."
 /usr/bin/systemctl disable --now lightdm.service 2>/dev/null || true
 /usr/bin/systemctl disable --now x11vnc.service 2>/dev/null || true
 /usr/bin/systemctl disable --now getty@tty1.service 2>/dev/null || true
 /usr/bin/systemctl unmask weston-pvr.service 2>/dev/null || true
 /usr/bin/systemctl daemon-reload
+echo "Starting Weston PowerVR service..."
 /usr/bin/systemctl enable --now weston-pvr.service
 
 [[ -f $WESTON_LOG ]] || { echo "ERROR: Weston log was not created: $WESTON_LOG" >&2; exit 1; }
