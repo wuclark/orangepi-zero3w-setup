@@ -18,7 +18,7 @@ GIT_DEPTH ?= 1
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
-	board-gpu-wayland-setup board-gpu-wayland-verify \
+	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
@@ -69,6 +69,7 @@ help:
 		'make board-gpu-compute-test              Run headless Vulkan compute benchmark' \
 		'make board-gpu-wayland-setup             Install verified Weston PowerVR service' \
 		'make board-gpu-wayland-verify            Verify Weston PowerVR service and EGL/GLES' \
+		'make board-gpu-x11-setup                 Switch to XFCE/Xorg and x11vnc' \
 		'make wsl-vulkan-compute-deps             Install WSL/Ubuntu CPU Vulkan tools' \
 		'make wsl-vulkan-compute-test             Run benchmark with Lavapipe CPU Vulkan' \
 		'make board-diagnostics                  Capture board diagnostics' \
@@ -373,8 +374,18 @@ board-gpu-compute-test:
 	sudo ./scripts/run-vulkan-compute-benchmark.sh \
 		--output /var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt
 
+board-gpu-x11-setup:
+	sudo /usr/bin/systemctl disable --now weston-pvr.service 2>/dev/null || true
+	sudo /usr/bin/systemctl mask weston-pvr.service
+	sudo /usr/bin/systemctl unmask lightdm.service
+	sudo /usr/bin/systemctl enable getty@tty1.service
+	$(MAKE) desktop-xfce
+	$(MAKE) remote-x11vnc REMOTE_USER='$(REMOTE_USER)'
+	sudo /usr/bin/systemctl enable --now lightdm.service
+
 board-gpu-wayland-setup:
 	sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh
+	$(MAKE) remote-wayvnc REMOTE_USER='$(REMOTE_USER)'
 	sudo ./scripts/20-install-weston-service.sh
 
 board-gpu-wayland-verify:

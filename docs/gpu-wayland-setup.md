@@ -40,7 +40,16 @@ sudo make board-gpu-wayland-setup
 make board-gpu-wayland-verify
 ```
 
-The setup target disables LightDM, x11vnc, and the tty1 getty so they cannot
+To return to the established XFCE/Xorg path, use:
+
+```bash
+sudo make board-gpu-x11-setup
+```
+
+The two setup targets are mutually exclusive: the X11 target masks Weston,
+while the Weston installer disables LightDM, x11vnc, and the tty1 getty.
+
+The setup target configures wayvnc, and disables LightDM, x11vnc, and the tty1 getty so they cannot
 compete with Weston for the DRM device. It does not install proprietary files
 or rebuild the kernel module. It fails if EGL/GLES or the latest Weston log
 falls back to llvmpipe or softpipe. Use the existing LightDM enable/unmask path
@@ -126,6 +135,10 @@ or:
 ```bash
 ./scripts/99-verify.sh
 ```
+
+When configured by `board-gpu-wayland-setup`, wayvnc waits for Weston’s
+Wayland socket and then serves that output. Its default configuration binds to
+localhost; use SSH tunneling rather than exposing the VNC port on the LAN.
 
 The verifier checks `pvrsrvkm`, the card1 driver binding, Vulkan, the linker
 cache, the GLVND JSON, EGL/GLES, the Weston service, and the last `GL renderer`

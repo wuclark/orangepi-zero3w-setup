@@ -36,6 +36,7 @@ install -o "$WESTON_USER" -g "$WESTON_USER" -m 0644 /dev/null "$WESTON_LOG"
 /usr/bin/systemctl disable --now lightdm.service 2>/dev/null || true
 /usr/bin/systemctl disable --now x11vnc.service 2>/dev/null || true
 /usr/bin/systemctl disable --now getty@tty1.service 2>/dev/null || true
+/usr/bin/systemctl unmask weston-pvr.service 2>/dev/null || true
 /usr/bin/systemctl daemon-reload
 /usr/bin/systemctl enable --now weston-pvr.service
 sleep 3

@@ -6,6 +6,10 @@
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before
   taking ownership of the DRM console.
+- Add an explicit XFCE/Xorg counterpart so the established X11 path and the
+  Weston path can be switched without competing DRM owners.
+- Configure wayvnc from the Weston setup target and start it after the Weston
+  Wayland socket becomes available.
 - Use shallow Git clones by default for A733 source synchronization, expose the
   full-history Make override, and document the SD-image SDK boundary.
 - Keep source-tree synchronization optional in the all-initial-setup targets;

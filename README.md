@@ -84,6 +84,8 @@ install its build tools from the existing apt cache.
 For the Weston PowerVR service and hardware-accelerated compositor setup, see
 the [GPU and Wayland setup guide](docs/gpu-wayland-setup.md), or run
 `sudo make board-gpu-wayland-setup` followed by `make board-gpu-wayland-verify`.
+The Weston target also installs and configures wayvnc for the active Weston
+socket; it remains localhost-only and uses SSH tunneling by default.
 The direct script sequence is:
 
 ```bash
@@ -91,6 +93,9 @@ sudo ./scripts/10-fix-pvr-linker-and-glvnd.sh
 sudo ./scripts/20-install-weston-service.sh
 ./scripts/99-verify.sh
 ```
+To switch back to the established XFCE/Xorg path, run
+`sudo make board-gpu-x11-setup`. The X11 target masks the Weston service,
+unmasks/enables LightDM, installs XFCE if needed, and configures x11vnc.
 On WSL/Ubuntu, use `make wsl-vulkan-compute-deps` and
 `make wsl-vulkan-compute-test`; this explicitly selects Mesa’s CPU Lavapipe
 Vulkan driver and does not test the Orange Pi PowerVR hardware.
