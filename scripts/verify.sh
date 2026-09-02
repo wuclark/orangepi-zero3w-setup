@@ -12,8 +12,26 @@ warn() { printf 'WARN  %s\n' "$*"; WARN=$((WARN + 1)); }
 x11_run() {
     if [[ $EUID -eq 0 && -n ${SUDO_USER:-} && $SUDO_USER != root ]]; then
         x11_home=$(getent passwd "$SUDO_USER" | cut -d: -f6)
-        sudo -u "$SUDO_USER" env DISPLAY=:0 \
-            XAUTHORITY="${XAUTHORITY:-$x11_home/.Xauthority}" "$@"
+        # LightDM normally owns the Xauthority file, and local X11 access may
+        # work without XAUTHORITY. Do not force a nonexistent user-home path.
+        x11_env=(DISPLAY=:0)
+        if [[ -n ${XAUTHORITY:-} && -r ${XAUTHORITY} ]]; then
+            x11_env+=(XAUTHORITY="$XAUTHORITY")
+        elif [[ -r "$x11_home/.Xauthority" ]]; then
+            x11_env+=(XAUTHORITY="$x11_home/.Xauthority")
+        fi
+        if sudo -u "$SUDO_USER" env "${x11_env[@]}" "$@"; then
+            return 0
+        fi
+
+        # Retry read-only X11 queries with LightDM's root-owned cookie.
+        for lightdm_authority in /var/run/lightdm/root/:0 /var/lib/lightdm/.Xauthority; do
+            if [[ -r "$lightdm_authority" ]] &&
+                env DISPLAY=:0 XAUTHORITY="$lightdm_authority" "$@"; then
+                return 0
+            fi
+        done
+        return 1
     else
         env DISPLAY=:0 "$@"
     fi

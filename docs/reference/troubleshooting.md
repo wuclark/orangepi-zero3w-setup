@@ -35,6 +35,11 @@ Check:
 DISPLAY=:0 xdpyinfo | grep -E 'DRI2|DRI3|Present'
 ```
 
+When running validation with `sudo`, the checker discovers the active LightDM
+X11 authority automatically. If this manual check succeeds but validation
+reports missing extensions, update the checkout before troubleshooting the GPU
+stack; older checkers forced an incorrect `$HOME/.Xauthority` path.
+
 If DRI3 is absent, inspect `/var/log/Xorg.0.log` and `/var/log/lightdm/x-0.log`. Confirm the Xorg wrapper is active and that the PowerVR GLES libraries exist in `/opt/pvr-ddk-24.2/lib`.
 
 ## EGL falls back to softpipe

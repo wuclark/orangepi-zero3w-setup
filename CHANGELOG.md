@@ -30,6 +30,8 @@
   to be on the shell PATH.
 - Limit storage kernel-message reporting to the root device instead of mixing
   in unused MMC controllers and Wi-Fi SDIO messages.
+- Fix sudo board validation using a nonexistent Xauthority path when checking
+  the LightDM-managed X11 display.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before
