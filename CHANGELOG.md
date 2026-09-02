@@ -15,6 +15,7 @@
 - Add an opt-in board Docker, Buildx, and Compose installation target.
 - Fix desktop session selection incorrectly failing when no reboot is requested.
 - Complete the Sway/X11 switching cleanup and remove stale default-session documentation.
+- Make the Sway/WayVNC verifier print hidden process-check failures.
 - Pass Docker repository update and user options through the Make target.
 - Show the current login user, detected board address, and local port 15900 in the VNC login banner.
 - Use shallow Git clones by default for A733 source synchronization, expose the
