@@ -236,7 +236,7 @@ board-diagnostics:
 	sudo ./scripts/collect-diagnostics.sh '$(BOARD_DIAGNOSTICS_OUTPUT)'
 
 board-validation:
-	sudo ./scripts/board-validation.sh
+	if [ "$$(id -u)" -eq 0 ]; then ./scripts/board-validation.sh; else sudo ./scripts/board-validation.sh; fi
 
 board-status:
 	sudo ./scripts/board-status.sh
