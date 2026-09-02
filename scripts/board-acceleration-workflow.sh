@@ -4,6 +4,11 @@ set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
 LAYER=""; ACTION=""; LOG="/var/log/orangepi-zero3w-setup/acceleration-progress.log"; YES=no
+VENDOR_FILES_ROOT=${VENDOR_FILES_ROOT:-$REPO_ROOT/vendor-files}
+if [[ ! -f "$VENDOR_FILES_ROOT/pvr-userspace.tar.gz" && \
+      -f /opt/orangepi-zero3w-setup/vendor-files/pvr-userspace.tar.gz ]]; then
+    VENDOR_FILES_ROOT=/opt/orangepi-zero3w-setup/vendor-files
+fi
 
 usage() {
     cat <<'EOF'
@@ -82,13 +87,15 @@ case "$LAYER" in
     gpu)
         printf 'Installing GPU only; VPU and x11vnc are disabled for this step.\n' | tee -a "$LOG"
         set +e
-        "$REPO_ROOT/setup.sh" gpu --without-vpu --without-x11vnc 2>&1 | tee -a "$LOG"
+        "$REPO_ROOT/setup.sh" gpu \
+            --pvr-tarball "$VENDOR_FILES_ROOT/pvr-userspace.tar.gz" \
+            --without-vpu --without-x11vnc 2>&1 | tee -a "$LOG"
         result=${PIPESTATUS[0]}
         set -e
         ;;
     vpu)
-        archive="$REPO_ROOT/vendor-files/vpu-userspace.tar.gz"
-        pvr_archive="$REPO_ROOT/vendor-files/pvr-userspace.tar.gz"
+        archive="$VENDOR_FILES_ROOT/vpu-userspace.tar.gz"
+        pvr_archive="$VENDOR_FILES_ROOT/pvr-userspace.tar.gz"
         [[ -f $archive && -f $pvr_archive ]] || {
             record failed "vendor-files requires pvr-userspace.tar.gz and vpu-userspace.tar.gz"; exit 1;
         }
@@ -105,14 +112,14 @@ case "$LAYER" in
         set -e
         ;;
     npu)
-        archive="$REPO_ROOT/vendor-files/npu-userspace.tar.gz"
-        test_archive="$REPO_ROOT/vendor-files/npu-test-assets.tar.gz"
+        archive="$VENDOR_FILES_ROOT/npu-userspace.tar.gz"
+        test_archive="$VENDOR_FILES_ROOT/npu-test-assets.tar.gz"
         [[ -f $archive && -f $test_archive ]] || {
             record failed 'vendor-files requires npu-userspace.tar.gz and npu-test-assets.tar.gz'; exit 1;
         }
         stage=$(mktemp -d -t zero3w-npu-work.XXXXXXXX)
         trap 'rm -rf -- "$stage"' EXIT
-        "$SCRIPT_DIR/prepare-vendor-archives.sh" --pvr-tarball "$REPO_ROOT/vendor-files/pvr-userspace.tar.gz" \
+        "$SCRIPT_DIR/prepare-vendor-archives.sh" --pvr-tarball "$VENDOR_FILES_ROOT/pvr-userspace.tar.gz" \
             --npu-tarball "$archive" --output "$stage" >/dev/null
         set +e
         "$SCRIPT_DIR/install-npu-userspace.sh" --vendor-root "$stage/.zero3w-npu" \

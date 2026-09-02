@@ -37,6 +37,8 @@ grep -q 'kernel-source' "$REPO_ROOT/Makefile"
 grep -q 'Using embedded checkout' "$REPO_ROOT/scripts/build-pvrsrvkm.sh"
 grep -q -- '--decode-pair' "$REPO_ROOT/scripts/gen_test_videos.sh"
 grep -q 'board-vpu-generate-decode-videos' "$REPO_ROOT/Makefile"
+grep -q 'VENDOR_FILES_ROOT' "$REPO_ROOT/scripts/board-acceleration-workflow.sh"
+grep -q '/opt/orangepi-zero3w-setup/vendor-files' "$REPO_ROOT/scripts/board-acceleration-workflow.sh"
 
 if grep -qs 'PRESET_HOSTNAME' "$REPO_ROOT/scripts/create-headless-preset.sh" \
     "$REPO_ROOT/windows/Prepare-HeadlessPreset.ps1"; then

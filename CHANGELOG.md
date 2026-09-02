@@ -7,6 +7,8 @@
 - Stage the matching sparse PowerVR module source in the SD image so board-side
   module builds do not require a later GitHub fetch.
 - Add a VPU target to generate only the two small decode-test video fixtures.
+- Let board acceleration targets find embedded vendor archives when invoked from
+  a separate checkout.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before

@@ -27,6 +27,8 @@ files are generated or fetched on the board only when running VPU tests.
 The matching sparse `linux-orangepi` PowerVR module source is staged into the
 image during `make image`/`make newsd`, so the board does not need to fetch it
 before building `pvrsrvkm.ko`.
+Board Make targets also use the embedded `/opt/orangepi-zero3w-setup/vendor-files`
+archives automatically when run from another checkout.
 
 For the complete WSL2/Linux workflow, `make newsd` performs the clean,
 userspace extraction, interactive preset creation, two image stages, final
