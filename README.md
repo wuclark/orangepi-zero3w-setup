@@ -108,6 +108,10 @@ Choose a GUI only when wanted. Available desktop profiles include X11 sessions
 sudo ./setup.sh desktop --profile openbox
 ```
 
+The Sway and labwc profiles include the `foot` terminal and `wofi`
+application launcher for opening programs in the otherwise minimal Wayland
+session.
+
 Docker and Docker Compose are optional. Choose option `4` in
 `sudo ./setup.sh packages`; see the [base-system guide](docs/guide/02-base-system.md#docker-and-docker-compose)
 for post-install group and verification steps.

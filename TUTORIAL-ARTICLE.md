@@ -319,6 +319,9 @@ compositor's Wayland DRM session. The Wayland profiles are not part of the
 proven PowerVR/X11 support claim until they have real-board presentation and
 reboot evidence.
 
+The Wayland profiles also install the lightweight `foot` terminal and `wofi`
+application launcher; they do not provide a full panel or desktop shell.
+
 ## Proving that acceleration is real
 
 After rebooting and waiting approximately one minute:

@@ -13,7 +13,8 @@ Usage: sudo ./setup.sh desktop --profile PROFILE [--user USER]
 Profiles: openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11,
           enlightenment-wayland
 
-Installs only the selected desktop and LightDM. It does not run apt update.
+Installs only the selected desktop and LightDM. Sway and labwc also install
+the `foot` terminal and `wofi` application launcher. It does not run apt update.
 Run `sudo apt update` explicitly first when the package cache is not current.
 No remote-access service is installed here.
 EOF
@@ -37,8 +38,8 @@ declare -A PACKAGES=(
     [i3]='lightdm lightdm-gtk-greeter i3 xterm dbus-x11'
     [icewm]='lightdm lightdm-gtk-greeter icewm xterm dbus-x11'
     [fluxbox]='lightdm lightdm-gtk-greeter fluxbox xterm dbus-x11'
-    [sway]='lightdm sway wayland-protocols xwayland'
-    [labwc]='lightdm labwc wayland-protocols xwayland'
+    [sway]='lightdm sway wayland-protocols xwayland foot wofi'
+    [labwc]='lightdm labwc wayland-protocols xwayland foot wofi'
     [enlightenment-x11]='lightdm enlightenment xterm dbus-x11'
     [enlightenment-wayland]='lightdm enlightenment wayland-protocols xwayland'
 )

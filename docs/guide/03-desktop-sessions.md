@@ -26,6 +26,11 @@ sudo make desktop-xfce
 sudo make desktop-labwc
 ```
 
+The Sway and labwc profiles include `foot` as a terminal and `wofi` as an
+application launcher. In Sway, `Super+Enter` opens the terminal when using the
+default configuration; run `wofi --show drun` from the terminal to browse
+installed applications.
+
 To switch among installed profiles:
 
 ```bash
