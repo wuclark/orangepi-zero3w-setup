@@ -8,9 +8,13 @@ legally permitted to use.
 
 The PowerVR kernel module is built from Orange Pi's vendor kernel tree:
 
-- Repository: <https://github.com/orangepi-xunlong/linux-orangepi>
+- Repository: <https://github.com/wuclark/linux-orangepi>
 - Branch: `orange-pi-6.6-sun60iw2`
 - Module directory: `bsp/modules/gpu/img-bxm/linux/rogue_km`
+
+This maintained fork currently contains the complete branch history needed by
+the module build. The build script uses it by default; pass `--repo` to use a
+different mirror.
 
 Use `scripts/build-pvrsrvkm.sh` on the target board. It builds against the
 currently running kernel headers and refuses to publish a module whose vermagic

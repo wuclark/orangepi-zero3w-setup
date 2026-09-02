@@ -7,7 +7,7 @@ source "$SCRIPT_DIR/lib.sh"
 
 OUTPUT="$PWD/pvrsrvkm.ko"
 WORK_DIR="$PWD/build-pvrsrvkm"
-KERNEL_REPO="https://github.com/orangepi-xunlong/linux-orangepi.git"
+KERNEL_REPO="https://github.com/wuclark/linux-orangepi.git"
 KERNEL_BRANCH="orange-pi-6.6-sun60iw2"
 
 usage() {

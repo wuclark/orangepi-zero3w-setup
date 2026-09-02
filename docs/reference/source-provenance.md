@@ -42,7 +42,7 @@ contains the symlink to the setup directory.
 
 | Repository | Role | Provenance/status |
 | --- | --- | --- |
-| [`orangepi-xunlong/linux-orangepi`](https://github.com/orangepi-xunlong/linux-orangepi) | Orange Pi vendor Linux kernel, including the `orange-pi-6.6-sun60iw2` branch | Kernel source corresponding to the Orange Pi vendor image; used by the GPU module build path |
+| [`wuclark/linux-orangepi`](https://github.com/wuclark/linux-orangepi) | Maintained fork of the Orange Pi vendor Linux kernel, including the `orange-pi-6.6-sun60iw2` branch | Kernel source corresponding to the Orange Pi vendor image; used by the GPU module build path |
 | [`orangepi-xunlong/orangepi-build`](https://github.com/orangepi-xunlong/orangepi-build) | Orange Pi image build scripts and kernel configuration | Vendor image-build reference |
 | [`orangepi-xunlong/u-boot-orangepi`](https://github.com/orangepi-xunlong/u-boot-orangepi) | Orange Pi bootloader source | Vendor boot-chain reference; not built by this setup |
 | [`torvalds/linux`](https://github.com/torvalds/linux) A733 bindings | Mainline Linux device-tree and binding history | Upstream reference; it does not replace the vendor kernel required by the current image |

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 BASE_IMAGE=""; BASE_FORMAT=""; OUTPUT_IMAGE=""
+progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
 while (($#)); do
     case "$1" in
         --base-image) BASE_IMAGE=${2:?}; shift 2;;
@@ -10,16 +11,19 @@ while (($#)); do
     esac
 done
 [[ -f $BASE_IMAGE && -n $BASE_FORMAT && -n $OUTPUT_IMAGE ]] || { echo 'ERROR: image arguments missing' >&2; exit 2; }
+progress 'Refreshing the temporary container package index'
 apt-get update -qq
+progress 'Installing temporary image-mount and archive tools'
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends e2fsprogs gzip mount tar util-linux xz-utils >/dev/null
 case "$BASE_FORMAT" in
-    xz) xz -dc -- "$BASE_IMAGE" > "$OUTPUT_IMAGE";;
-    7z) apt-get install -y -qq --no-install-recommends p7zip-full >/dev/null; 7z x -so -- "$BASE_IMAGE" '*.img' > "$OUTPUT_IMAGE";;
-    *) cp -- "$BASE_IMAGE" "$OUTPUT_IMAGE";;
+    xz) progress 'Decompressing base image'; xz -dc -- "$BASE_IMAGE" > "$OUTPUT_IMAGE";;
+    7z) progress 'Extracting base image'; apt-get install -y -qq --no-install-recommends p7zip-full >/dev/null; 7z x -so -- "$BASE_IMAGE" '*.img' > "$OUTPUT_IMAGE";;
+    *) progress 'Copying base image'; cp -- "$BASE_IMAGE" "$OUTPUT_IMAGE";;
 esac
 WORK=$(mktemp -d -p /tmp zero3w-preload.XXXXXXXX)
 trap 'umount -l "$WORK/root" 2>/dev/null || true; losetup -D 2>/dev/null || true; rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/root"
+progress 'Mounting output image root filesystem'
 start=0; sectors=0; loop=""
 while read -r start sectors; do
     [[ $start =~ ^[0-9]+$ && $sectors =~ ^[0-9]+$ ]] || continue
@@ -33,7 +37,9 @@ done < <(partx -g -o START,SECTORS -r "$OUTPUT_IMAGE")
 TARGET="$WORK/root/opt/orangepi-zero3w-setup"
 install -d -m 755 "$TARGET/vendor-files"
 chmod 755 "$(dirname "$TARGET")"
+progress 'Copying repository into the image'
 tar -C /repo --exclude=.git --exclude=work --exclude=vendor-files -cf - . | tar -C "$TARGET" -xf -
+progress 'Copying vendor userspace archives into the image'
 cp -a /repo/work/vendor-output/pvr-userspace.tar.gz "$TARGET/vendor-files/"
 for archive in vpu-userspace.tar.gz npu-userspace.tar.gz; do
     [[ -f /repo/work/vendor-output/$archive ]] && cp -a "/repo/work/vendor-output/$archive" "$TARGET/vendor-files/"
@@ -43,6 +49,7 @@ done
 chown -R root:root "$TARGET"; chmod 0644 "$TARGET/vendor-files/"*.tar.gz
 find "$TARGET" -type d -exec chmod 755 {} +
 find "$TARGET" -type f -printf '%P\n' | sort > "$OUTPUT_IMAGE.manifest.txt"
+progress 'Unmounting output image and computing checksum'
 sync; umount "$WORK/root"; losetup -D 2>/dev/null || true
 (cd "$(dirname "$OUTPUT_IMAGE")" && sha256sum "$(basename "$OUTPUT_IMAGE")" > "$(basename "$OUTPUT_IMAGE").sha256")
-printf 'preloaded image created: %s\n' "$OUTPUT_IMAGE"
+progress "preloaded image created: $OUTPUT_IMAGE"

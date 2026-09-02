@@ -2,11 +2,12 @@ SHELL := /usr/bin/env bash
 
 BASE := work/images/armbian/Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal
 PRELOADED := $(BASE)-preloaded.img
-FINAL := $(BASE)-preloaded-firstboot.img
+FINAL_WORK := $(BASE)-preloaded-firstboot.img
+FINAL_POINTER := work/images/armbian/.last-final-image
 VENDOR_OUTPUT := work/vendor-output
 REBUILD ?= no
 
-.PHONY: help extract preset preloaded firstboot image newsd summary validate test clean \
+.PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test clean \
 	board-gpu-precheck board-gpu-install board-gpu-verify \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
@@ -24,7 +25,7 @@ help:
 		'  2. Run: make newsd' \
 		'     Cleans generated files, extracts userspace, prompts for first-boot' \
 		'     settings, builds both images, and validates the final image.' \
-		'  3. Write the reported *-preloaded-firstboot.img to the confirmed SD card.' \
+		'  3. Write the reported timestamped *-preloaded-firstboot-...Z.img to the confirmed SD card.' \
 		'  4. On the board: GPU precheck/install, reboot, then GPU verify.' \
 		'  5. Run the equivalent VPU targets one at a time.' \
 		'  6. Run NPU precheck/install/verify when the AI SDK test bundle is present.' \
@@ -37,6 +38,7 @@ help:
 		'make image      Run extract, preloaded, firstboot, and validation' \
 		'make newsd      Clean, prompt, build, and validate a fresh SD image' \
 		'make summary    Show final image and redacted settings summary' \
+		'make show-unredacted  Show the summary including local credentials' \
 		'make validate   Validate the final image before writing to SD' \
 		'make test       Run host/static/archive checks' \
 		'make clean      Remove generated outputs but preserve source images' \
@@ -83,19 +85,28 @@ preloaded: extract
 firstboot: preloaded
 	@test -f not_logged_in_yet || { echo 'ERROR: create not_logged_in_yet first.' >&2; exit 1; }
 	@test -f provisioning.sh || { echo 'ERROR: provisioning.sh not found.' >&2; exit 1; }
-	@if [[ -f $(FINAL) && $(REBUILD) != 1 ]]; then \
+	@if [[ -f $(FINAL_POINTER) && $(REBUILD) != 1 ]]; then \
 		echo 'ERROR: final image already exists and contains credentials.' >&2; \
 		echo 'Use REBUILD=1 make image to preserve it and create a fresh one.' >&2; \
 		exit 1; \
-	elif [[ -f $(FINAL) ]]; then \
-		backup=$(FINAL).previous.$$(date -u +%Y%m%dT%H%M%SZ); \
-		mv -- $(FINAL) $$backup; \
-		[[ ! -f $(FINAL).sha256 ]] || mv -- $(FINAL).sha256 $$backup.sha256; \
+	elif [[ -f $(FINAL_POINTER) ]]; then \
+		previous=$$(cat $(FINAL_POINTER)); \
+		backup=$${previous%.img}.previous.$$(date -u +%Y%m%dT%H%M%SZ).img; \
+		mv -- $$previous $$backup; \
+		[[ ! -f $$previous.sha256 ]] || mv -- $$previous.sha256 $$backup.sha256; \
 		echo "Preserved previous final image as $$backup"; \
 	else \
 		true; \
 	fi
-	@if [[ ! -f $(FINAL) ]]; then ./scripts/prepare-firstboot-image-docker.sh; fi
+	@rm -f -- $(FINAL_POINTER) $(FINAL_WORK) $(FINAL_WORK).sha256
+	@./scripts/prepare-firstboot-image-docker.sh
+	@stamp=$$(date -u +%Y%m%dT%H%M%SZ); \
+	final=$(BASE)-preloaded-firstboot-$$stamp.img; \
+	mv -- $(FINAL_WORK) $$final; \
+	rm -f -- $(FINAL_WORK).sha256; \
+	(cd "$$(dirname -- "$$final")" && sha256sum -- "$$(basename -- "$$final")" > "$$(basename -- "$$final").sha256"); \
+	printf '%s\n' "$$final" > $(FINAL_POINTER); \
+	echo "Final SD image: $$final"
 
 image: firstboot validate
 
@@ -107,10 +118,16 @@ newsd:
 	$(MAKE) summary
 
 summary:
-	./scripts/show-build-summary.sh $(FINAL)
+	@test -f $(FINAL_POINTER) || { echo 'ERROR: no final image has been built.' >&2; exit 1; }
+	./scripts/show-build-summary.sh "$$(cat $(FINAL_POINTER))"
 
-validate: firstboot
-	./scripts/validate-image-before-write.sh $(FINAL)
+show-unredacted:
+	@test -f $(FINAL_POINTER) || { echo 'ERROR: no final image has been built.' >&2; exit 1; }
+	@echo 'WARNING: the following output contains credentials; do not share or save it.' >&2
+	./scripts/show-build-summary.sh --unredacted "$$(cat $(FINAL_POINTER))"
+
+validate:
+	./scripts/validate-image-before-write.sh "$$(cat $(FINAL_POINTER))"
 
 test:
 	@find scripts tests -type f -name '*.sh' -print0 | xargs -0 -n1 bash -n
@@ -126,7 +143,10 @@ clean:
 		-name '$(notdir $(BASE))-preloaded.img' -o \
 		-name '$(notdir $(BASE))-preloaded.img.*' -o \
 		-name '$(notdir $(BASE))-preloaded-firstboot.img' -o \
-		-name '$(notdir $(BASE))-preloaded-firstboot.img.*' \) -delete 2>/dev/null || true
+		-name '$(notdir $(BASE))-preloaded-firstboot.img.*' -o \
+		-name '$(notdir $(BASE))-preloaded-firstboot-*.img' -o \
+		-name '$(notdir $(BASE))-preloaded-firstboot-*.img.*' \) -delete 2>/dev/null || true
+	@rm -f -- $(FINAL_POINTER)
 	@rm -f -- not_logged_in_yet provisioning.sh
 	@rm -f -- not_logged_in_yet.previous.* provisioning.sh.previous.*
 	@echo 'Removed generated archives, derived images, metadata, and local first-boot files.'

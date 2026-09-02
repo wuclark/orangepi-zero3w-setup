@@ -23,7 +23,9 @@ the preloaded output to the SD card.
 
 For the complete WSL2/Linux workflow, `make newsd` performs the clean,
 userspace extraction, interactive preset creation, two image stages, final
-summary, and validation. It preserves the source images under `work/images/`.
+summary, and validation. The normal summary redacts credentials; use
+`make show-unredacted` only for local troubleshooting. It preserves the source
+images under `work/images/`.
 
 To include first-boot settings in another derived image, create the local
 preset and provisioning hook, then run:
@@ -34,15 +36,15 @@ preset and provisioning hook, then run:
 ```
 
 This consumes the preloaded image and creates a separate
-`-preloaded-firstboot.img`. Write that final image to the SD card. The preset
+`-preloaded-firstboot-YYYYMMDDTHHMMSSZ.img`, with its UTC creation timestamp.
+Write that reported final image to the SD card. The preset
 contains passwords and Wi-Fi credentials; it is Git-ignored and should be
 deleted after first boot.
 
-Before writing, validate the exact final image:
+Before writing, validate the exact timestamped final image:
 
 ```bash
-./scripts/validate-image-before-write.sh \
-  work/images/armbian/Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal-preloaded-firstboot.img
+make validate
 ```
 
 The preloaded repository is kept at `/opt/orangepi-zero3w-setup`; after

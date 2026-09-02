@@ -39,8 +39,9 @@ derived images: `prepare-preloaded-image-docker.sh` embeds the repository and
 GPU/VPU/NPU archives, then `prepare-firstboot-image-docker.sh` adds the local
 first-boot preset and provisioning hook. The base and preloaded images remain
 unchanged; the final image contains credentials and must stay outside Git.
-Before writing the final image, run `scripts/validate-image-before-write.sh`
-against its path to verify the checksum and partition table.
+The final SD image is named with its UTC creation timestamp, such as
+`*-preloaded-firstboot-20260901T143012Z.img`. Before writing it, run
+`make validate` to verify the checksum and partition table.
 The same sequence can be driven from WSL2/Linux with `make image`; existing
 archives and derived images are reused automatically. `make test` runs the
 host checks. An existing credential-bearing final image requires
@@ -49,6 +50,8 @@ Run `make preset` first when you need to interactively create the local
 first-boot files; it never runs implicitly as part of `make image`.
 For a completely fresh build that cleans generated outputs, prompts for the
 preset, builds both image stages, and validates the result, run `make newsd`.
+The normal `make summary` output redacts credentials; use
+`make show-unredacted` only for local troubleshooting.
 Run `make help` for the complete SD-card-to-board handoff sequence.
 Use `make clean` to remove generated archives, derived images, metadata, and
 local first-boot files while preserving source/base images under `work/images/`.

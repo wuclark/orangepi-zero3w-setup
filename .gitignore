@@ -6,6 +6,7 @@ work/*
 !work/images/.gitkeep
 !work/images/armbian/
 !work/images/armbian/.gitkeep
+work/images/armbian/.last-final-image
 !work/vendor-output/
 work/vendor-output/*
 !work/vendor-output/.gitkeep

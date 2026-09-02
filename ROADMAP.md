@@ -41,7 +41,15 @@ specified in `AGENTS.md`.
 - [ ] Test GPU, VPU, and NPU independently on the Orange Pi.
 - [ ] Add a real GPU workload test: `vulkaninfo`, GLES/EGL, and `vkcube`.
 - [x] Add real VPU GStreamer H.264/H.265 decode samples and board commands.
-- [ ] Add a pinned VIPLite `vpm_run` NPU inference sample.
+- [ ] Strengthen VPU validation beyond EOS: generate reproducible local H.264
+  and H.265 MP4 samples covering 720p/1080p, 30/60 fps, suitable profiles,
+  and controlled keyframes; run them through Cedar; decode them through a
+  software reference; and compare normalized frames with PSNR/SSIM.
+- [x] Add a pinned VIPLite `vpm_run` NPU execution smoke-test sample.
+- [ ] Add an independently generated `golden_0.dat` for the exact NPU sample:
+  obtain it from the SDK/vendor reference test, or generate it through the
+  SDK's CPU/Pegasus path using the matching model, quantization, and
+  preprocessing metadata.
 - [ ] Implement the board-side NPU installer only after its kernel/userspace
   ABI is confirmed.
 - [ ] Pin the Docker extraction environment instead of installing unpinned

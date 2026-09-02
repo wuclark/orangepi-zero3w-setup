@@ -10,19 +10,33 @@ while (($#)); do
     esac
 done
 [[ -f $GPU_VPU_IMAGE && -f $NPU_IMAGE && -n $OUTPUT_DIR ]] || { echo 'ERROR: image arguments missing' >&2; exit 2; }
+progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
+progress 'Refreshing the temporary container package index'
 apt-get update >/dev/null
+progress 'Installing temporary image-mount and archive tools'
 DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     e2fsprogs gzip mount p7zip-full tar util-linux xz-utils >/dev/null
 WORK=$(mktemp -d -p /tmp zero3w-image.XXXXXXXX)
-trap 'umount -l "$WORK/radxa" 2>/dev/null || true; umount -l "$WORK/orangepi" 2>/dev/null || true; losetup -D 2>/dev/null || true; rm -rf "$WORK"' EXIT
+cleanup() {
+    progress 'Unmounting temporary source filesystems'
+    umount -l "$WORK/radxa" 2>/dev/null || true
+    umount -l "$WORK/orangepi" 2>/dev/null || true
+    progress 'Releasing temporary loop devices'
+    losetup -D 2>/dev/null || true
+    progress 'Removing temporary extraction workspace'
+    rm -rf "$WORK"
+    progress 'Temporary extraction cleanup complete'
+}
+trap cleanup EXIT
 mkdir -p "$WORK/radxa" "$WORK/orangepi"
 prepare_image() {
     local input=$1 name=$2 image loop partition start sectors candidate
     image=$input
     case "$input" in
-        *.xz) image="$WORK/$name.img"; xz -dc -- "$input" > "$image";;
-        *.7z) 7z x -so -- "$input" '*.img' > "$WORK/$name.img"; image="$WORK/$name.img";;
+        *.xz) progress "Decompressing $name source image"; image="$WORK/$name.img"; xz -dc -- "$input" > "$image";;
+        *.7z)  progress "Extracting $name source image"; 7z x -so -- "$input" '*.img' > "$WORK/$name.img"; image="$WORK/$name.img";;
     esac
+    progress "Mounting $name root filesystem read-only"
     if [[ $(blkid -o value -s TYPE "$image" 2>/dev/null || true) == ext4 ]]; then
         loop=$(losetup --find --show "$image")
         mount -o ro "$loop" "$WORK/$name"
@@ -39,8 +53,11 @@ prepare_image() {
     echo "ERROR: no ext4 root filesystem in $input" >&2
     exit 1
 }
+progress 'Preparing GPU/VPU source image'
 prepare_image "$GPU_VPU_IMAGE" radxa
+progress 'Preparing NPU source image'
 prepare_image "$NPU_IMAGE" orangepi
 mkdir -p "$OUTPUT_DIR"
+progress 'Scanning source files and creating userspace archives'
 exec /work/scripts/extract-vendor-userspace.sh --gpu-vpu-root "$WORK/radxa" \
     --npu-root "$WORK/orangepi" --output-dir "$OUTPUT_DIR"

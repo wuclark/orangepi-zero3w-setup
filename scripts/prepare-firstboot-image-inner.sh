@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 BASE_IMAGE=""; BASE_FORMAT=""; PRESET=""; PROVISIONING=""; OUTPUT_IMAGE=""
+progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
 while (($#)); do
     case "$1" in
         --base-image) BASE_IMAGE=${2:?}; shift 2;;
@@ -14,17 +15,20 @@ done
 [[ -f $BASE_IMAGE && -f $PRESET && -f $PROVISIONING && -n $BASE_FORMAT && -n $OUTPUT_IMAGE ]] || {
     echo 'ERROR: image, first-boot files, or output arguments missing' >&2; exit 2;
 }
+progress 'Refreshing the temporary container package index'
 apt-get update -qq
+progress 'Installing temporary image-mount and archive tools'
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
     e2fsprogs gzip mount tar util-linux xz-utils >/dev/null
 case "$BASE_FORMAT" in
-    xz) xz -dc -- "$BASE_IMAGE" > "$OUTPUT_IMAGE";;
-    7z) apt-get install -y -qq --no-install-recommends p7zip-full >/dev/null; 7z x -so -- "$BASE_IMAGE" '*.img' > "$OUTPUT_IMAGE";;
-    *) cp -- "$BASE_IMAGE" "$OUTPUT_IMAGE";;
+    xz) progress 'Decompressing base image'; xz -dc -- "$BASE_IMAGE" > "$OUTPUT_IMAGE";;
+    7z) progress 'Extracting base image'; apt-get install -y -qq --no-install-recommends p7zip-full >/dev/null; 7z x -so -- "$BASE_IMAGE" '*.img' > "$OUTPUT_IMAGE";;
+    *) progress 'Copying base image'; cp -- "$BASE_IMAGE" "$OUTPUT_IMAGE";;
 esac
 WORK=$(mktemp -d -p /tmp zero3w-firstboot.XXXXXXXX)
 trap 'umount -l "$WORK/root" 2>/dev/null || true; losetup -D 2>/dev/null || true; rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/root"
+progress 'Mounting output image root filesystem'
 loop=""
 while read -r start sectors; do
     [[ $start =~ ^[0-9]+$ && $sectors =~ ^[0-9]+$ ]] || continue
@@ -39,6 +43,7 @@ user_name=$(sed -n 's/^PRESET_USER_NAME="\([a-z_][a-z0-9_-]*\)\$\?"$/\1/p' "$PRE
 [[ $user_name =~ ^[a-z_][a-z0-9_-]*\$?$ ]] || {
     echo 'ERROR: preset must contain a valid PRESET_USER_NAME' >&2; exit 1;
 }
+progress 'Installing first-boot preset and provisioning hook'
 install -d -m 755 "$WORK/root/root"
 install -o root -g root -m 600 "$PRESET" "$WORK/root/root/.not_logged_in_yet"
 {
@@ -48,6 +53,7 @@ install -o root -g root -m 600 "$PRESET" "$WORK/root/root/.not_logged_in_yet"
     printf 'ln -sfn /opt/orangepi-zero3w-setup /home/%q/orangepi-zero3w-setup\n' "$user_name"
 } > "$WORK/provisioning.sh"
 install -o root -g root -m 700 "$WORK/provisioning.sh" "$WORK/root/root/provisioning.sh"
+progress 'Unmounting output image and computing checksum'
 sync; umount "$WORK/root"; losetup -D 2>/dev/null || true
 (cd "$(dirname "$OUTPUT_IMAGE")" && sha256sum "$(basename "$OUTPUT_IMAGE")" > "$(basename "$OUTPUT_IMAGE").sha256")
-printf 'first-boot image created: %s\n' "$OUTPUT_IMAGE"
+progress "first-boot image created: $OUTPUT_IMAGE"

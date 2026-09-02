@@ -56,7 +56,9 @@ Git-ignored `not_logged_in_yet` and `provisioning.sh` files, then run:
 ```
 
 This consumes the `*-preloaded.img`, writes the two files under `/root`, and
-creates a `*-preloaded-firstboot.img` beside it. The repository is stored at
+creates the intermediate `*-preloaded-firstboot.img` beside it. The complete
+Make workflow renames the validated handoff image to
+`*-preloaded-firstboot-YYYYMMDDTHHMMSSZ.img`. The repository is stored at
 `/opt/orangepi-zero3w-setup` and the first-boot hook creates a symlink to it
 under the selected user's home directory. Do not commit the preset or the
 resulting image because the preset contains credentials.
@@ -65,7 +67,11 @@ After those files exist, `make image` runs the complete extraction, image
 staging, and pre-write validation sequence. It reuses existing non-empty
 archive and preloaded outputs instead of asking the extractor to overwrite
 them. Because the final image contains credentials, an existing final image
-requires `REBUILD=1 make image`; the old final image is moved aside first.
+requires `REBUILD=1 make image`; the old timestamped image is moved aside first.
+Local ignored metadata records the latest exact artifact for `make summary` and
+`make validate`.
+The normal summary redacts credentials; use `make show-unredacted` only for
+local troubleshooting and never share that output.
 
 `make preset` runs the interactive preset generator. It is separate from
 `make image` so image builds never prompt for or overwrite credentials.

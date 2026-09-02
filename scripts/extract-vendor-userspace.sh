@@ -23,6 +23,7 @@ SOURCE_ROOT=""
 GPU_VPU_ROOT=""
 NPU_ROOT=""
 OUTPUT_DIR=""
+progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
 while (($#)); do
     case "$1" in
         --source-root) SOURCE_ROOT=${2:?}; shift 2 ;;
@@ -62,6 +63,7 @@ NPU_STAGE=$WORK/npu
 install -d -m 700 "$PVR_STAGE" "$VPU_STAGE" "$NPU_STAGE"
 trap 'rm -rf -- "$WORK"' EXIT
 CURRENT_STAGE=$PVR_STAGE
+progress 'Collecting PowerVR userspace files'
 SOURCE_ROOT=$GPU_VPU_ROOT
 
 copy_path() {
@@ -109,6 +111,7 @@ for pattern in lib/firmware/rgx.* usr/share/vulkan/icd.d/img_icd.json \
 done
 
 CURRENT_STAGE=$VPU_STAGE
+progress 'Collecting VPU userspace files'
 SOURCE_ROOT=$GPU_VPU_ROOT
 for manifest in "$SOURCE_ROOT"/var/lib/dpkg/info/libcedarc*.list \
     "$SOURCE_ROOT"/var/lib/dpkg/info/libgstreamer-openmax-allwinner.list \
@@ -121,6 +124,7 @@ copy_path lib/udev/rules.d/99-sunxi-ve.rules etc/udev/rules.d/99-cedar-ve.rules
 copy_path etc/udev/rules.d/99-cedar-ve.rules
 
 CURRENT_STAGE=$NPU_STAGE
+progress 'Collecting NPU userspace files'
 SOURCE_ROOT=$NPU_ROOT
 for pattern in usr/lib/libvip*.so* usr/lib/lib*vip*.so* \
     usr/lib/aarch64-linux-gnu/libvip*.so* usr/lib/aarch64-linux-gnu/lib*vip*.so* \
@@ -153,6 +157,7 @@ require_component npu "$NPU_STAGE" usr/lib/libvip*.so* usr/lib/aarch64-linux-gnu
     usr/lib/lib*vip*.so* usr/local/lib/npu/libVIPhal.so* usr/local/lib/npu/libNBGlinker.so*
 
 for component in pvr vpu npu; do
+    progress "Creating ${component} userspace archive"
     tar -C "$WORK/$component" --sort=name --mtime='UTC 1970-01-01' \
         --owner=0 --group=0 --numeric-owner -czf "$OUTPUT_DIR/${component}-userspace.tar.gz" .
     (cd "$OUTPUT_DIR" && sha256sum "${component}-userspace.tar.gz" > \
@@ -161,4 +166,4 @@ done
 for component in pvr vpu npu; do
     find "$WORK/$component" \( -type f -o -type l \) -printf "$component/%P\n" | sort
 done > "$OUTPUT_DIR/files.txt"
-printf 'Created GPU, VPU, and NPU archives in %s\n' "$OUTPUT_DIR"
+progress "Created GPU, VPU, and NPU archives in $OUTPUT_DIR"

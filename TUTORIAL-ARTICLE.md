@@ -10,11 +10,14 @@ stages them on Linux, avoiding Windows damage to symlinks or permissions. See
 
 For SD-card preparation, Docker can first create a separate `-preloaded.img`
 with the repository and generated GPU/VPU/NPU archives, then create a second
-`-preloaded-firstboot.img` containing the locally generated Armbian first-boot
-preset. This keeps the base image reusable while keeping credentials out of Git.
+`-preloaded-firstboot-YYYYMMDDTHHMMSSZ.img` containing the locally generated
+Armbian first-boot preset. The UTC timestamp identifies when the handoff image
+was created. This keeps the base image reusable while keeping credentials out
+of Git.
 The repository also provides `make newsd` to run the complete clean, extract,
-preset, image, and validation sequence; its final summary redacts all
-passwords.
+preset, image, and validation sequence; its normal summary redacts credentials.
+Use `make show-unredacted` only for local troubleshooting, and treat that
+output as sensitive.
 
 The Orange Pi Zero 3W is a tiny Allwinner A733 board with a PowerVR B-Series
 BXM-4-64 GPU. The hardware is capable, but on a clean Armbian Debian 13 system,

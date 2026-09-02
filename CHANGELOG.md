@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Name final credential-bearing SD images with a UTC creation timestamp and
+  keep `make summary` and `make validate` pointed at the exact artifact.
+- Add timestamped progress messages to the Docker userspace extraction stages
+  so long-running `make newsd` operations show current activity.
 - Reframe the project as `orangepi-zero3w-setup` with a CLI-only base path,
   modular setup dispatcher, optional desktop/remote/GPU layers, and a Windows
   SSH-tunneling guide for VNC viewers.
@@ -68,3 +72,11 @@
   synchronization under `/opt/orangepi-zero3w-setup/sources`.
 - Document the verified Orange Pi CPU numbering and safe workload affinity
   example for leaving a maintenance CPU available.
+- Use the maintained `wuclark/linux-orangepi` fork for the default PowerVR
+  module source while retaining an explicit repository override.
+- Document independent golden-output validation as a future NPU test step;
+  the current VIPLite check remains execution-only.
+- Add a roadmap and documentation plan for expanded VPU stream coverage and
+  hardware-versus-software frame comparison.
+- Redact credentials from the default SD-image summary and add the explicit
+  `make show-unredacted` troubleshooting target.

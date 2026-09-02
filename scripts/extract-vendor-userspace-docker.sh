@@ -7,6 +7,7 @@ DOCKER_IMAGE=${DOCKER_IMAGE:-debian:bookworm-slim}
 GPU_VPU_SHA256=${GPU_VPU_SHA256:-}
 NPU_SHA256=${NPU_SHA256:-}
 command -v docker >/dev/null 2>&1 || { echo 'ERROR: docker is required' >&2; exit 1; }
+progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
 find_image() {
     local label=$1 explicit=$2 pattern item
     shift 2
@@ -50,6 +51,7 @@ if [[ -e $OUTPUT_DIR ]]; then
 fi
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
+progress "Starting Docker userspace extraction (GPU/VPU: $(basename "$GPU_VPU_IMAGE"), NPU: $(basename "$NPU_IMAGE"))"
 docker run --rm --privileged \
     -v "$REPO_ROOT/scripts:/work/scripts:ro" \
     -v "$GPU_VPU_IMAGE:/input/gpu:ro" -v "$NPU_IMAGE:/input/npu:ro" \
