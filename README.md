@@ -60,6 +60,9 @@ the corresponding post-install checks. Use `sudo make board-diagnostics` for
 the broader evidence capture. These targets never install or reboot.
 For the optional compute benchmark, run `sudo make board-gpu-compute-deps` to
 install its build tools from the existing apt cache.
+On WSL/Ubuntu, use `make wsl-vulkan-compute-deps` and
+`make wsl-vulkan-compute-test`; this explicitly selects Mesa’s CPU Lavapipe
+Vulkan driver and does not test the Orange Pi PowerVR hardware.
 Desktop profiles can also be installed or switched through Make, for example
 `sudo make desktop-openbox`, `sudo make desktop-xfce`, or `sudo make
 desktop-switch DESKTOP_PROFILE=labwc`. Use `sudo make desktop-list` and

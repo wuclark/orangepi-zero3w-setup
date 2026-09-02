@@ -16,7 +16,7 @@ REMOTE_BACKEND ?=
 REMOTE_USER ?=
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
-	board-test board-tests board-diagnostics board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test board-vpu-test \
+	board-test board-tests board-diagnostics board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
 	desktop-sway desktop-labwc desktop-enlightenment-x11 desktop-enlightenment-wayland \
@@ -64,6 +64,8 @@ help:
 		'make board-gpu-test                     Run GPU checks and runtime validation' \
 		'make board-gpu-compute-deps              Install Vulkan compute build tools' \
 		'make board-gpu-compute-test              Run headless Vulkan compute benchmark' \
+		'make wsl-vulkan-compute-deps             Install WSL/Ubuntu CPU Vulkan tools' \
+		'make wsl-vulkan-compute-test             Run benchmark with Lavapipe CPU Vulkan' \
 		'make board-diagnostics                  Capture board diagnostics' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
 		'make board-vpu-test                     Run VPU checks and decode tests' \
@@ -310,6 +312,15 @@ board-gpu-compute-deps:
 board-gpu-compute-test:
 	sudo ./scripts/run-vulkan-compute-benchmark.sh \
 		--output /var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt
+
+wsl-vulkan-compute-deps:
+	./scripts/install-wsl-vulkan-compute-deps.sh
+
+wsl-vulkan-compute-test:
+	@icd=$$(find /usr/share/vulkan/icd.d -maxdepth 1 -type f \( -iname '*lvp*.json' -o -iname '*lavapipe*.json' \) -print -quit); \
+	[[ -n $$icd ]] || { echo 'ERROR: Lavapipe ICD not found; run make wsl-vulkan-compute-deps.' >&2; exit 1; }; \
+	VK_DRIVER_FILES=$$icd ./scripts/run-vulkan-compute-benchmark.sh \
+		--output work/wsl-vulkan-compute-benchmark.txt
 
 board-vpu-precheck:
 	sudo $(BOARD_WORKFLOW) --layer vpu --action precheck $(BOARD_ARGS)

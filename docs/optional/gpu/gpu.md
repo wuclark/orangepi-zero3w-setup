@@ -43,6 +43,18 @@ sudo make board-gpu-compute-deps
 It installs `g++`, `libvulkan-dev`, and either `glslc` or `glslangValidator`
 using the existing apt cache. It does not run `apt update`.
 
+For WSL/Ubuntu, install and run the CPU Vulkan baseline separately:
+
+```bash
+sudo apt update
+make wsl-vulkan-compute-deps
+make wsl-vulkan-compute-test
+```
+
+This target forces Mesa Lavapipe, so its timings are not Orange Pi GPU
+measurements. It is useful for validating benchmark correctness before running
+the same source on the board.
+
 After installing the dependencies, run the headless compute benchmark:
 
 ```bash
