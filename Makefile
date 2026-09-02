@@ -16,7 +16,7 @@ REMOTE_BACKEND ?=
 REMOTE_USER ?=
 
 .PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
-	board-test board-tests board-diagnostics board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
+	board-test board-tests board-diagnostics board-validation board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
 	desktop-sway desktop-labwc desktop-enlightenment-x11 desktop-enlightenment-wayland \
@@ -67,6 +67,7 @@ help:
 		'make wsl-vulkan-compute-deps             Install WSL/Ubuntu CPU Vulkan tools' \
 		'make wsl-vulkan-compute-test             Run benchmark with Lavapipe CPU Vulkan' \
 		'make board-diagnostics                  Capture board diagnostics' \
+		'make board-validation                  Run all installed-layer validations' \
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
 		'make board-vpu-test                     Run VPU checks and decode tests' \
 		'make board-vpu-decode-test              Run downloaded H.264/H.265 VPU tests' \
@@ -188,6 +189,9 @@ board-tests: board-test
 
 board-diagnostics:
 	sudo ./scripts/collect-diagnostics.sh '$(BOARD_DIAGNOSTICS_OUTPUT)'
+
+board-validation:
+	sudo ./scripts/board-validation.sh
 
 desktop:
 	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }

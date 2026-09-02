@@ -101,6 +101,19 @@ capture the broader pre/post hardware evidence. These targets never install,
 reboot, or change boot ordering; visible `vkcube` presentation remains a
 manual test.
 
+For one consolidated post-install report, run:
+
+```bash
+sudo make board-validation
+```
+
+It runs the available layer checks and workloads, reports `PASS`, `FAIL`, or
+`SKIP`, and saves a timestamped report under
+`/var/log/orangepi-zero3w-setup/`. A missing optional layer is reported as a
+failure by its device check, while workload prerequisites that are absent are
+reported as skipped. The command never installs, reboots, or changes boot
+ordering.
+
 Keep real images, extracted roots, archives, logs, models, and test output under
 the ignored `work/` directory or outside the repository.
 
