@@ -68,7 +68,8 @@ The VPU installer stages archives privately, installs FFmpeg, GStreamer tools,
 and parser plugins without running `apt update`, installs Cedar configuration and
 udev rules, reloads the device rules, and keeps timestamped backups. Its
 repository-owned udev rule gives members of the `video` group access to
-`/dev/cedar_dev*` for desktop applications such as Terminology. It does not
+`/dev/cedar_dev*` and members of the `render` group access to the system
+DMA-heap required by desktop applications such as Terminology. It does not
 install the GPU or NPU layers.
 
 The proprietary archives, firmware, and generated test media remain excluded
