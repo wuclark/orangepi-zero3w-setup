@@ -9,6 +9,16 @@ pass() { printf 'PASS  %s\n' "$*"; PASS=$((PASS + 1)); }
 fail() { printf 'FAIL  %s\n' "$*"; FAIL=$((FAIL + 1)); }
 warn() { printf 'WARN  %s\n' "$*"; WARN=$((WARN + 1)); }
 
+x11_run() {
+    if [[ $EUID -eq 0 && -n ${SUDO_USER:-} && $SUDO_USER != root ]]; then
+        x11_home=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+        sudo -u "$SUDO_USER" env DISPLAY=:0 \
+            XAUTHORITY="${XAUTHORITY:-$x11_home/.Xauthority}" "$@"
+    else
+        env DISPLAY=:0 "$@"
+    fi
+}
+
 if systemctl is-active --quiet pvr-late-load.service; then
     pass "Delayed PowerVR service is active"
 else
@@ -49,7 +59,7 @@ fi
 if [[ -S /tmp/.X11-unix/X0 ]]; then
     pass "Xorg display :0 exists"
     if command -v xdpyinfo >/dev/null 2>&1; then
-        EXTENSIONS=$(DISPLAY=:0 xdpyinfo 2>/dev/null)
+        EXTENSIONS=$(x11_run xdpyinfo 2>/dev/null)
         for extension in DRI2 DRI3 Present; do
             if grep -qw "$extension" <<<"$EXTENSIONS"; then
                 pass "X11 exposes $extension"
@@ -72,7 +82,7 @@ if command -v eglinfo >/dev/null 2>&1; then
 fi
 
 if [[ -S /tmp/.X11-unix/X0 ]] && command -v glxinfo >/dev/null 2>&1; then
-    GLX_OUTPUT=$(DISPLAY=:0 glxinfo -B 2>&1 || true)
+    GLX_OUTPUT=$(x11_run glxinfo -B 2>&1 || true)
     if grep -q 'llvmpipe' <<<"$GLX_OUTPUT"; then
         warn "X11 GLX is using llvmpipe software rendering"
     elif grep -qi 'PowerVR' <<<"$GLX_OUTPUT"; then
