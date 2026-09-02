@@ -389,7 +389,7 @@ board-gpu-compute-test:
 		--output /var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt
 
 board-docker-install:
-	sudo ./scripts/install-docker.sh
+	sudo env DOCKER_APT_UPDATE='$(DOCKER_APT_UPDATE)' DOCKER_USER='$(DOCKER_USER)' ./scripts/install-docker.sh
 
 board-gpu-x11-setup:
 	sudo /usr/bin/systemctl disable --now weston-pvr.service 2>/dev/null || true
