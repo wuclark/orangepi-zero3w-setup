@@ -1,6 +1,9 @@
 SHELL := /usr/bin/env bash
 
 BASE := work/images/armbian/Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal
+RELEASE_VERSION := $(strip $(shell /usr/bin/cat VERSION 2>/dev/null))
+GIT_REVISION := $(strip $(shell /usr/bin/git rev-parse --short HEAD 2>/dev/null || echo nogit))
+IMAGE_RELEASE_TAG := v$(RELEASE_VERSION)-g$(GIT_REVISION)
 PRELOADED := $(BASE)-preloaded.img
 FINAL_WORK := $(BASE)-preloaded-firstboot.img
 FINAL_POINTER := work/images/armbian/.last-final-image
@@ -16,7 +19,7 @@ REMOTE_BACKEND ?=
 REMOTE_USER ?=
 GIT_DEPTH ?= 1
 
-.PHONY: help extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
+.PHONY: help version extract preset preloaded firstboot image newsd summary show-unredacted validate test tests clean \
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify \
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
@@ -52,6 +55,7 @@ help:
 		'  Board log: /var/log/orangepi-zero3w-setup/acceleration-progress.log' \
 		'' \
 		'make extract    Generate vendor archives, or reuse existing output' \
+		'make version    Show release version and Git revision used in image names' \
 		'make preset     Interactively create local first-boot settings' \
 		'make preloaded  Create the archive-preloaded Armbian image' \
 		'make firstboot  Add local first-boot settings to a separate image' \
@@ -136,6 +140,8 @@ preloaded: extract
 	fi
 
 firstboot: preloaded
+	@test -n '$(RELEASE_VERSION)' || { echo 'ERROR: VERSION is empty.' >&2; exit 1; }
+	@[[ '$(RELEASE_VERSION)' =~ ^[0-9]+\.[0-9]+\.[0-9]+$$ ]] || { echo 'ERROR: VERSION must contain MAJOR.MINOR.PATCH.' >&2; exit 1; }
 	@test -f not_logged_in_yet || { echo 'ERROR: create not_logged_in_yet first.' >&2; exit 1; }
 	@test -f provisioning.sh || { echo 'ERROR: provisioning.sh not found.' >&2; exit 1; }
 	@if [[ -f $(FINAL_POINTER) && $(REBUILD) != 1 ]]; then \
@@ -154,7 +160,7 @@ firstboot: preloaded
 	@rm -f -- $(FINAL_POINTER) $(FINAL_WORK) $(FINAL_WORK).sha256
 	@./scripts/prepare-firstboot-image-docker.sh
 	@stamp=$$(date -u +%Y%m%dT%H%M%SZ); \
-	final=$(BASE)-preloaded-firstboot-$$stamp.img; \
+	final=$(BASE)-$(IMAGE_RELEASE_TAG)-preloaded-firstboot-$$stamp.img; \
 	mv -- $(FINAL_WORK) $$final; \
 	rm -f -- $(FINAL_WORK).sha256; \
 	(cd "$$(dirname -- "$$final")" && sha256sum -- "$$(basename -- "$$final")" > "$$(basename -- "$$final").sha256"); \
@@ -162,6 +168,11 @@ firstboot: preloaded
 	echo "Final SD image: $$final"
 
 image: firstboot validate
+
+version:
+	@echo "Release version: $(RELEASE_VERSION)"
+	@echo "Git revision:    $(GIT_REVISION)"
+	@echo "Image tag:       $(IMAGE_RELEASE_TAG)"
 
 newsd:
 	$(MAKE) clean

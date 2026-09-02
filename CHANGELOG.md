@@ -10,6 +10,7 @@
   Weston path can be switched without competing DRM owners.
 - Configure wayvnc from the Weston setup target and start it after the Weston
   Wayland socket becomes available.
+- Add release version and Git revision identifiers to generated final image names.
 - Use shallow Git clones by default for A733 source synchronization, expose the
   full-history Make override, and document the SD-image SDK boundary.
 - Keep source-tree synchronization optional in the all-initial-setup targets;

@@ -52,6 +52,10 @@ For a completely fresh build that cleans generated outputs, prompts for the
 preset, builds both image stages, and validates the result, run `make newsd`.
 The normal `make summary` output redacts credentials; use
 `make show-unredacted` only for local troubleshooting.
+The release identity is stored in `VERSION`; `make version` shows it and the
+Git revision used in generated image names. For example, a final image may
+contain `v0.2.0-g1e98095-preloaded-firstboot-...`. Git pushes change the
+revision suffix, not the release version.
 Run `make help` for the complete SD-card-to-board handoff sequence. Run
 `make tests` for the host checks, or `sudo make board-test
 BOARD_LAYER=gpu|vpu|npu|all` for a selected diagnostic board pass. The

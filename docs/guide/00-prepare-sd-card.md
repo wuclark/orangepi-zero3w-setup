@@ -27,6 +27,11 @@ summary, and validation. The normal summary redacts credentials; use
 `make show-unredacted` only for local troubleshooting. It preserves the source
 images under `work/images/`.
 
+The repository release version is stored in `VERSION`; `make version` shows it
+along with the Git revision. `make newsd` includes both in the final image
+filename, such as `-v0.2.0-g1e98095-preloaded-firstboot-...img`. Routine Git
+pushes change only the revision suffix; update `VERSION` for a new release.
+
 To include first-boot settings in another derived image, create the local
 preset and provisioning hook, then run:
 
