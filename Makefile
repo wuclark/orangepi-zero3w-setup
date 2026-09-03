@@ -46,7 +46,8 @@ GIT_DEPTH ?= 1
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets \
 	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports \
-	backup-required backup-cache backup-sensitive backup-all restore
+	backup-required backup-cache backup-sensitive backup-all restore \
+	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced board-retroarch-download-advanced
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -90,6 +91,14 @@ help:
 		'make board-system-benchmark-deps          Install system benchmark tools' \
 		'make board-thermal-monitor                Monitor temperature/power during a command' \
 		'make board-storage-health                 Run read-only storage health checks' \
+		'make board-retroarch-install             Install RetroArch, cores, and PowerVR Vulkan wrapper' \
+		'make board-retroarch-verify              Validate RetroArch Vulkan, X11, and ALSA' \
+		'make board-retroarch-repair              Restore the newest config backup and repair settings' \
+		'make board-retroarch-audio-test          Run the bounded HDMI ALSA speaker test' \
+		'make board-retroarch-uninstall           Remove tracked RetroArch packages and files' \
+		'make board-retroarch-emulationstation   Install repository EmulationStation when available' \
+		'make board-retroarch-advanced            Install available/manual advanced ARM64 cores' \
+		'make board-retroarch-download-advanced   Download official aarch64 PS/N64/PSP/Dreamcast cores' \
 		'make board-gpu-wayland-setup             Install Sway and WayVNC as the default Wayland path' \
 		'make board-gpu-wayland-verify            Verify the Sway Wayland session and WayVNC' \
 		'make board-gpu-weston-setup              Install the explicit Weston PowerVR service path' \
@@ -282,6 +291,30 @@ backup-all:
 
 restore:
 	BACKUP_DIR='$(BACKUP_DIR)' RESTORE_SET='$(RESTORE_SET)' RESTORE_FORCE='$(RESTORE_FORCE)' ./scripts/restore.sh
+
+board-retroarch-install:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/install-retroarch.sh --install; else sudo RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/install-retroarch.sh --install; fi
+
+board-retroarch-emulationstation:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' ./scripts/install-retroarch.sh --install --emulationstation; else sudo RETROARCH_USER='$(RETROARCH_USER)' ./scripts/install-retroarch.sh --install --emulationstation; fi
+
+board-retroarch-verify:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' ./scripts/verify-retroarch.sh; else sudo RETROARCH_USER='$(RETROARCH_USER)' ./scripts/verify-retroarch.sh; fi
+
+board-retroarch-repair:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/install-retroarch.sh --repair; else sudo RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/install-retroarch.sh --repair; fi
+
+board-retroarch-audio-test:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/retroarch-audio-test.sh; else sudo RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/retroarch-audio-test.sh; fi
+
+board-retroarch-uninstall:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' ./scripts/uninstall-retroarch.sh; else sudo RETROARCH_USER='$(RETROARCH_USER)' ./scripts/uninstall-retroarch.sh; fi
+
+board-retroarch-advanced:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_CORE_FILES='$(RETROARCH_CORE_FILES)' ./scripts/install-retroarch.sh --install --advanced-cores; else sudo RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_CORE_FILES='$(RETROARCH_CORE_FILES)' ./scripts/install-retroarch.sh --install --advanced-cores; fi
+
+board-retroarch-download-advanced:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_CORE_BASE_URL='$(RETROARCH_CORE_BASE_URL)' ./scripts/install-retroarch.sh --install --download-advanced; else sudo RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_CORE_BASE_URL='$(RETROARCH_CORE_BASE_URL)' ./scripts/install-retroarch.sh --install --download-advanced; fi
 
 board-base:
 	sudo ./setup.sh base

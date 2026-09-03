@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Add optional idempotent RetroArch/PowerVR Vulkan installation, validation,
+  bounded ALSA testing, configuration repair, and tracked-package uninstall.
+- Add repository-core discovery, the `retroarch-powervr` launcher, and RetroArch
+  documentation without globally exporting the proprietary PVR library path.
+- Add an explicit advanced-core workflow for available Debian packages and
+  user-supplied ARM64 Libretro cores.
+- Add an opt-in official Libretro aarch64 downloader for PS, N64, PSP, and
+  Dreamcast cores with ZIP and ARM64 payload validation.
+
 - Exclude generated VPU video fixtures from preloaded images so the small base
   root filesystem does not fill during repository copy.
 - Stage the matching sparse PowerVR module source in the SD image so board-side

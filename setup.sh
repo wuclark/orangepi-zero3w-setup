@@ -19,6 +19,7 @@ Usage:
   sudo ./setup.sh sources
   sudo ./setup.sh status
   sudo ./setup.sh board-status
+  sudo ./setup.sh retroarch --install [--advanced-cores|--download-advanced]|--verify|--repair|--audio-test|--uninstall
   sudo ./setup.sh reset
   sudo ./setup.sh uninstall
 
@@ -41,6 +42,15 @@ case "$command_name" in
     npu) exec "$REPO_ROOT/scripts/setup-npu.sh" "$@" ;;
     status) exec "$REPO_ROOT/scripts/setup-status.sh" "$@" ;;
     board-status) exec "$REPO_ROOT/scripts/board-status.sh" "$@" ;;
+    retroarch)
+        case ${1:---install} in
+            --install|--repair) exec "$REPO_ROOT/scripts/install-retroarch.sh" "$@" ;;
+            --verify) shift; exec "$REPO_ROOT/scripts/verify-retroarch.sh" "$@" ;;
+            --audio-test) shift; exec "$REPO_ROOT/scripts/retroarch-audio-test.sh" "$@" ;;
+            --uninstall) shift; exec "$REPO_ROOT/scripts/uninstall-retroarch.sh" "$@" ;;
+            *) echo "Unknown retroarch action: ${1:-}" >&2; usage >&2; exit 2 ;;
+        esac
+        ;;
     reset) exec "$REPO_ROOT/scripts/setup-reset.sh" "$@" ;;
     uninstall) exec "$REPO_ROOT/scripts/setup-uninstall.sh" "$@" ;;
     help|-h|--help) usage ;;

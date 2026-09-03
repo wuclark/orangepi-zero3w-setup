@@ -74,6 +74,14 @@ Optional Docker support for board-side containers is available with
 `sudo make board-docker-install DOCKER_APT_UPDATE=1`; it installs Docker
 Engine, Buildx, and Compose and is not required for the GPU/display layers.
 After logging in again, verify it with `make board-docker-verify`.
+For optional RetroArch gaming with the isolated PowerVR Vulkan environment,
+run `sudo make board-retroarch-install`, then `sudo make board-retroarch-verify`.
+Use `sudo make board-retroarch-advanced` for repository-provided advanced cores
+or `RETROARCH_CORE_FILES='/path/to/core.so'` for user-supplied ARM64 cores.
+Use `sudo make board-retroarch-download-advanced` to fetch the official
+Libretro aarch64 PS/N64/PSP/Dreamcast cores.
+See [Retro Gaming / RetroArch](docs/optional/retroarch.md) for the launcher,
+ALSA audio test, repository cores, X11/SSH behavior, repair, and uninstall.
 For a complete initial board setup that also installs GPU, VPU, and experimental
 NPU acceleration, run `sudo make board-initial-setup`. It runs base, packages,
 core, and the acceleration installers; source-tree cloning is optional. It does
