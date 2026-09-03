@@ -20,7 +20,10 @@ specified in `AGENTS.md`.
 - [x] Confirm the current vendor EGL userspace lacks a built Wayland client
   platform; record the native client failure and software fallback.
 - [x] Real-image test of the Docker extractor using the pinned source images.
-- [ ] NPU userspace installation and runtime validation.
+- [x] Implement guarded NPU userspace installation and a pinned execution
+  smoke-test path.
+- [ ] Validate the NPU runtime on the reference Orange Pi and establish an
+  independent correctness golden for the pinned sample.
 - [x] Validate VPU H.264 and H.265 runtime decoding on the Orange Pi.
 - [ ] Investigate desktop GLX acceleration; resolve the `pvr`/Zink geometry
   shader limitation or document the exact unsupported boundary.
@@ -67,8 +70,8 @@ specified in `AGENTS.md`.
   obtain it from the SDK/vendor reference test, or generate it through the
   SDK's CPU/Pegasus path using the matching model, quantization, and
   preprocessing metadata.
-- [ ] Implement the board-side NPU installer only after its kernel/userspace
-  ABI is confirmed.
+- [ ] Confirm the board-side NPU installer against the target kernel/userspace
+  ABI before treating the NPU layer as supported.
 - [x] Pin the default Docker base image used by extraction and image
   preparation to an immutable official Debian digest.
 - [x] Pin the temporary Debian package set by replacing runtime package
@@ -84,11 +87,12 @@ specified in `AGENTS.md`.
 3. Record the verified source-image identities and hashes in the generated
    manifests.
 4. Continue extending archive validation as real image layouts are confirmed.
-5. Implement an opt-in board-side NPU installer with private staging,
-   architecture/ABI checks, timestamped backups, and uninstall/recovery
-   support. Do not install `vipcore.ko` from the userspace archive.
-6. Add NPU diagnostics and a pinned VIPLite inference smoke test. Require
-   `/dev/vipcore`, driver/runtime versions, and successful output.
+5. Confirm the opt-in board-side NPU installer on the target ABI with private
+   staging, timestamped backups, recovery support, and no `vipcore.ko` from
+   the userspace archive.
+6. Run NPU diagnostics and the pinned VIPLite inference smoke test. Require
+   `/dev/vipcore`, driver/runtime versions, successful output, and an
+   independently generated correctness golden before expanding the claim.
 7. Validate GPU, VPU, and NPU on a recoverable Orange Pi with UART access,
    including repeated reboot tests and presentation/media/inference tests.
 8. Update README, CLI help, guides, tutorial, changelog, manifests, and
