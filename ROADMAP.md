@@ -22,8 +22,9 @@ specified in `AGENTS.md`.
 - [x] Real-image test of the Docker extractor using the pinned source images.
 - [x] Implement guarded NPU userspace installation and a pinned execution
   smoke-test path.
-- [ ] Validate the NPU runtime on the reference Orange Pi and establish an
-  independent correctness golden for the pinned sample.
+- [x] Validate the NPU runtime on the reference Orange Pi: ABI precheck,
+  userspace installation, and three successful pinned VIPLite inferences.
+- [ ] Establish an independent correctness golden for the pinned NPU sample.
 - [x] Validate VPU H.264 and H.265 runtime decoding on the Orange Pi.
 - [ ] Investigate desktop GLX acceleration; resolve the `pvr`/Zink geometry
   shader limitation or document the exact unsupported boundary.
@@ -58,7 +59,9 @@ specified in `AGENTS.md`.
   Docker extraction command.
 - [x] Run generated archives through `prepare-vendor-archives.sh` on the target
   software stack.
-- [ ] Test GPU, VPU, and NPU independently on the Orange Pi.
+- [ ] Test GPU and VPU independently on the Orange Pi.
+- [x] Test NPU independently on the Orange Pi with the pinned VIPLite sample;
+  retain the sanitized diagnostics and smoke-test evidence in the issue.
 - [ ] Add a real GPU workload test: `vulkaninfo`, GLES/EGL, and `vkcube`.
 - [x] Add real VPU GStreamer H.264/H.265 decode samples and board commands.
 - [ ] Strengthen VPU validation beyond EOS: generate reproducible local H.264
@@ -70,8 +73,9 @@ specified in `AGENTS.md`.
   obtain it from the SDK/vendor reference test, or generate it through the
   SDK's CPU/Pegasus path using the matching model, quantization, and
   preprocessing metadata.
-- [ ] Confirm the board-side NPU installer against the target kernel/userspace
-  ABI before treating the NPU layer as supported.
+- [x] Confirm the board-side NPU installer against the target kernel/userspace
+  ABI on the reference board; retain the precheck, install, verify, and smoke
+  test evidence in the issue.
 - [x] Pin the default Docker base image used by extraction and image
   preparation to an immutable official Debian digest.
 - [x] Pin the temporary Debian package set by replacing runtime package
