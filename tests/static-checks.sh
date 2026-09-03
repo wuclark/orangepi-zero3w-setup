@@ -6,6 +6,11 @@ while IFS= read -r script; do
     bash -n "$script"
 done < <(find "$REPO_ROOT/scripts" "$REPO_ROOT/tests" -type f -name '*.sh' | sort)
 
+if find "$REPO_ROOT/scripts" "$REPO_ROOT/tests" -type f -name '*.sh' ! -perm -u+x -print -quit | grep -q .; then
+    echo 'Shell scripts under scripts/ and tests/ must be executable.' >&2
+    exit 1
+fi
+
 grep -q '/dev/dri/card0' "$REPO_ROOT/config/10-sunxi-primary.conf"
 grep -q 'ExecStartPre=/bin/sleep 30' "$REPO_ROOT/config/pvr-late-load.service"
 grep -q '/opt/pvr-ddk-24.2/lib/libVK_IMG.so' "$REPO_ROOT/config/img_icd.json"

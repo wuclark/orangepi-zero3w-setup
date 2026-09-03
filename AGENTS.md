@@ -24,6 +24,9 @@ sequencing and ABI checks as safety-critical.
 
 - Make small, reviewable changes; preserve unrelated user work.
 - Use `apply_patch` for edits.
+- Keep every executable shell script under `scripts/` and `tests/` executable
+  in Git (`chmod 755 script.sh`); a script invoked as `./script.sh` must never
+  be committed with mode `644`.
 - Run `tests/static-checks.sh`, `bash -n` on every shell script, PowerShell
   parsing when `pwsh` exists, `git diff --check`, and `tests/test-archives.sh`.
 - Do not run installers on a development workstation. Hardware tests must be

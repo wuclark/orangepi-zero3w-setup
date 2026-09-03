@@ -249,9 +249,9 @@ chmod 644 /usr/share/applications/retroarch-powervr.desktop
 if [[ ${#core_packages[@]} -gt 0 ]]; then
     log "Installed libretro cores: ${core_packages[*]}"
 else
-    warn 'No libretro runtime/core packages were found in the configured APT cache.'
+    warn 'No Debian libretro runtime/core packages were found in the configured APT cache.'
 fi
-if [[ $ADVANCED_CORES == yes && ${#advanced_packages[@]} -eq 0 && -z ${CORE_FILES//[[:space:]]/} ]]; then
+if [[ $ADVANCED_CORES == yes && ${#advanced_packages[@]} -eq 0 && -z ${CORE_FILES//[[:space:]]/} && $DOWNLOAD_ADVANCED != yes ]]; then
     warn 'No advanced PlayStation/N64/PSP/Dreamcast package is available in the configured repositories.'
     warn 'Supply ARM64 Libretro .so files with --core-file FILE or RETROARCH_CORE_FILES=...'
 fi
@@ -266,6 +266,7 @@ Genesis Plus GX Genesis/Mega Drive/Master System/Game Gear; Gambatte Game Boy/
 Game Boy Color; mGBA Game Boy Advance; DeSmuME Nintendo DS; Beetle VB Virtual
 Boy; Beetle WonderSwan WonderSwan.
 For this board, use Snes9x or BSNES Mercury Performance rather than Accuracy.
-The current repository does not provide PlayStation, N64, PSP, or Dreamcast
-cores; those require manually downloaded ARM64 cores or source builds.
+The current Debian repository may not provide PlayStation, N64, PSP, or
+Dreamcast cores. Use board-retroarch-download-advanced for the official ARM64
+buildbot cores, or supply reviewed ARM64 core files/source builds.
 EOF
