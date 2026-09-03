@@ -25,6 +25,20 @@ specified in `AGENTS.md`.
 - [x] Validate the NPU runtime on the reference Orange Pi: ABI precheck,
   userspace installation, and three successful pinned VIPLite inferences.
 - [ ] Establish an independent correctness golden for the pinned NPU sample.
+  Investigated 2026-09-03: `operator/v3/network_binary.nb` has no golden
+  anywhere (checked local `ai-sdk.tar.gz`, `wuclark/ai-sdk`, upstream
+  `ZIFENG278/ai-sdk`, `petayyyy/a733_npu_driver`) and no source model, so one
+  cannot be independently generated for it either — see the
+  `docs/optional/npu.md` roadmap note. Superseded by real ACUITY goldens for
+  named models instead (`lenet`, `yolov5`, `resnet50` — see below); it stays
+  execution-only until those replacements are board-validated, then gets
+  removed.
+- [x] Script real ACUITY-quantized goldens for `lenet`, `yolov5`, and
+  `resnet50` (`scripts/generate-npu-golden.sh`, `scripts/board-npu-model-test.sh`,
+  `scripts/compare-npu-output.py`) reusing `wuclark/a733_npu_driver`'s
+  board-proven ACUITY Docker toolchain, wired into `make` and automatic
+  SD-card staging. Written 2026-09-03; not yet run against Docker or real
+  board hardware — see "Next implementation steps".
 - [x] Validate VPU H.264 and H.265 runtime decoding on the Orange Pi.
 - [ ] Investigate desktop GLX acceleration; resolve the `pvr`/Zink geometry
   shader limitation or document the exact unsupported boundary.
@@ -75,7 +89,30 @@ specified in `AGENTS.md`.
 - [ ] Add an independently generated `golden_0.dat` for the exact NPU sample:
   obtain it from the SDK/vendor reference test, or generate it through the
   SDK's CPU/Pegasus path using the matching model, quantization, and
-  preprocessing metadata.
+  preprocessing metadata. Investigated 2026-09-03: neither is possible for
+  `network_binary.nb` itself (no golden published anywhere, no source model
+  in the SDK to regenerate one from). Tracking now happens under the
+  `lenet`/`yolov5`/`resnet50` ACUITY-golden line above instead.
+- [ ] Run `scripts/generate-npu-golden.sh --model lenet` for real: clone
+  `wuclark/a733_npu_driver` to `work/sources/a733_npu_driver`, build its
+  ACUITY Docker image per that repo's `docs/01-setup-host.md`, then
+  `make npu-golden-lenet`. Expect and fix real friction here first — this is
+  the smallest, most proven recipe (already board-validated in that repo's
+  own reports for a different board bring-up).
+- [ ] Fix the yolov5/resnet50 ONNX `--inputs`/`--input-size-list`/`--outputs`
+  values in `scripts/generate-npu-golden.sh` against the real ONNX graphs
+  (`yolov5s-sim.onnx`, and whichever public ResNet50 ONNX is sourced) — the
+  current defaults are unverified best guesses.
+- [ ] Source an openly licensed public ResNet50 ONNX file (e.g. ONNX Model
+  Zoo/torchvision) for `NPU_PUBLIC_ONNX=` before `make npu-golden-resnet50`
+  can run; the SDK ships no resnet50 source weights.
+- [ ] Board-run `make board-npu-golden-test-lenet` / `-yolov5` / `-resnet50`
+  on the reference Orange Pi Zero 3W and record real PASS/FAIL evidence
+  (top-K match, max/mean abs diff, RMSE, cosine) — required before any
+  support claim, per the evidence gate below.
+- [ ] Once lenet/yolov5/resnet50 are board-green, remove
+  `operator/v3/network_binary.nb` and its `test-npu.sh`/`board-npu-test`
+  usage, per the roadmap note in `docs/optional/npu.md`.
 - [x] Confirm the board-side NPU installer against the target kernel/userspace
   ABI on the reference board; retain the precheck, install, verify, and smoke
   test evidence in the issue.

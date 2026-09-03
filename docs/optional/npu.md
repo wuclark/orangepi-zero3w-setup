@@ -147,6 +147,129 @@ records the kernel, module, firmware/runtime versions, device nodes, sample
 workload, and successful output. Proprietary archives and firmware remain
 excluded from Git.
 
+### Real ACUITY goldens (lenet, yolov5, resnet50)
+
+The custom-LUT candidate above is a real, byte-exact golden, but it only
+exercises one small LUT operator. `operator/v3/network_binary.nb` has no
+golden anywhere: this project checked the local `ai-sdk.tar.gz`, the
+maintained `wuclark/ai-sdk` mirror, its upstream `ZIFENG278/ai-sdk`, and the
+independent `petayyyy/a733_npu_driver` reference — none contain
+`golden_0.dat` for that exact NBG, and the file itself carries no name, no
+README, and no source model. It can only ever be an execution-only smoke
+test. See the [roadmap](#roadmap-retiring-the-pinned-operator-sample) below.
+
+Three of the SDK's other bundled example models do have real source weights
+(or, for `resnet50`, can use publicly sourced ones), which makes a genuine
+independently-generated golden possible for them:
+
+| Model | Source | Notes |
+| --- | --- | --- |
+| `lenet` | `ai-sdk/models/lenet/lenet.{prototxt,caffemodel}` (Caffe) | Smallest, fastest; conversion already board-validated (uint8 + int16) in `wuclark/a733_npu_driver`'s `reports/g2-acuity-lenet.md` |
+| `yolov5` | `ai-sdk/models/yolov5s-sim/yolov5s-sim.onnx` (ONNX) | Same yolov5s architecture family as the bundled `examples/yolov5/model/v3/yolov5.nb`, but not proven to be the identical weights — treat the resulting golden as an architecture-level reference, not a byte-proof of that exact bundled NBG |
+| `resnet50` | **not in the SDK** — the bundled `examples/resnet50/model/v3/resnet50.nb` ships with no source weights at all | Generated instead from a separately obtained, openly licensed public ResNet50 ONNX file (e.g. ONNX Model Zoo/torchvision); this is a *new*, equivalent-coverage pinned test, not a golden for the SDK's own `resnet50.nb` |
+
+**Why not just run the model on CPU and call that a golden**: `vpm_run`'s
+`[golden]` check is a raw byte `memcmp()` (see
+`ai-sdk/examples/vpm_run/vpm_run.c`). A plain independent CPU run (e.g.
+OpenCV or PyTorch) uses different numeric precision/quantization than the
+NBG and will not byte-match, even when the result is correct. A genuine
+byte-faithful reference has to come from the *same* ACUITY/Pegasus
+quantization pipeline that produced the NBG — the vendor toolkit referenced
+by the SDK's own scripts (`$ACUITY_PATH/pegasus`) but not included in the
+SDK archive itself.
+
+**That toolkit is obtainable**: `wuclark/a733_npu_driver` already has a
+working, board-proven ACUITY Docker toolchain (image `ubuntu-npu:v2.0.10.1`,
+public mirror `khalida5/ubuntu-npu:v2.0.10`, per
+[Radxa's own ACUITY setup docs](https://docs.radxa.com/en/cubie/a7z/app-dev/npu-dev/cubie-acuity-env)).
+Its `reports/g2-acuity-lenet.md` and `reports/g2-acuity-inception-v1.md`
+already converted and board-validated `lenet` and `inception_v1` on a real
+A733 VIP9000 board (same VIPLite `2.0.3.2-AW-2024-08-30`, and that repo's
+own hardware table includes the Orange Pi Zero 3W). This project reuses that
+toolchain rather than re-implementing ACUITY plumbing:
+
+1. One-time host setup: clone `wuclark/a733_npu_driver` to
+   `work/sources/a733_npu_driver` (or set `NPU_DRIVER_REPO=`), and follow
+   *that* repo's `docs/01-setup-host.md` to build its ACUITY Docker image
+   and populate its own `work/ai-sdk/ZIFENG278-ai-sdk/` checkout. This
+   project's scripts drive that toolchain; they do not reproduce its setup.
+2. Generate a golden:
+
+   ```bash
+   make npu-golden-lenet
+   make npu-golden-yolov5
+   NPU_PUBLIC_ONNX=/path/to/resnet50.onnx make npu-golden-resnet50
+   ```
+
+   Each produces `work/vendor-output/npu-golden-<model>.tar.gz`: an NBG,
+   packed input, and an ACUITY *host* golden tensor (`host_output_N.txt`)
+   from the same quantization run — see `scripts/generate-npu-golden.sh`
+   for the exact recipe per model. `--inputs`/`--input-size-list`/`--outputs`
+   for the ONNX models (yolov5, resnet50) are best-effort defaults; inspect
+   the real ONNX graph node names before trusting a first run (the script's
+   `--help` shows how).
+3. Copy the resulting archive to the board's
+   `/opt/orangepi-zero3w-setup/vendor-files/`, or just run `make newsd` —
+   `scripts/prepare-preloaded-image-inner.sh` automatically bakes in any
+   `npu-golden-{candidate,lenet,yolov5,resnet50}.tar.gz` it finds under
+   `work/vendor-output/` when building a fresh SD image, no manual copy step.
+4. Verify on the board:
+
+   ```bash
+   make board-npu-golden-test-lenet
+   make board-npu-golden-test-yolov5
+   make board-npu-golden-test-resnet50
+   ```
+
+   Unlike the custom-LUT candidate, these do **not** use `vpm_run`'s
+   built-in `[golden]` memcmp path (the golden comes from a separate ACUITY
+   host run, not the exact run that produced the NBG). Instead
+   `scripts/board-npu-model-test.sh` runs `vpm_run --save_txt 1` and
+   compares the saved `output_N.txt` against the packaged
+   `host_output_N.txt` with `scripts/compare-npu-output.py`: top-K index
+   match, max/mean absolute difference, RMSE, and cosine similarity.
+   Evidence is recorded under
+   `/var/log/orangepi-zero3w-setup/npu-golden-<model>.txt`.
+
+All model weights, generated NBGs, and golden tensors from this flow are
+proprietary/derived-vendor content (see
+[Licensing](#licensing-model-and-golden-binaries-stay-out-of-git) below) and
+stay under `work/vendor-output/`, which is git-ignored. Only the generation
+and verification scripts are committed.
+
+### Licensing: model and golden binaries stay out of Git
+
+`wuclark/ai-sdk` and its upstream, `ZIFENG278/ai-sdk`, both carry no
+`LICENSE` file (GitHub reports `license: null` for both) — the default is
+all rights reserved. None of the SDK's model weights, compiled NBGs, or any
+golden derived from them may be redistributed, so none of it goes into this
+public repository: only the scripts that generate, stage, and verify them
+are committed, exactly like the existing `npu-golden-candidate.tar.gz`
+pattern. A resnet50 rebuilt from a public, openly licensed ONNX file would
+in principle carry a real license, but for consistency this project keeps
+it out of Git too — no compiled NBG or golden binary of any kind is
+committed, regardless of its own licensing.
+
+### Roadmap: retiring the pinned operator sample
+
+`operator/v3/network_binary.nb` stays as the execution-only smoke test for
+now (`make board-npu-test`), but is slated for removal once the
+lenet/yolov5/resnet50 goldens above are board-validated. Reasons:
+
+- It is an undocumented, unnamed vendor test fixture: no README, no source
+  model, no metadata identifying what it computes.
+- No golden exists for it anywhere that was checked (local disk,
+  `wuclark/ai-sdk`, upstream `ZIFENG278/ai-sdk`, `petayyyy/a733_npu_driver`),
+  and none can be independently generated, because there is no source model
+  to run through ACUITY.
+- It can therefore only ever prove "the driver ran something without
+  crashing," never "the NPU computed the right answer" — the exact
+  limitation the lenet/yolov5/resnet50 goldens above are built to close,
+  with named, documented, independently verifiable models instead.
+
+Until the replacement goldens have real board evidence, `network_binary.nb`
+remains in place; do not remove it or `test-npu.sh`'s use of it first.
+
 ## Cross-platform userspace extraction
 
 The repository now provides a host-side extractor for all three userspace

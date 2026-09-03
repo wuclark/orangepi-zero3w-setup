@@ -14,6 +14,8 @@ new public target or changing a target's boundary.
 | `board-npu-*` | `scripts/board-acceleration-workflow.sh`, `test-npu.sh` | Board | Install and validate VIPLite userspace and the smoke test. |
 | `npu-golden-candidate` | `scripts/stage-npu-golden-candidate.sh` | Host | Stage the SDK custom-LUT NBG/input/golden bundle under ignored `work/`. |
 | `board-npu-golden-test` | `scripts/board-npu-golden-test.sh` | Board | Compare the SDK custom-LUT candidate with its supplied binary golden; does not validate the pinned operator sample. |
+| `npu-golden-lenet`, `npu-golden-yolov5`, `npu-golden-resnet50` | `scripts/generate-npu-golden.sh` | Host (Docker + a733_npu_driver checkout) | Generate a real ACUITY-quantized NBG/input/host-golden bundle for a named model under ignored `work/`; see `docs/optional/npu.md`. |
+| `board-npu-golden-test-lenet`, `-yolov5`, `-resnet50` | `scripts/board-npu-model-test.sh` | Board | Run one of the above goldens and semantically compare (top-K/RMSE/cosine, not memcmp) against its ACUITY host tensor. |
 | `board-validation`, `board-status`, `board-report` | matching `scripts/board-*.sh` | Board | Run combined validation or read-only status/evidence collection. |
 | `board-headless-benchmark`, `board-system-benchmark` | matching `scripts/board-*.sh` | Board | Run acceleration or CPU/system workloads; storage/network are opt-in. |
 | `board-stability-test`, `board-thermal-monitor` | matching `scripts/board-*.sh` | Board | Repeat workloads and record thermal/frequency data. |

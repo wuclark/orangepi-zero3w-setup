@@ -17,6 +17,8 @@ BOARD_REPORT_OUTPUT ?=
 BOARD_REPORTS_OUTPUT ?=
 NPU_GOLDEN_ARCHIVE ?= /opt/orangepi-zero3w-setup/vendor-files/npu-golden-candidate.tar.gz
 NPU_GOLDEN_OUTPUT ?= /var/log/orangepi-zero3w-setup/npu-golden-candidate.txt
+NPU_DRIVER_REPO ?= work/sources/a733_npu_driver
+NPU_PUBLIC_ONNX ?=
 STABILITY_MINUTES ?= 30
 STABILITY_STORAGE ?= no
 STABILITY_INTERVAL_SECONDS ?= 0
@@ -50,6 +52,8 @@ GIT_DEPTH ?= 1
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test board-npu-golden-test npu-test-assets npu-golden-candidate \
+	npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 \
+	board-npu-golden-test-lenet board-npu-golden-test-yolov5 board-npu-golden-test-resnet50 \
 	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports \
 	backup-required backup-cache backup-sensitive backup-all restore \
 	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-audio-auto board-retroarch-core-check board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced board-retroarch-download-advanced board-display-status board-audio-status board-stability-test
@@ -145,6 +149,8 @@ help:
 		'make board-npu-test                     Run NPU test and save evidence' \
 		'make npu-golden-candidate               Stage SDK custom-LUT NPU golden candidate' \
 		'make board-npu-golden-test              Run the SDK golden candidate on the board' \
+		'make npu-golden-lenet/yolov5/resnet50   Generate a real ACUITY NPU golden (see docs/optional/npu.md)' \
+		'make board-npu-golden-test-lenet/yolov5/resnet50  Run one of those goldens on the board' \
 		'make board-test BOARD_LAYER=gpu|vpu|npu|all  Run diagnostic board checks' \
 		'make board-tests BOARD_LAYER=...        Alias for board-test' \
 		'make desktop DESKTOP_PROFILE=openbox    Install a desktop profile' \
@@ -625,6 +631,15 @@ board-npu-golden-test:
 	sudo NPU_GOLDEN_ARCHIVE='$(NPU_GOLDEN_ARCHIVE)' NPU_GOLDEN_OUTPUT='$(NPU_GOLDEN_OUTPUT)' \
 		./scripts/board-npu-golden-test.sh
 
+board-npu-golden-test-lenet:
+	sudo ./scripts/board-npu-model-test.sh --model lenet
+
+board-npu-golden-test-yolov5:
+	sudo ./scripts/board-npu-model-test.sh --model yolov5
+
+board-npu-golden-test-resnet50:
+	sudo ./scripts/board-npu-model-test.sh --model resnet50
+
 board-core-install:
 	sudo ./setup.sh core
 
@@ -644,3 +659,36 @@ npu-golden-candidate:
 	@install -d -m 755 $(VENDOR_OUTPUT)
 	@./scripts/stage-npu-golden-candidate.sh --sdk-tarball work/images/ai-sdk.tar.gz \
 		--output $(VENDOR_OUTPUT)/npu-golden-candidate.tar.gz
+
+# Real ACUITY-generated NPU goldens (lenet, yolov5, resnet50). See
+# docs/optional/npu.md "Real ACUITY goldens" for the one-time host setup
+# these depend on: a host clone of wuclark/a733_npu_driver at
+# $(NPU_DRIVER_REPO) with its own ACUITY Docker image already built per
+# that repo's docs/01-setup-host.md, and (for resnet50 only) a separately
+# obtained, openly licensed ResNet50 ONNX file passed as NPU_PUBLIC_ONNX=.
+# Unlike npu-golden-candidate above, these are NEVER byte-exact vendor
+# goldens: the golden tensor comes from a separate ACUITY host inference
+# run, verified on the board with compare-npu-output.py, not vpm_run's
+# built-in memcmp() [golden] check.
+npu-golden-lenet:
+	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
+	@test -d $(NPU_DRIVER_REPO) || { echo 'ERROR: $(NPU_DRIVER_REPO) not found; clone wuclark/a733_npu_driver there first.' >&2; exit 1; }
+	@install -d -m 755 $(VENDOR_OUTPUT)
+	@./scripts/generate-npu-golden.sh --model lenet --sdk-tarball work/images/ai-sdk.tar.gz \
+		--driver-repo $(NPU_DRIVER_REPO) --output $(VENDOR_OUTPUT)/npu-golden-lenet.tar.gz
+
+npu-golden-yolov5:
+	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
+	@test -d $(NPU_DRIVER_REPO) || { echo 'ERROR: $(NPU_DRIVER_REPO) not found; clone wuclark/a733_npu_driver there first.' >&2; exit 1; }
+	@install -d -m 755 $(VENDOR_OUTPUT)
+	@./scripts/generate-npu-golden.sh --model yolov5 --sdk-tarball work/images/ai-sdk.tar.gz \
+		--driver-repo $(NPU_DRIVER_REPO) --output $(VENDOR_OUTPUT)/npu-golden-yolov5.tar.gz
+
+npu-golden-resnet50:
+	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
+	@test -d $(NPU_DRIVER_REPO) || { echo 'ERROR: $(NPU_DRIVER_REPO) not found; clone wuclark/a733_npu_driver there first.' >&2; exit 1; }
+	@test -n '$(NPU_PUBLIC_ONNX)' || { echo 'ERROR: set NPU_PUBLIC_ONNX=/path/to/resnet50.onnx (an openly licensed file; the SDK ships no resnet50 source).' >&2; exit 1; }
+	@install -d -m 755 $(VENDOR_OUTPUT)
+	@./scripts/generate-npu-golden.sh --model resnet50 --sdk-tarball work/images/ai-sdk.tar.gz \
+		--driver-repo $(NPU_DRIVER_REPO) --public-onnx '$(NPU_PUBLIC_ONNX)' \
+		--output $(VENDOR_OUTPUT)/npu-golden-resnet50.tar.gz

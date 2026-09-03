@@ -68,6 +68,14 @@ for archive in vpu-userspace.tar.gz npu-userspace.tar.gz; do
 done
 [[ -f /repo/work/vendor-output/npu-test-assets.tar.gz ]] && \
     cp -a /repo/work/vendor-output/npu-test-assets.tar.gz "$TARGET/vendor-files/"
+# NPU golden archives are optional and only exist once generated on the
+# host (make npu-golden-candidate / npu-golden-lenet / -yolov5 / -resnet50).
+# Bake in whichever ones are present so a fresh SD card already carries
+# them; see docs/optional/npu.md for how each is produced and verified.
+for golden_archive in npu-golden-candidate npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50; do
+    [[ -f /repo/work/vendor-output/$golden_archive.tar.gz ]] && \
+        cp -a "/repo/work/vendor-output/$golden_archive.tar.gz" "$TARGET/vendor-files/"
+done
 chown -R root:root "$TARGET"; chmod 0644 "$TARGET/vendor-files/"*.tar.gz
 find "$TARGET" -type d -exec chmod 755 {} +
 find "$TARGET" -type f -printf '%P\n' | sort > "$OUTPUT_IMAGE.manifest.txt"

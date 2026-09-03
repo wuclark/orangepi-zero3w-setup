@@ -38,6 +38,20 @@ contains the symlink to the setup directory.
 | [`unnamedwild-ux/frigate_npu_vivante`](https://github.com/unnamedwild-ux/frigate_npu_vivante) | Frigate integration using VIPLite/NBG inference | Community application reference; primarily validated on Radxa A7A |
 | [ONNX Runtime VIPLite issue](https://github.com/microsoft/onnxruntime/issues/28244) | VIP9000/VIPLite ecosystem and execution-provider discussion | External compatibility reference, not an implementation used by this setup |
 
+## ACUITY/Pegasus NPU quantization toolchain
+
+Real (non-execution-only) NPU goldens for `lenet`, `yolov5`, and `resnet50`
+(see [docs/optional/npu.md](../optional/npu.md#real-acuity-goldens-lenet-yolov5-resnet50))
+require the vendor ACUITY/Pegasus quantization toolkit, which is not part of
+the `ai-sdk` archive itself (its scripts only reference an external
+`$ACUITY_PATH`). The provenance for that toolkit and its prior use:
+
+| Source | Role | Provenance/status |
+| --- | --- | --- |
+| [Radxa Cubie A7Z ACUITY setup docs](https://docs.radxa.com/en/cubie/a7z/app-dev/npu-dev/cubie-acuity-env) | Documents the A733 ACUITY workflow: Docker image `ubuntu-npu:v2.0.10.1`, `AI_SDK_PLATFORM=a733`, `NPU_VERSION=v3` | Vendor/Radxa reference confirming the toolchain and its intended usage |
+| `khalida5/ubuntu-npu:v2.0.10` (Docker Hub) | Public mirror of the ACUITY toolkit Docker image | Community mirror used as the host toolchain; retag locally as `ubuntu-npu:v2.0.10.1` |
+| [`wuclark/a733_npu_driver`](https://github.com/wuclark/a733_npu_driver) | Host-side ACUITY conversion scripts (`scripts/host/convert_onnx_to_nbg.sh`, `package_acuity_nbg.py`) and board-validated conversion reports | Maintained working repository this project's `scripts/generate-npu-golden.sh` drives directly; see `reports/g2-acuity-lenet.md` and `reports/g2-acuity-inception-v1.md` for prior board-validated LeNet and Inception v1 conversions on real A733 VIP9000 hardware (including the Orange Pi Zero 3W) |
+
 ## Orange Pi and Allwinner vendor sources
 
 | Repository | Role | Provenance/status |
