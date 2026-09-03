@@ -43,6 +43,19 @@ tar -tzf "$TMP/generated/vpu-userspace.tar.gz" | grep -q 'etc/cedarc.conf'
 tar -tzf "$TMP/generated/npu-userspace.tar.gz" | grep -q 'usr/lib/libvipcore.so'
 ! tar -tzf "$TMP/generated/npu-userspace.tar.gz" | grep -q 'libVK_IMG.so'
 
+# The SDK golden-candidate staging keeps only the complete custom-LUT test set.
+mkdir -p "$TMP/sdk/ai-sdk/examples/custom_lut/test/models/v3"
+printf '[network]\n./lut_test.nb\n[input]\n./input.txt\n[golden]\n./golden.bin\n' \
+  > "$TMP/sdk/ai-sdk/examples/custom_lut/test/sample.txt"
+printf '0\n1\n2\n' > "$TMP/sdk/ai-sdk/examples/custom_lut/test/input.txt"
+printf 'golden' > "$TMP/sdk/ai-sdk/examples/custom_lut/test/golden.bin"
+printf 'nbg' > "$TMP/sdk/ai-sdk/examples/custom_lut/test/models/v3/custom_lut.nb"
+tar -C "$TMP/sdk" -czf "$TMP/ai-sdk.tar.gz" ai-sdk
+"$ROOT/scripts/stage-npu-golden-candidate.sh" \
+  --sdk-tarball "$TMP/ai-sdk.tar.gz" --output "$TMP/npu-golden-candidate.tar.gz" >/dev/null
+tar -tzf "$TMP/npu-golden-candidate.tar.gz" | sort | diff -u - <(printf '%s\n' \
+  golden.bin input.txt lut_test.nb sample.txt)
+
 # A traversal member must be rejected before extraction.
 python3 - "$TMP/unsafe.tar.gz" <<'PY'
 import io, sys, tarfile

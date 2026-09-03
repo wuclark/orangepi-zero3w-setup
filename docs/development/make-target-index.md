@@ -12,6 +12,8 @@ new public target or changing a target's boundary.
 | `board-gpu-*` | `scripts/board-acceleration-workflow.sh` | Board | Precheck, install, ABI-check, benchmark, and verify PowerVR. |
 | `board-vpu-*` | `scripts/board-acceleration-workflow.sh`, `test-vpu-decode.sh` | Board | Install and validate Cedar/libcedarc and H.264/H.265 decode. |
 | `board-npu-*` | `scripts/board-acceleration-workflow.sh`, `test-npu.sh` | Board | Install and validate VIPLite userspace and the smoke test. |
+| `npu-golden-candidate` | `scripts/stage-npu-golden-candidate.sh` | Host | Stage the SDK custom-LUT NBG/input/golden bundle under ignored `work/`. |
+| `board-npu-golden-test` | `scripts/board-npu-golden-test.sh` | Board | Compare the SDK custom-LUT candidate with its supplied binary golden; does not validate the pinned operator sample. |
 | `board-validation`, `board-status`, `board-report` | matching `scripts/board-*.sh` | Board | Run combined validation or read-only status/evidence collection. |
 | `board-headless-benchmark`, `board-system-benchmark` | matching `scripts/board-*.sh` | Board | Run acceleration or CPU/system workloads; storage/network are opt-in. |
 | `board-stability-test`, `board-thermal-monitor` | matching `scripts/board-*.sh` | Board | Repeat workloads and record thermal/frequency data. |

@@ -104,11 +104,31 @@ after it completes, then run `sudo make board-validation`.
 The evidence records the kernel, driver `vermagic`, runtime/model/input
 hashes, device permissions, loaded module, runner output, and result.
 
-### Golden-output validation TODO
+### SDK golden candidate and exact-sample limitation
 
 The current test is an execution-only smoke test; it does not compare the NPU
-result with an independently generated expected output. Add this validation
-when one of these inputs becomes available:
+result for `operator/v3/network_binary.nb` with an independently generated
+expected output. The full AI SDK does contain a separate custom-LUT candidate
+with an input, v3 NBG, and binary golden. Stage it privately on the host:
+
+```bash
+make npu-golden-candidate
+```
+
+Copy `work/vendor-output/npu-golden-candidate.tar.gz` unchanged to the board's
+`/opt/orangepi-zero3w-setup/vendor-files/`, then run:
+
+```bash
+make board-npu-golden-test
+```
+
+The board target requires the installed `vpm_run` runner and records evidence
+under `/var/log/orangepi-zero3w-setup/npu-golden-candidate.txt`. A pass means
+the SDK custom-LUT candidate matched its supplied golden; it does not promote
+that golden to the pinned operator sample or establish general NPU accuracy.
+
+For the pinned operator sample, add a golden only when one of these inputs is
+available:
 
 1. Obtain `golden_0.dat` from the SDK or vendor reference test for this exact
    `network_binary.nb` and `input_0.dat`.

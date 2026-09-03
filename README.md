@@ -400,6 +400,10 @@ The equivalent Make targets are `board-gpu-*`, `board-vpu-*`, and
 `board-npu-precheck`/`board-npu-install`/`board-npu-verify`. When
 `work/images/ai-sdk.tar.gz` is available, `make newsd` also places a selected
 A733 NPU test bundle in the image; the full SDK remains outside the image.
+To stage the SDK's separate custom-LUT golden candidate, run
+`make npu-golden-candidate` on the host, copy the resulting private archive to
+the board, and run `make board-npu-golden-test`. This candidate does not
+validate the pinned `operator/v3/network_binary.nb` sample.
 
 Prechecks may report expected missing-layer warnings but still record a
 successful baseline. Verification steps fail when required checks are absent.

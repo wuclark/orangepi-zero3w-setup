@@ -15,6 +15,8 @@ BOARD_TEST_OUTPUT ?= /var/log/orangepi-zero3w-setup/postboot-acceleration.txt
 BOARD_DIAGNOSTICS_OUTPUT ?= /var/log/orangepi-zero3w-setup/diagnostics.txt
 BOARD_REPORT_OUTPUT ?=
 BOARD_REPORTS_OUTPUT ?=
+NPU_GOLDEN_ARCHIVE ?= /opt/orangepi-zero3w-setup/vendor-files/npu-golden-candidate.tar.gz
+NPU_GOLDEN_OUTPUT ?= /var/log/orangepi-zero3w-setup/npu-golden-candidate.txt
 STABILITY_MINUTES ?= 30
 STABILITY_STORAGE ?= no
 STABILITY_INTERVAL_SECONDS ?= 0
@@ -47,7 +49,7 @@ GIT_DEPTH ?= 1
 	board-gpu-precheck board-gpu-install board-gpu-verify board-gpu-abi-check board-headless-benchmark board-system-benchmark board-system-benchmark-deps board-thermal-monitor board-storage-health \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
-	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets \
+	board-npu-precheck board-npu-install board-npu-verify board-npu-test board-npu-golden-test npu-test-assets npu-golden-candidate \
 	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports \
 	backup-required backup-cache backup-sensitive backup-all restore \
 	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-audio-auto board-retroarch-core-check board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced board-retroarch-download-advanced board-display-status board-audio-status board-stability-test
@@ -141,6 +143,8 @@ help:
 		'make release-vpu-test-videos             Publish generated VPU assets to GitHub' \
 		'make board-npu-precheck/verify          Run supported NPU checks' \
 		'make board-npu-test                     Run NPU test and save evidence' \
+		'make npu-golden-candidate               Stage SDK custom-LUT NPU golden candidate' \
+		'make board-npu-golden-test              Run the SDK golden candidate on the board' \
 		'make board-test BOARD_LAYER=gpu|vpu|npu|all  Run diagnostic board checks' \
 		'make board-tests BOARD_LAYER=...        Alias for board-test' \
 		'make desktop DESKTOP_PROFILE=openbox    Install a desktop profile' \
@@ -617,6 +621,10 @@ board-npu-verify:
 board-npu-test:
 	sudo ./scripts/test-npu.sh --output /var/log/orangepi-zero3w-setup/npu-smoke-test.txt
 
+board-npu-golden-test:
+	sudo NPU_GOLDEN_ARCHIVE='$(NPU_GOLDEN_ARCHIVE)' NPU_GOLDEN_OUTPUT='$(NPU_GOLDEN_OUTPUT)' \
+		./scripts/board-npu-golden-test.sh
+
 board-core-install:
 	sudo ./setup.sh core
 
@@ -630,3 +638,9 @@ npu-test-assets:
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
 	@./scripts/stage-npu-test-assets.sh --sdk-tarball work/images/ai-sdk.tar.gz \
 		--output $(VENDOR_OUTPUT)/npu-test-assets.tar.gz
+
+npu-golden-candidate:
+	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
+	@install -d -m 755 $(VENDOR_OUTPUT)
+	@./scripts/stage-npu-golden-candidate.sh --sdk-tarball work/images/ai-sdk.tar.gz \
+		--output $(VENDOR_OUTPUT)/npu-golden-candidate.tar.gz
