@@ -1,5 +1,6 @@
 vendor-root/
 vendor-files/
+/backup/
 testdata/videos/*.mp4
 testdata/videos/*.md5
 testdata/videos/SHA256SUMS

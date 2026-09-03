@@ -56,6 +56,19 @@ copy_matches() {
             echo "ERROR: required backup input is missing: $pattern" >&2
             return 1
         fi
+        if ((found == 0)) && ((! required)); then
+            case "$pattern" in
+                work/vendor-output/*)
+                    echo 'INFO: vendor output is absent; run `make extract` to regenerate it.' >&2
+                    ;;
+                testdata/videos/*)
+                    echo 'INFO: VPU test data is absent; run `make board-vpu-generate-videos` (all) or `make board-vpu-generate-decode-videos` (two decode files).' >&2
+                    ;;
+                work/images/armbian/*preloaded*.img|work/images/armbian/*.sha256|work/images/armbian/*.manifest.txt|work/images/armbian/.last-final-image)
+                    echo 'INFO: derived image output is absent; run `make image` or `make newsd` to rebuild it.' >&2
+                    ;;
+            esac
+        fi
         found=0
     done
 }
@@ -75,6 +88,17 @@ copy_any() {
     done
     if ((found == 0)); then
         echo "ERROR: required backup input is missing: $label" >&2
+        case "$label" in
+            'matching kernel source')
+                echo 'ACTION: run `make kernel-source` to fetch the sparse orange-pi-6.6-sun60iw2 checkout, then rerun this backup.' >&2
+                ;;
+            'AI SDK')
+                echo 'ACTION: place the AI SDK archive at work/images/ai-sdk.tar.gz, then rerun this backup.' >&2
+                ;;
+            'Orange Pi source image'|'Radxa source image'|'Armbian base image')
+                echo 'ACTION: restore or download the matching source image under work/images/, then rerun this backup.' >&2
+                ;;
+        esac
         return 1
     fi
 }
@@ -94,9 +118,8 @@ backup_required() {
         'work/images/radxa-*.img' 'work/images/radxa-*.img.xz' 'work/images/radxa-*.img.7z'
     copy_any "$set_name" 'Armbian base image' \
         'work/images/armbian/*minimal.img' 'work/images/armbian/*minimal.img.xz' 'work/images/armbian/*minimal.img.7z'
-    copy_matches "$set_name" 1 \
-        'work/images/ai-sdk.tar.gz' \
-        'build-pvrsrvkm/linux-orangepi'
+    copy_any "$set_name" 'AI SDK' 'work/images/ai-sdk.tar.gz'
+    copy_any "$set_name" 'matching kernel source' 'build-pvrsrvkm/linux-orangepi'
     [[ -d "$REPO_ROOT/vendor-files" ]] && copy_one "$set_name" vendor-files
     [[ -d "$REPO_ROOT/vendor-root" ]] && copy_one "$set_name" vendor-root
     write_manifest "$set_name"

@@ -38,6 +38,10 @@
   comparison Make targets.
 - Add categorized external-input backup, checksum manifests, and selective
   restore commands with sensitive-file safeguards.
+- Explain the recovery command when a required backup input, especially the
+  matching kernel source, is missing.
+- Explain how to regenerate missing optional vendor output, VPU test data, and
+  derived image caches during backup.
 - Add the reproducible PowerVR linker/GLVND fix, tty1 Weston service, verifier,
   Make targets, and debugging guide for the A733 Wayland compositor path.
 - Have the Weston installer stop competing LightDM and x11vnc services before
