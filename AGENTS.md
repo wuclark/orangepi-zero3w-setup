@@ -29,6 +29,15 @@ sequencing and ABI checks as safety-critical.
   be committed with mode `644`.
 - Run `tests/static-checks.sh`, `bash -n` on every shell script, PowerShell
   parsing when `pwsh` exists, `git diff --check`, and `tests/test-archives.sh`.
+- Keep the project map in `docs/development/project-map.md` aligned with new
+  directories, entrypoints, and host/board boundaries. When the documentation
+  contract checker is added, run it as part of the same local verification and
+  fix or explicitly exempt every changed script/configuration file.
+- Keep these companion references current and linked from the project map:
+  `make-target-index.md`, `data-lifecycle.md`, `safety-boundaries.md`,
+  `support-matrix.md`, `decision-log.md`, and `evidence-format.md`. Update the
+  relevant reference when a target, artifact flow, safety boundary, support
+  claim, design decision, or evidence field changes.
 - Do not run installers on a development workstation. Hardware tests must be
   explicit and occur on the target board.
 - The base and desktop/package setup paths must not run `apt update` unless the
