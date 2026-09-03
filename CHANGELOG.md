@@ -19,8 +19,13 @@
   optional PNG graph generation through the headless gnuplot package.
 - Render the accumulated temperature CSV as an ASCII line graph after each
   stability-test iteration.
+- Split stability temperature graphs into absolute and delta-from-Skin panels.
 - Show the stability-test wait interval and allow it to be configured.
 - Make continuous high-load stability testing the default with interval zero.
+- Add contributor guidance requiring explanatory documentation and rationale for
+  maintained scripts, configuration, and Make targets.
+- Expand the documentation checklist with platform assumptions, prerequisites,
+  permissions, side effects, provenance, recovery, verification, and examples.
 
 - Exclude generated VPU video fixtures from preloaded images so the small base
   root filesystem does not fill during repository copy.

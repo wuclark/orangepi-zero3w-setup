@@ -87,6 +87,7 @@ grep -q 'STABILITY_STORAGE' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'gnuplot-nox' "$REPO_ROOT/scripts/install-system-benchmark-deps.sh"
 grep -q 'Temperature graph saved' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'set terminal dumb' "$REPO_ROOT/scripts/board-stability-test.sh"
+grep -q 'Delta from Skin history' "$REPO_ROOT/scripts/board-stability-test.sh"
 if grep -qE '<<[[:space:]]*[A-Za-z]' "$REPO_ROOT/scripts/board-stability-test.sh"; then
     echo 'Stability graph must not use a gnuplot heredoc.' >&2
     exit 1

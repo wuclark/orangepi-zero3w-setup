@@ -83,9 +83,10 @@ insert a pause between iterations; a nonzero interval reduces sustained load
 and heat.
 
 Each iteration prints an ASCII temperature snapshot and, when `gnuplot-nox` is
-installed, a historical ASCII line graph from the CSV collected so far. The
-test also saves a CSV file, a text report, and a PNG temperature graph beside
-the report. Install the graph tool with:
+installed, two historical ASCII line graphs from the CSV collected so far: an
+absolute-temperature graph and a graph of each internal sensor minus Skin. The
+test also saves a CSV file, a text report, and a two-panel PNG temperature graph
+beside the report. Install the graph tool with:
 
 ```bash
 sudo make board-system-benchmark-deps

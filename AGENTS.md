@@ -35,6 +35,22 @@ sequencing and ABI checks as safety-critical.
   user explicitly passes an update option.
 - Update README, CLI help, step-by-step guide, tutorial, and changelog whenever
   an input, option, installed path, or support claim changes.
+- Treat documentation as part of every implementation: each maintained
+  executable script and each non-obvious configuration file must explain its
+  purpose, inputs, outputs, root/system writes, safety boundaries, important
+  design decisions, known limitations, and safe extension points. Put concise
+  rationale comments beside non-obvious code and link to a detailed guide when
+  the explanation is too large for the file. Documentation should teach a new
+  maintainer how the component works and why it works that way, not merely list
+  the command that invokes it.
+- Include, where applicable, the supported board/OS/architecture/kernel,
+  prerequisites and required packages/services/devices, permission and sudo
+  requirements, idempotency and repeat-run behavior, created or modified
+  paths/services, download provenance, cleanup/rollback/recovery behavior,
+  expected exit and failure behavior, log/evidence locations, security/privacy
+  considerations, verification commands, normal and advanced examples, and
+  explicit non-goals. Do not document a capability as supported unless the
+  corresponding verification evidence exists.
 - Record hardware test evidence using `scripts/collect-diagnostics.sh` and put
   sanitized results in an issue; never commit secrets, host keys, or VNC hashes.
 

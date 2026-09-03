@@ -85,9 +85,9 @@ ALSA audio test, repository cores, X11/SSH behavior, repair, and uninstall.
 Use `sudo make board-retroarch-core-check` to inspect advanced ARM64 cores,
 `sudo make board-retroarch-audio-auto` to select the working ALSA device, and
 `sudo make board-stability-test STABILITY_MINUTES=30` for bounded headless
-endurance testing. It prints an ASCII temperature snapshot and historical line
-graph after each iteration and saves CSV, text, and (with `gnuplot-nox`) PNG
-graph output.
+endurance testing. It prints an ASCII temperature snapshot, absolute and
+Skin-delta historical line graphs after each iteration, and saves CSV, text,
+and (with `gnuplot-nox`) a two-panel PNG graph.
 The default interval is zero for continuous high-load testing; use
 `STABILITY_INTERVAL_SECONDS=5` to insert a pause between iterations.
 For a complete initial board setup that also installs GPU, VPU, and experimental

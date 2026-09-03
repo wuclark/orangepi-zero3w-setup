@@ -70,8 +70,10 @@ ascii_graph() {
 
 ascii_history_graph() {
     command -v gnuplot >/dev/null 2>&1 || return 0
-    echo 'Temperature history (C):'
-    gnuplot -e "set datafile separator ','; set terminal dumb 110 24; set title 'Temperature history'; set xlabel 'Iteration'; set ylabel 'C'; set key outside; set grid; plot '$CSV_OUTPUT' every ::1 using 1:4 with linespoints title 'CPU', '$CSV_OUTPUT' every ::1 using 1:5 with linespoints title 'GPU', '$CSV_OUTPUT' every ::1 using 1:6 with linespoints title 'NPU', '$CSV_OUTPUT' every ::1 using 1:7 with linespoints title 'DDR'"
+    echo 'Absolute temperature history (C):'
+    gnuplot -e "set datafile separator ','; set terminal dumb 110 20; set title 'Absolute temperature'; set xlabel 'Iteration'; set ylabel 'C'; set key outside; set grid; plot '$CSV_OUTPUT' every ::1 using 1:4 with linespoints title 'CPU', '$CSV_OUTPUT' every ::1 using 1:5 with linespoints title 'GPU', '$CSV_OUTPUT' every ::1 using 1:6 with linespoints title 'NPU', '$CSV_OUTPUT' every ::1 using 1:7 with linespoints title 'DDR', '$CSV_OUTPUT' every ::1 using 1:8 with linespoints title 'Skin'"
+    echo 'Delta from Skin history (C):'
+    gnuplot -e "set datafile separator ','; set terminal dumb 110 20; set title 'Temperature delta from Skin'; set xlabel 'Iteration'; set ylabel 'C'; set key outside; set grid; plot '$CSV_OUTPUT' every ::1 using 1:(\$4-\$8) with linespoints title 'CPU-Skin', '$CSV_OUTPUT' every ::1 using 1:(\$5-\$8) with linespoints title 'GPU-Skin', '$CSV_OUTPUT' every ::1 using 1:(\$6-\$8) with linespoints title 'NPU-Skin', '$CSV_OUTPUT' every ::1 using 1:(\$7-\$8) with linespoints title 'DDR-Skin'"
 }
 
 printf 'Orange Pi stability test: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -140,7 +142,7 @@ printf '\nSUMMARY: iterations=%d failures=%d\n' "$iteration" "$failures"
 echo '===== TEMPERATURE SUMMARY ====='
 awk -F, 'NR > 1 {for (i = 4; i <= 8; i++) if ($i != "") {sum[i] += $i; count[i]++; if (!(i in min) || $i < min[i]) min[i] = $i; if (!(i in max) || $i > max[i]) max[i] = $i}} END {names[4]="CPU"; names[5]="GPU"; names[6]="NPU"; names[7]="DDR"; names[8]="Skin"; for (i = 4; i <= 8; i++) if (count[i]) printf "%s: min=%.1fC max=%.1fC avg=%.1fC\n", names[i], min[i], max[i], sum[i] / count[i]}' "$CSV_OUTPUT"
 if command -v gnuplot >/dev/null 2>&1; then
-    if gnuplot -e "set datafile separator ','; set terminal pngcairo size 1200,700 noenhanced; set output '$GRAPH_OUTPUT'; set title 'Orange Pi stability temperatures'; set xlabel 'Iteration'; set ylabel 'Temperature (C)'; set key outside; set grid; plot '$CSV_OUTPUT' every ::1 using 1:4 with linespoints title 'CPU', '$CSV_OUTPUT' every ::1 using 1:5 with linespoints title 'GPU', '$CSV_OUTPUT' every ::1 using 1:6 with linespoints title 'NPU', '$CSV_OUTPUT' every ::1 using 1:7 with linespoints title 'DDR', '$CSV_OUTPUT' every ::1 using 1:8 with linespoints title 'Skin'" > /dev/null 2>&1 && [[ -s $GRAPH_OUTPUT ]]; then
+    if gnuplot -e "set datafile separator ','; set terminal pngcairo size 1200,1000 noenhanced; set output '$GRAPH_OUTPUT'; set multiplot layout 2,1; set xlabel 'Iteration'; set ylabel 'Temperature (C)'; set key outside; set grid; set title 'Absolute temperature'; plot '$CSV_OUTPUT' every ::1 using 1:4 with linespoints title 'CPU', '$CSV_OUTPUT' every ::1 using 1:5 with linespoints title 'GPU', '$CSV_OUTPUT' every ::1 using 1:6 with linespoints title 'NPU', '$CSV_OUTPUT' every ::1 using 1:7 with linespoints title 'DDR', '$CSV_OUTPUT' every ::1 using 1:8 with linespoints title 'Skin'; set ylabel 'Delta from Skin (C)'; set title 'Temperature delta from Skin'; plot '$CSV_OUTPUT' every ::1 using 1:(\$4-\$8) with linespoints title 'CPU-Skin', '$CSV_OUTPUT' every ::1 using 1:(\$5-\$8) with linespoints title 'GPU-Skin', '$CSV_OUTPUT' every ::1 using 1:(\$6-\$8) with linespoints title 'NPU-Skin', '$CSV_OUTPUT' every ::1 using 1:(\$7-\$8) with linespoints title 'DDR-Skin'; unset multiplot" > /dev/null 2>&1 && [[ -s $GRAPH_OUTPUT ]]; then
         echo "Temperature graph saved to $GRAPH_OUTPUT"
     else
         echo "WARNING: gnuplot did not create $GRAPH_OUTPUT"
