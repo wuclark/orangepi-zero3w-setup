@@ -134,6 +134,13 @@ ordering.
 Keep real images, extracted roots, archives, logs, models, and test output under
 the ignored `work/` directory or outside the repository.
 
+`check-documentation-contract.sh` checks every maintained shell entrypoint,
+test harness, Makefile, and selected configuration file. Each file must have
+the standard explanatory header fields, or a path-specific exception in
+`documentation-contract-exceptions.txt` that names the guide carrying its
+contract. Exceptions are validated for existing paths and guides, so new
+entrypoints cannot silently bypass documentation review.
+
 The final `make newsd` summary is a handoff record only: it reports paths,
 hashes, selected non-secret settings, and whether credentials are set. It does
 not print passwords.

@@ -42,7 +42,7 @@ specified in `AGENTS.md`.
   validation, acceleration, desktop/remote, benchmark, health, backup/restore,
   and reboot actions while showing the equivalent command and requiring
   confirmation for installs, desktop changes, restores, and reboots.
-- [ ] Add a lightweight documentation-contract checker to `tests/static-checks.sh`.
+- [x] Add a lightweight documentation-contract checker to `tests/static-checks.sh`.
   Require a standard explanatory header or a linked guide/exception for each
   maintained script and non-obvious configuration/Make entrypoint, without
   trying to judge prose quality.

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a documentation-contract checker and validated, path-specific legacy exceptions.
+
 - Add host and board Make targets for testing the AI SDK custom-LUT NPU golden
   candidate without confusing it with the pinned operator smoke test.
 - Include the private NPU golden-candidate check in board validation when its

@@ -2,6 +2,8 @@
 set -Eeuo pipefail
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 
+"$REPO_ROOT/tests/check-documentation-contract.sh"
+
 while IFS= read -r script; do
     bash -n "$script"
 done < <(find "$REPO_ROOT/scripts" "$REPO_ROOT/tests" -type f -name '*.sh' | sort)

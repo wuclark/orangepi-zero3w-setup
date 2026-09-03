@@ -23,6 +23,7 @@ remain outside Git.
 │   ├── host/                             pre-boot host workflow tests
 │   ├── board/                            explicit real-board test entrypoints
 │   ├── static-checks.sh                  syntax/policy/path checks
+│   ├── check-documentation-contract.sh  documentation contract enforcement
 │   └── test-archives.sh                  generated archive safety checks
 ├── docs/
 │   ├── development/                      contributor workflow and this map

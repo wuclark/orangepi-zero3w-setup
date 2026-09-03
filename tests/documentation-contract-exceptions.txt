@@ -1,0 +1,62 @@
+# path|why a standard header is not practical|guide containing the maintained contract
+config/img_icd.json|JSON syntax does not permit explanatory comments|docs/reference/architecture.md
+config/10-sunxi-primary.conf|legacy Xorg fragment is explained by the display guide|docs/reference/architecture.md
+config/90-orangepi-xterm|legacy Xresources fragment is explained by the desktop guide|docs/guide/03-desktop-sessions.md
+config/95-zero3w-vnc-tunnel|legacy Xorg fragment is explained by the remote-access guide|docs/guide/04-remote-access.md
+config/99-orangepi-zero3w-cedar.rules|udev syntax is explained by the VPU guide|docs/optional/vpu.md
+config/Xorg-pvr|legacy Xorg fragment is explained by the GPU guide|docs/optional/gpu/gpu.md
+config/pvr-late-load.service|legacy systemd unit is explained by the GPU guide|docs/optional/gpu/gpu.md
+systemd/weston-pvr.service|legacy systemd unit is explained by the desktop guide|docs/guide/03-desktop-sessions.md
+manifests/reference-stack.env|data-only manifest is explained by the architecture reference|docs/reference/architecture.md
+docker/extraction-toolchain.Dockerfile|data-only build recipe is explained by the development guide|docs/development/development.md
+Makefile|target catalog and safety notes are maintained in the target index|docs/development/make-target-index.md
+scripts/10-fix-pvr-linker-and-glvnd.sh|legacy entrypoint has inline usage and is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/20-install-weston-service.sh|legacy entrypoint has inline usage and is covered by the desktop guide|docs/guide/03-desktop-sessions.md
+scripts/98-verify-sway-wayvnc.sh|legacy entrypoint has inline usage and is covered by the remote-access guide|docs/guide/04-remote-access.md
+scripts/armbian-bootstrap.sh|legacy entrypoint has inline usage and is covered by the installation guide|docs/development/development.md
+scripts/armbian-first-run.sh|legacy wrapper is covered by the installation guide|docs/development/development.md
+scripts/armbian-provision.sh|legacy entrypoint has inline usage and is covered by the installation guide|docs/development/development.md
+scripts/board-audio-status.sh|read-only status helper is covered by the board guide|docs/development/development.md
+scripts/board-display-status.sh|read-only status helper is covered by the display guide|docs/guide/03-desktop-sessions.md
+scripts/board-gpu-abi-check.sh|read-only status helper is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/board-stability-test.sh|legacy benchmark is covered by the board guide|docs/development/development.md
+scripts/build-docker-toolchain.sh|host build helper is covered by the development guide|docs/development/development.md
+scripts/build-pvrsrvkm.sh|build helper has inline usage and is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/collect-board-reports.sh|report helper is covered by the evidence guide|docs/development/evidence-format.md
+scripts/compare-board-reports.sh|report helper is covered by the evidence guide|docs/development/evidence-format.md
+scripts/create-headless-preset.sh|legacy helper is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/fetch-vpu-test-videos.sh|fixture helper is covered by the VPU guide|docs/optional/vpu.md
+scripts/gen_test_videos.sh|fixture helper is covered by the VPU guide|docs/optional/vpu.md
+scripts/install-docker.sh|legacy installer is covered by the development guide|docs/development/development.md
+scripts/install-kernel-module.sh|legacy installer is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/install-userspace.sh|legacy installer is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/install-vulkan-compute-deps.sh|legacy installer is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/install-wayvnc.sh|legacy installer is covered by the remote-access guide|docs/guide/04-remote-access.md
+scripts/install-wsl-vulkan-compute-deps.sh|host helper is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/install-x11.sh|legacy installer is covered by the desktop guide|docs/guide/03-desktop-sessions.md
+scripts/install-x11vnc.sh|legacy installer is covered by the remote-access guide|docs/guide/04-remote-access.md
+scripts/lib.sh|sourced helper library is covered by the development guide|docs/development/development.md
+scripts/preflight.sh|legacy wrapper is covered by the installation guide|docs/development/development.md
+scripts/prepare-vendor-archives.sh|legacy staging helper is covered by the archive guide|docs/development/development.md
+scripts/publish-vpu-test-videos.sh|fixture helper is covered by the VPU guide|docs/optional/vpu.md
+scripts/run-pvr-app.sh|small environment wrapper is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/run-vulkan-compute-benchmark.sh|benchmark helper is covered by the GPU guide|docs/optional/gpu/gpu.md
+scripts/setup-base.sh|legacy setup wrapper is covered by the installation guide|docs/development/development.md
+scripts/setup-core.sh|legacy setup wrapper is covered by the installation guide|docs/development/development.md
+scripts/setup-npu.sh|legacy wrapper is covered by the NPU guide|docs/optional/npu.md
+scripts/setup-status.sh|read-only status helper is covered by the installation guide|docs/development/development.md
+scripts/setup-uninstall.sh|legacy wrapper is covered by the recovery guide|docs/development/development.md
+scripts/setup-vpu.sh|legacy setup wrapper is covered by the VPU guide|docs/optional/vpu.md
+scripts/show-build-summary.sh|report helper is covered by the development guide|docs/development/development.md
+scripts/stage-npu-test-assets.sh|legacy staging helper is covered by the NPU guide|docs/optional/npu.md
+scripts/sync-a733-sources.sh|legacy source helper is covered by the development guide|docs/development/development.md
+scripts/test-npu.sh|test helper is covered by the NPU guide|docs/optional/npu.md
+scripts/test-vpu-decode.sh|test helper is covered by the VPU guide|docs/optional/vpu.md
+scripts/uninstall.sh|legacy recovery entrypoint is covered by the recovery guide|docs/development/development.md
+scripts/validate-image-before-write.sh|safety helper is covered by the image guide|docs/development/development.md
+scripts/verify-docker.sh|host verification helper is covered by the development guide|docs/development/development.md
+scripts/weston-pvr-launch.sh|legacy launcher is covered by the desktop guide|docs/guide/03-desktop-sessions.md
+tests/static-checks.sh|test harness is covered by the development guide|docs/development/development.md
+tests/test-archives.sh|test harness is covered by the archive guide|docs/development/development.md
+tests/board/test-postboot-acceleration.sh|board test harness is covered by the acceleration guide|docs/reference/acceleration-status.md
+tests/host/test-preboot-extraction.sh|host test harness is covered by the archive guide|docs/development/development.md
