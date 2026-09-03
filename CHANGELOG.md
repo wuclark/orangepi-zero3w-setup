@@ -15,6 +15,8 @@
 - Add read-only display and ALSA status reports for HDMI and USB-C DP testing.
 - Add advanced-core checks, automatic ALSA device selection, and a bounded
   headless GPU/VPU/NPU stability test with optional storage testing.
+- Add per-iteration ASCII temperature output, CSV data, summary statistics, and
+  optional PNG graph generation through the headless gnuplot package.
 
 - Exclude generated VPU video fixtures from preloaded images so the small base
   root filesystem does not fill during repository copy.

@@ -77,6 +77,14 @@ new matching kernel messages. `STABILITY_STORAGE=yes` also runs the storage
 benchmark in each iteration and writes temporary data to the storage device;
 use it only when deliberate SD-card write testing is intended.
 
+Each iteration prints an ASCII temperature snapshot. The test also saves a CSV
+file, a text report, and—when `gnuplot-nox` is installed—a PNG temperature graph
+beside the report. Install the graph tool with:
+
+```bash
+sudo make board-system-benchmark-deps
+```
+
 If downloaded cores do not show friendly names, refresh Debian's core
 information package and, when available, RetroArch's Core Info Files:
 

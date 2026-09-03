@@ -90,7 +90,7 @@ help:
 		'make board-gpu-abi-check                 Check kernel/module ABI before GPU use' \
 		'make board-headless-benchmark             Run GPU, VPU, and NPU headless benchmarks' \
 		'make board-system-benchmark               Run CPU, compression, crypto, and memory benchmarks' \
-		'make board-system-benchmark-deps          Install system benchmark tools' \
+		'make board-system-benchmark-deps          Install benchmark tools and gnuplot-nox graph support' \
 		'make board-thermal-monitor                Monitor temperature/power during a command' \
 		'make board-storage-health                 Run read-only storage health checks' \
 		'make board-retroarch-install             Install RetroArch, cores, and PowerVR Vulkan wrapper' \
