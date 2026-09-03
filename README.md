@@ -82,6 +82,10 @@ Use `sudo make board-retroarch-download-advanced` to fetch the official
 Libretro aarch64 PS/N64/PSP/Dreamcast cores.
 See [Retro Gaming / RetroArch](docs/optional/retroarch.md) for the launcher,
 ALSA audio test, repository cores, X11/SSH behavior, repair, and uninstall.
+Use `sudo make board-retroarch-core-check` to inspect advanced ARM64 cores,
+`sudo make board-retroarch-audio-auto` to select the working ALSA device, and
+`sudo make board-stability-test STABILITY_MINUTES=30` for bounded headless
+endurance testing.
 For a complete initial board setup that also installs GPU, VPU, and experimental
 NPU acceleration, run `sudo make board-initial-setup`. It runs base, packages,
 core, and the acceleration installers; source-tree cloning is optional. It does
@@ -117,6 +121,10 @@ available power sensors.
 Use `sudo make board-storage-health` for a read-only storage report covering
 mounts, space, block devices, MMC health data, SMART support, and kernel I/O
 errors.
+Use `sudo make board-display-status` to report HDMI and USB-C DisplayPort
+connector state, X11 outputs, and available modes. Use `sudo make
+board-audio-status` to enumerate ALSA cards and playback devices without
+starting playback.
 Use `make board-report` to collect one normalized report from the current board.
 From a workstation, use `make collect-boards` to collect reports over SSH; it
 prompts for space-separated `user@host` values when `BOARDS` is omitted. Set

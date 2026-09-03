@@ -12,8 +12,10 @@ REPAIR=no
 EMULATIONSTATION=no
 ADVANCED_CORES=no
 DOWNLOAD_ADVANCED=no
+AUTO_AUDIO=no
 AUDIO_DEVICE=${RETROARCH_AUDIO_DEVICE:-default}
 CORE_FILES=${RETROARCH_CORE_FILES:-}
+CORE_CACHE_DIR=${RETROARCH_CORE_CACHE_DIR:-/var/cache/orangepi-zero3w-setup/retroarch-cores}
 LOG_FILE=/var/log/orangepi-zero3w-setup/retroarch-install.log
 
 usage() {
@@ -28,6 +30,7 @@ Options:
   --emulationstation       Install EmulationStation when available
   --advanced-cores         Install available advanced cores or supplied ARM64 .so files
   --download-advanced      Download five official Libretro aarch64 cores
+  --audio-auto             Select ALSA default, then explicit HDMI plughw
   --core-file FILE         Install a user-supplied ARM64 Libretro .so core
   --update                  Explicitly refresh apt metadata
   -h, --help                Show this help
@@ -46,6 +49,7 @@ while (($#)); do
         --emulationstation) EMULATIONSTATION=yes; shift;;
         --advanced-cores) ADVANCED_CORES=yes; shift;;
         --download-advanced) ADVANCED_CORES=yes; DOWNLOAD_ADVANCED=yes; shift;;
+        --audio-auto) AUTO_AUDIO=yes; shift;;
         --core-file) ADVANCED_CORES=yes; CORE_FILES+=" ${2:?missing core file}"; shift 2;;
         --update) UPDATE=yes; shift;;
         -h|--help) usage; exit 0;;
@@ -129,6 +133,25 @@ if [[ $REPAIR == no ]]; then
         grep -Fxq "$package" "$state_file" || printf '%s\n' "$package" >> "$state_file"
     done
 fi
+if [[ $AUTO_AUDIO == yes ]]; then
+    if ! command -v speaker-test >/dev/null 2>&1; then
+        warn 'speaker-test is unavailable; retaining the configured ALSA device.'
+    else
+        for candidate in default plughw:CARD=allwinnerhdmi,DEV=0; do
+            log "Trying ALSA playback device: $candidate"
+            set +e
+            timeout 4s speaker-test -D "$candidate" -c 2 -r 48000 -F S16_LE -t wav -l 1 >/tmp/orangepi-retroarch-audio-test.log 2>&1
+            audio_status=$?
+            set -e
+            if [[ $audio_status -eq 0 ]]; then
+                AUDIO_DEVICE=$candidate
+                log "Selected ALSA playback device: $AUDIO_DEVICE"
+                break
+            fi
+        done
+        rm -f /tmp/orangepi-retroarch-audio-test.log
+    fi
+fi
 
 CFG_DIR="$USER_HOME/.config/retroarch"
 CFG="$CFG_DIR/retroarch.cfg"
@@ -136,13 +159,29 @@ if [[ $DOWNLOAD_ADVANCED == yes ]]; then
     download_dir=$(mktemp -d)
     trap 'rm -rf "$download_dir"' EXIT
     install -d -m 755 /usr/lib/aarch64-linux-gnu/libretro
-    core_base_url=${RETROARCH_CORE_BASE_URL:-https://buildbot.libretro.com/nightly/linux/aarch64/latest}
+    install -d -m 755 "$CORE_CACHE_DIR"
+    core_latest_url=${RETROARCH_CORE_BASE_URL:-https://buildbot.libretro.com/nightly/linux/aarch64/latest}
     for core_name in pcsx_rearmed mednafen_psx_hw parallel_n64 ppsspp flycast; do
+        cached_zip="$CORE_CACHE_DIR/${core_name}_libretro.so.zip"
+        cached_hash="$cached_zip.sha256"
         core_zip="$download_dir/${core_name}_libretro.so.zip"
         core_source="$download_dir/${core_name}_libretro.so"
-        log "Downloading official aarch64 Libretro core: $core_name"
-        curl --fail --location --retry 3 --silent --show-error \
-            "$core_base_url/${core_name}_libretro.so.zip" -o "$core_zip"
+        if [[ -s $cached_zip && -s $cached_hash ]] && (cd "$CORE_CACHE_DIR" && sha256sum -c "$(basename -- "$cached_hash")" >/dev/null 2>&1); then
+            log "Reusing cached hash-verified aarch64 Libretro core: $core_name"
+            cp -a "$cached_zip" "$core_zip"
+        else
+            core_base_url=${RETROARCH_CORE_PINNED_BASE_URL:-$core_latest_url}
+            if [[ -n ${RETROARCH_CORE_PINNED_BASE_URL:-} ]]; then
+                log "Downloading pinned aarch64 Libretro core: $core_name"
+            else
+                log "No cached or pinned archive for $core_name; falling back to official latest aarch64 build"
+            fi
+            curl --fail --location --retry 3 --silent --show-error \
+                "$core_base_url/${core_name}_libretro.so.zip" -o "$core_zip"
+            unzip -tqq "$core_zip"
+            cp -a "$core_zip" "$cached_zip"
+            (cd "$CORE_CACHE_DIR" && sha256sum "$(basename -- "$cached_zip")" >"$(basename -- "$cached_hash")")
+        fi
         unzip -tqq "$core_zip"
         unzip -p "$core_zip" "${core_name}_libretro.so" > "$core_source"
         [[ -s $core_source ]] || die "Downloaded core archive did not contain ${core_name}_libretro.so"

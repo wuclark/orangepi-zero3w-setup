@@ -80,6 +80,12 @@ grep -q -- '--storage' "$REPO_ROOT/scripts/board-system-benchmark.sh"
 grep -q -- '--network' "$REPO_ROOT/scripts/board-system-benchmark.sh"
 grep -q '90-orangepi-xterm' "$REPO_ROOT/scripts/setup-desktop.sh"
 grep -q 'XTerm\*foreground: white' "$REPO_ROOT/config/90-orangepi-xterm"
+grep -q 'board-retroarch-core-check' "$REPO_ROOT/Makefile"
+grep -q 'audio-auto' "$REPO_ROOT/scripts/install-retroarch.sh"
+grep -q 'board-stability-test' "$REPO_ROOT/Makefile"
+grep -q 'STABILITY_STORAGE' "$REPO_ROOT/scripts/board-stability-test.sh"
+grep -q 'USB-C DP interpretation' "$REPO_ROOT/scripts/board-display-status.sh"
+grep -q 'allwinnerhdmi' "$REPO_ROOT/scripts/board-audio-status.sh"
 
 if grep -qs 'PRESET_HOSTNAME' "$REPO_ROOT/scripts/create-headless-preset.sh" \
     "$REPO_ROOT/windows/Prepare-HeadlessPreset.ps1"; then

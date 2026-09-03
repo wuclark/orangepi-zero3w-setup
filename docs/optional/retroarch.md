@@ -20,6 +20,7 @@ APT sources and/or provide legally obtained ARM64 Libretro `.so` files:
 sudo make board-retroarch-advanced
 sudo make board-retroarch-advanced RETROARCH_CORE_FILES='/path/to/pcsx.so /path/to/flycast.so'
 sudo make board-retroarch-download-advanced
+sudo make board-retroarch-core-check
 ```
 
 The supplied files are checked as ARM64 and installed alongside Debian cores
@@ -31,6 +32,11 @@ from the official Libretro buildbot, validates each ZIP, and validates the
 ARM64 payload before installation. It uses the mutable `latest` buildbot path;
 for reproducible deployments, set `RETROARCH_CORE_BASE_URL` to a dated or
 privately mirrored directory that you have reviewed.
+
+`board-retroarch-core-check` checks the five advanced cores for ARM64 format,
+unresolved shared-library dependencies, and bounded RetroArch loading evidence.
+Missing cores are reported as warnings; run the download target first when all
+five are wanted.
 
 The installer configures the selected non-root desktop user and creates the
 `RetroArch (PowerVR Vulkan)` application entry and the
@@ -46,6 +52,7 @@ if the default device cannot play, try:
 ```bash
 sudo make board-retroarch-audio-test
 sudo make board-retroarch-audio-test RETROARCH_AUDIO_DEVICE=plughw:CARD=allwinnerhdmi,DEV=0
+sudo make board-retroarch-audio-auto
 ```
 
 The test is bounded and can also be stopped with Ctrl-C. MIDI is disabled to
@@ -53,6 +60,22 @@ avoid irrelevant `/dev/snd/seq` errors. Group changes require a new login or
 reboot. A local desktop session is preferred for the X11 smoke test; SSH
 without X11 authorization can make RetroArch report a `null` Vulkan context
 even when `vulkaninfo` correctly sees PowerVR.
+
+`board-retroarch-audio-auto` backs up the configuration, tests `default` and
+then the explicit HDMI `plughw` device, and keeps the first working device.
+Use `board-audio-status` to inspect cards without playing anything, and
+`board-display-status` to inspect HDMI and USB-C DP connectors.
+
+For repeated no-display hardware testing, run:
+
+```bash
+sudo make board-stability-test STABILITY_MINUTES=30
+```
+
+This repeats the GPU/VPU/NPU headless workloads and records temperatures and
+new matching kernel messages. `STABILITY_STORAGE=yes` also runs the storage
+benchmark in each iteration and writes temporary data to the storage device;
+use it only when deliberate SD-card write testing is intended.
 
 If downloaded cores do not show friendly names, refresh Debian's core
 information package and, when available, RetroArch's Core Info Files:

@@ -15,6 +15,8 @@ BOARD_TEST_OUTPUT ?= /var/log/orangepi-zero3w-setup/postboot-acceleration.txt
 BOARD_DIAGNOSTICS_OUTPUT ?= /var/log/orangepi-zero3w-setup/diagnostics.txt
 BOARD_REPORT_OUTPUT ?=
 BOARD_REPORTS_OUTPUT ?=
+STABILITY_MINUTES ?= 30
+STABILITY_STORAGE ?= no
 REMOTE_REPO ?= ~/orangepi-zero3w-setup
 REPORT_DIR ?=
 BACKUP_DIR ?=
@@ -47,7 +49,7 @@ GIT_DEPTH ?= 1
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test npu-test-assets \
 	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports \
 	backup-required backup-cache backup-sensitive backup-all restore \
-	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced board-retroarch-download-advanced
+	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-audio-auto board-retroarch-core-check board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced board-retroarch-download-advanced board-display-status board-audio-status board-stability-test
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -95,10 +97,15 @@ help:
 		'make board-retroarch-verify              Validate RetroArch Vulkan, X11, and ALSA' \
 		'make board-retroarch-repair              Restore the newest config backup and repair settings' \
 		'make board-retroarch-audio-test          Run the bounded HDMI ALSA speaker test' \
+		'make board-retroarch-audio-auto          Select the working ALSA playback device automatically' \
+		'make board-retroarch-core-check          Check advanced ARM64 core files and dependencies' \
 		'make board-retroarch-uninstall           Remove tracked RetroArch packages and files' \
 		'make board-retroarch-emulationstation   Install repository EmulationStation when available' \
 		'make board-retroarch-advanced            Install available/manual advanced ARM64 cores' \
 		'make board-retroarch-download-advanced   Download official aarch64 PS/N64/PSP/Dreamcast cores' \
+		'make board-display-status                Report HDMI/USB-C DP connector and X11 outputs' \
+		'make board-audio-status                  Report ALSA cards and playback devices' \
+		'make board-stability-test [STABILITY_MINUTES=30]  Repeat headless tests; default is 30 minutes' \
 		'make board-gpu-wayland-setup             Install Sway and WayVNC as the default Wayland path' \
 		'make board-gpu-wayland-verify            Verify the Sway Wayland session and WayVNC' \
 		'make board-gpu-weston-setup              Install the explicit Weston PowerVR service path' \
@@ -307,6 +314,12 @@ board-retroarch-repair:
 board-retroarch-audio-test:
 	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/retroarch-audio-test.sh; else sudo RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/retroarch-audio-test.sh; fi
 
+board-retroarch-audio-auto:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' ./scripts/install-retroarch.sh --install --audio-auto; else sudo RETROARCH_USER='$(RETROARCH_USER)' ./scripts/install-retroarch.sh --install --audio-auto; fi
+
+board-retroarch-core-check:
+	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' ./scripts/board-retroarch-core-check.sh; else sudo RETROARCH_USER='$(RETROARCH_USER)' ./scripts/board-retroarch-core-check.sh; fi
+
 board-retroarch-uninstall:
 	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' ./scripts/uninstall-retroarch.sh; else sudo RETROARCH_USER='$(RETROARCH_USER)' ./scripts/uninstall-retroarch.sh; fi
 
@@ -315,6 +328,15 @@ board-retroarch-advanced:
 
 board-retroarch-download-advanced:
 	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_CORE_BASE_URL='$(RETROARCH_CORE_BASE_URL)' ./scripts/install-retroarch.sh --install --download-advanced; else sudo RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_CORE_BASE_URL='$(RETROARCH_CORE_BASE_URL)' ./scripts/install-retroarch.sh --install --download-advanced; fi
+
+board-display-status:
+	if [ "$$(id -u)" -eq 0 ]; then DISPLAY_STATUS_USER='$(RETROARCH_USER)' ./scripts/board-display-status.sh; else sudo DISPLAY_STATUS_USER='$(RETROARCH_USER)' ./scripts/board-display-status.sh; fi
+
+board-audio-status:
+	if [ "$$(id -u)" -eq 0 ]; then ./scripts/board-audio-status.sh; else sudo ./scripts/board-audio-status.sh; fi
+
+board-stability-test:
+	if [ "$$(id -u)" -eq 0 ]; then STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' ./scripts/board-stability-test.sh; else sudo STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' ./scripts/board-stability-test.sh; fi
 
 board-base:
 	sudo ./setup.sh base

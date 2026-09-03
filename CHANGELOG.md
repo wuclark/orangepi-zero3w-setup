@@ -10,6 +10,11 @@
   user-supplied ARM64 Libretro cores.
 - Add an opt-in official Libretro aarch64 downloader for PS, N64, PSP, and
   Dreamcast cores with ZIP and ARM64 payload validation.
+- Cache downloaded RetroArch core archives with SHA-256 manifests, reusing them
+  before falling back to the official latest buildbot path.
+- Add read-only display and ALSA status reports for HDMI and USB-C DP testing.
+- Add advanced-core checks, automatic ALSA device selection, and a bounded
+  headless GPU/VPU/NPU stability test with optional storage testing.
 
 - Exclude generated VPU video fixtures from preloaded images so the small base
   root filesystem does not fill during repository copy.
