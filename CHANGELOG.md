@@ -17,6 +17,8 @@
   headless GPU/VPU/NPU stability test with optional storage testing.
 - Add per-iteration ASCII temperature output, CSV data, summary statistics, and
   optional PNG graph generation through the headless gnuplot package.
+- Render the accumulated temperature CSV as an ASCII line graph after each
+  stability-test iteration.
 
 - Exclude generated VPU video fixtures from preloaded images so the small base
   root filesystem does not fill during repository copy.

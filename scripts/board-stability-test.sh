@@ -66,6 +66,24 @@ ascii_graph() {
     echo
 }
 
+ascii_history_graph() {
+    command -v gnuplot >/dev/null 2>&1 || return 0
+    echo 'Temperature history (C):'
+    gnuplot <<GNUPLOT
+set datafile separator ','
+set terminal dumb 110 24
+set title 'Temperature history'
+set xlabel 'Iteration'
+set ylabel 'C'
+set key outside
+set grid
+plot '$CSV_OUTPUT' every ::1 using 1:4 with linespoints title 'CPU', \
+     '$CSV_OUTPUT' every ::1 using 1:5 with linespoints title 'GPU', \
+     '$CSV_OUTPUT' every ::1 using 1:6 with linespoints title 'NPU', \
+     '$CSV_OUTPUT' every ::1 using 1:7 with linespoints title 'DDR'
+GNUPLOT
+}
+
 printf 'Orange Pi stability test: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 uname -a
 printf 'duration_minutes=%s\n' "$MINUTES"
@@ -109,6 +127,7 @@ while (( $(date +%s) < deadline || iteration == 0 )); do
     fi
     printf '%d,%d,%s,%s,%s,%s,%s,%s,%s\n' "$iteration" "$(date +%s)" "$SAMPLE_UTC" \
         "${TEMP_CPUB:-}" "${TEMP_GPU:-}" "${TEMP_NPU:-}" "${TEMP_DDR:-}" "${TEMP_SKIN:-}" "$result_label" >>"$CSV_OUTPUT"
+    ascii_history_graph
     (( $(date +%s) >= deadline )) && break
     sleep 30
 done
