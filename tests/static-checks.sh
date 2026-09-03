@@ -87,6 +87,10 @@ grep -q 'STABILITY_STORAGE' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'gnuplot-nox' "$REPO_ROOT/scripts/install-system-benchmark-deps.sh"
 grep -q 'Temperature graph saved' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'set terminal dumb' "$REPO_ROOT/scripts/board-stability-test.sh"
+if grep -qE '<<[[:space:]]*[A-Za-z]' "$REPO_ROOT/scripts/board-stability-test.sh"; then
+    echo 'Stability graph must not use a gnuplot heredoc.' >&2
+    exit 1
+fi
 grep -q 'STABILITY_INTERVAL_SECONDS' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'interval=0' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'USB-C DP interpretation' "$REPO_ROOT/scripts/board-display-status.sh"
