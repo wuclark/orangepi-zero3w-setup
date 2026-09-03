@@ -7,7 +7,7 @@ require_root
 
 MINUTES=${STABILITY_MINUTES:-30}
 STORAGE=${STABILITY_STORAGE:-no}
-INTERVAL=${STABILITY_INTERVAL_SECONDS:-30}
+INTERVAL=${STABILITY_INTERVAL_SECONDS:-0}
 OUTPUT=${STABILITY_OUTPUT:-/var/log/orangepi-zero3w-setup/stability-test-$(date -u +%Y%m%dT%H%M%SZ).txt}
 CSV_OUTPUT=${STABILITY_CSV_OUTPUT:-${OUTPUT%.txt}.csv}
 GRAPH_OUTPUT=${STABILITY_GRAPH_OUTPUT:-${OUTPUT%.txt}.png}
@@ -92,7 +92,7 @@ printf 'duration_minutes=%s\n' "$MINUTES"
 printf 'storage_benchmark=%s\n' "$STORAGE"
 printf 'iteration_interval_seconds=%s\n' "$INTERVAL"
 echo "To change duration: sudo make board-stability-test STABILITY_MINUTES=MINUTES"
-echo 'Default duration is 30 minutes; storage testing is disabled unless STABILITY_STORAGE=yes is supplied.'
+echo 'Default duration is 30 minutes with no interval between iterations; storage testing is disabled unless STABILITY_STORAGE=yes is supplied.'
 echo 'Repeats headless GPU/VPU/NPU workloads and records temperatures.'
 echo 'Storage mode writes a temporary benchmark file; use it only when intended.'
 
@@ -132,7 +132,11 @@ while (( $(date +%s) < deadline || iteration == 0 )); do
         "${TEMP_CPUB:-}" "${TEMP_GPU:-}" "${TEMP_NPU:-}" "${TEMP_DDR:-}" "${TEMP_SKIN:-}" "$result_label" >>"$CSV_OUTPUT"
     ascii_history_graph
     (( $(date +%s) >= deadline )) && break
-    echo "Waiting $INTERVAL seconds before the next iteration..."
+    if ((INTERVAL == 0)); then
+        echo 'Continuing immediately with the next iteration (interval=0).'
+    else
+        echo "Waiting $INTERVAL seconds before the next iteration..."
+    fi
     sleep "$INTERVAL"
 done
 

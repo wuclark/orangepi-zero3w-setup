@@ -17,7 +17,7 @@ BOARD_REPORT_OUTPUT ?=
 BOARD_REPORTS_OUTPUT ?=
 STABILITY_MINUTES ?= 30
 STABILITY_STORAGE ?= no
-STABILITY_INTERVAL_SECONDS ?= 30
+STABILITY_INTERVAL_SECONDS ?= 0
 REMOTE_REPO ?= ~/orangepi-zero3w-setup
 REPORT_DIR ?=
 BACKUP_DIR ?=
@@ -106,7 +106,7 @@ help:
 		'make board-retroarch-download-advanced   Download official aarch64 PS/N64/PSP/Dreamcast cores' \
 		'make board-display-status                Report HDMI/USB-C DP connector and X11 outputs' \
 		'make board-audio-status                  Report ALSA cards and playback devices' \
-		'make board-stability-test [STABILITY_MINUTES=30]  Repeat headless tests; default is 30 minutes' \
+		'make board-stability-test [STABILITY_MINUTES=30]  Repeat continuously; default is 30 minutes' \
 		'make board-gpu-wayland-setup             Install Sway and WayVNC as the default Wayland path' \
 		'make board-gpu-wayland-verify            Verify the Sway Wayland session and WayVNC' \
 		'make board-gpu-weston-setup              Install the explicit Weston PowerVR service path' \

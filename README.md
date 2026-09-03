@@ -88,8 +88,8 @@ Use `sudo make board-retroarch-core-check` to inspect advanced ARM64 cores,
 endurance testing. It prints an ASCII temperature snapshot and historical line
 graph after each iteration and saves CSV, text, and (with `gnuplot-nox`) PNG
 graph output.
-The default interval is 30 seconds; use `STABILITY_INTERVAL_SECONDS=5` to make
-interactive testing update more often.
+The default interval is zero for continuous high-load testing; use
+`STABILITY_INTERVAL_SECONDS=5` to insert a pause between iterations.
 For a complete initial board setup that also installs GPU, VPU, and experimental
 NPU acceleration, run `sudo make board-initial-setup`. It runs base, packages,
 core, and the acceleration installers; source-tree cloning is optional. It does
