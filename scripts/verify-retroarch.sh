@@ -22,7 +22,7 @@ printf 'target_user=%s\n' "$TARGET_USER"
 command -v vulkaninfo >/dev/null 2>&1 && pass 'vulkaninfo is available' || fail 'vulkaninfo is missing; install vulkan-tools.'
 
 if [[ -r "$PVR_ROOT/vulkan/img_icd.json" ]] && command -v vulkaninfo >/dev/null 2>&1; then
-    vulkan_output=$(runuser -u "$TARGET_USER" -- env HOME="$USER_HOME" -u LD_LIBRARY_PATH VK_ICD_FILENAMES="$PVR_ROOT/vulkan/img_icd.json" vulkaninfo --summary 2>&1 || true)
+    vulkan_output=$(runuser -u "$TARGET_USER" -- env -u LD_LIBRARY_PATH HOME="$USER_HOME" XDG_RUNTIME_DIR="/run/user/$(id -u "$TARGET_USER")" VK_ICD_FILENAMES="$PVR_ROOT/vulkan/img_icd.json" vulkaninfo --summary 2>&1 || true)
     if grep -Fq 'PowerVR B-Series BXM-4-64 MC1' <<<"$vulkan_output"; then
         pass 'Vulkan detects the expected PowerVR GPU'
     else
