@@ -77,6 +77,10 @@ new matching kernel messages. `STABILITY_STORAGE=yes` also runs the storage
 benchmark in each iteration and writes temporary data to the storage device;
 use it only when deliberate SD-card write testing is intended.
 
+The default interval between iterations is 30 seconds. Change it when testing
+interactively, for example `STABILITY_INTERVAL_SECONDS=5`; use zero only for
+continuous testing because it increases sustained load and heat.
+
 Each iteration prints an ASCII temperature snapshot and, when `gnuplot-nox` is
 installed, a historical ASCII line graph from the CSV collected so far. The
 test also saves a CSV file, a text report, and a PNG temperature graph beside

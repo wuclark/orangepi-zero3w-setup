@@ -19,6 +19,7 @@
   optional PNG graph generation through the headless gnuplot package.
 - Render the accumulated temperature CSV as an ASCII line graph after each
   stability-test iteration.
+- Show the stability-test wait interval and allow it to be configured.
 
 - Exclude generated VPU video fixtures from preloaded images so the small base
   root filesystem does not fill during repository copy.

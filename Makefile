@@ -17,6 +17,7 @@ BOARD_REPORT_OUTPUT ?=
 BOARD_REPORTS_OUTPUT ?=
 STABILITY_MINUTES ?= 30
 STABILITY_STORAGE ?= no
+STABILITY_INTERVAL_SECONDS ?= 30
 REMOTE_REPO ?= ~/orangepi-zero3w-setup
 REPORT_DIR ?=
 BACKUP_DIR ?=
@@ -336,7 +337,7 @@ board-audio-status:
 	if [ "$$(id -u)" -eq 0 ]; then ./scripts/board-audio-status.sh; else sudo ./scripts/board-audio-status.sh; fi
 
 board-stability-test:
-	if [ "$$(id -u)" -eq 0 ]; then STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' ./scripts/board-stability-test.sh; else sudo STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' ./scripts/board-stability-test.sh; fi
+	if [ "$$(id -u)" -eq 0 ]; then STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' STABILITY_INTERVAL_SECONDS='$(STABILITY_INTERVAL_SECONDS)' ./scripts/board-stability-test.sh; else sudo STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' STABILITY_INTERVAL_SECONDS='$(STABILITY_INTERVAL_SECONDS)' ./scripts/board-stability-test.sh; fi
 
 board-base:
 	sudo ./setup.sh base

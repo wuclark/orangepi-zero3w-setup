@@ -87,6 +87,7 @@ grep -q 'STABILITY_STORAGE' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'gnuplot-nox' "$REPO_ROOT/scripts/install-system-benchmark-deps.sh"
 grep -q 'Temperature graph saved' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'set terminal dumb' "$REPO_ROOT/scripts/board-stability-test.sh"
+grep -q 'STABILITY_INTERVAL_SECONDS' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'USB-C DP interpretation' "$REPO_ROOT/scripts/board-display-status.sh"
 grep -q 'allwinnerhdmi' "$REPO_ROOT/scripts/board-audio-status.sh"
 

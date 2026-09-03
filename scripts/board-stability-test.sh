@@ -7,11 +7,13 @@ require_root
 
 MINUTES=${STABILITY_MINUTES:-30}
 STORAGE=${STABILITY_STORAGE:-no}
+INTERVAL=${STABILITY_INTERVAL_SECONDS:-30}
 OUTPUT=${STABILITY_OUTPUT:-/var/log/orangepi-zero3w-setup/stability-test-$(date -u +%Y%m%dT%H%M%SZ).txt}
 CSV_OUTPUT=${STABILITY_CSV_OUTPUT:-${OUTPUT%.txt}.csv}
 GRAPH_OUTPUT=${STABILITY_GRAPH_OUTPUT:-${OUTPUT%.txt}.png}
 [[ $MINUTES =~ ^[1-9][0-9]*$ ]] || die 'STABILITY_MINUTES must be a positive integer.'
 [[ $STORAGE == yes || $STORAGE == no ]] || die 'STABILITY_STORAGE must be yes or no.'
+[[ $INTERVAL =~ ^[0-9]+$ ]] || die 'STABILITY_INTERVAL_SECONDS must be zero or a positive integer.'
 
 install -d -m 755 "$(dirname -- "$OUTPUT")"
 install -d -m 755 "$(dirname -- "$CSV_OUTPUT")" "$(dirname -- "$GRAPH_OUTPUT")"
@@ -88,6 +90,7 @@ printf 'Orange Pi stability test: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 uname -a
 printf 'duration_minutes=%s\n' "$MINUTES"
 printf 'storage_benchmark=%s\n' "$STORAGE"
+printf 'iteration_interval_seconds=%s\n' "$INTERVAL"
 echo "To change duration: sudo make board-stability-test STABILITY_MINUTES=MINUTES"
 echo 'Default duration is 30 minutes; storage testing is disabled unless STABILITY_STORAGE=yes is supplied.'
 echo 'Repeats headless GPU/VPU/NPU workloads and records temperatures.'
@@ -129,7 +132,8 @@ while (( $(date +%s) < deadline || iteration == 0 )); do
         "${TEMP_CPUB:-}" "${TEMP_GPU:-}" "${TEMP_NPU:-}" "${TEMP_DDR:-}" "${TEMP_SKIN:-}" "$result_label" >>"$CSV_OUTPUT"
     ascii_history_graph
     (( $(date +%s) >= deadline )) && break
-    sleep 30
+    echo "Waiting $INTERVAL seconds before the next iteration..."
+    sleep "$INTERVAL"
 done
 
 dmesg --color=never >"$current" || true
