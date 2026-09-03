@@ -126,6 +126,8 @@ The board target requires the installed `vpm_run` runner and records evidence
 under `/var/log/orangepi-zero3w-setup/npu-golden-candidate.txt`. A pass means
 the SDK custom-LUT candidate matched its supplied golden; it does not promote
 that golden to the pinned operator sample or establish general NPU accuracy.
+When the private candidate archive is installed, `sudo make board-validation`
+also runs this check and records its result in the combined validation summary.
 
 For the pinned operator sample, add a golden only when one of these inputs is
 available:

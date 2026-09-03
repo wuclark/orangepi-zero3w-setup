@@ -119,7 +119,8 @@ Use these diagnostic commands after installation:
 - `sudo make board-diagnostics` captures broader evidence. These targets never
   install or reboot.
 - `sudo make board-validation` runs available GPU, Vulkan compute, VPU decode,
-  NPU, X11, and x11vnc checks and prints a PASS/FAIL/SKIP summary.
+  NPU, optional SDK golden-candidate, X11, and x11vnc checks and prints a
+  PASS/FAIL/SKIP summary.
 - `sudo make board-status` reports board identity, kernel, devices, firmware,
   services, installed tools, vendor archives, and recent logs.
 - `sudo make board-gpu-abi-check` checks the running kernel, module `vermagic`,

@@ -54,6 +54,8 @@ grep -q 'run-vulkan-compute-benchmark.sh' "$REPO_ROOT/scripts/board-headless-ben
 grep -q 'test-vpu-decode.sh' "$REPO_ROOT/scripts/board-headless-benchmark.sh"
 grep -q 'test-npu.sh' "$REPO_ROOT/scripts/board-headless-benchmark.sh"
 grep -q 'board-status' "$REPO_ROOT/Makefile"
+grep -q 'board-npu-golden-test.sh' "$REPO_ROOT/scripts/board-validation.sh"
+grep -q 'NPU SDK golden candidate' "$REPO_ROOT/scripts/board-validation.sh"
 grep -q 'collect-boards' "$REPO_ROOT/Makefile"
 grep -q 'compare-board-reports' "$REPO_ROOT/Makefile"
 grep -q 'prompts for space-separated' "$REPO_ROOT/README.md"

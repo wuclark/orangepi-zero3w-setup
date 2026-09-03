@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
+# Purpose: Run read-only validation for installed GPU, VPU, NPU, and display layers.
+# Platform: Orange Pi board with the reference kernel; requires root.
+# Inputs: optional --output and private NPU golden-candidate archive in vendor-files.
+# Writes: timestamped validation output and component evidence under /var/log.
+# Safety: never installs, loads modules, changes configuration, or reboots.
+# Repeat behavior: safe to repeat; unavailable optional layers are reported SKIP.
+# Recovery: follow the printed remediation target for a failed component.
+# Verification: PASS/FAIL/SKIP summary is the authoritative result of this check.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
 OUTPUT="/var/log/orangepi-zero3w-setup/board-validation-$(date -u +%Y%m%dT%H%M%SZ).txt"
+NPU_GOLDEN_ARCHIVE=${NPU_GOLDEN_ARCHIVE:-/opt/orangepi-zero3w-setup/vendor-files/npu-golden-candidate.tar.gz}
 while (($#)); do
     case "$1" in
         --output) OUTPUT=${2:?}; shift 2;;
@@ -49,6 +58,13 @@ if [[ -x /opt/orangepi-zero3w-setup/npu-test/bin/vpm_run ]]; then
     run_check 'NPU VIPLite smoke test' "$REPO_ROOT/scripts/test-npu.sh" --output /var/log/orangepi-zero3w-setup/npu-validation.txt
 else
     skip_check 'NPU VIPLite smoke test (runner is not installed)'
+fi
+if [[ -f $NPU_GOLDEN_ARCHIVE ]]; then
+    run_check 'NPU SDK golden candidate' "$REPO_ROOT/scripts/board-npu-golden-test.sh" \
+        --archive "$NPU_GOLDEN_ARCHIVE" \
+        --output /var/log/orangepi-zero3w-setup/npu-golden-validation.txt
+else
+    skip_check 'NPU SDK golden candidate (private archive is not installed)'
 fi
 if [[ -S /tmp/.X11-unix/X0 ]]; then
     run_check 'X11 display :0' test -S /tmp/.X11-unix/X0

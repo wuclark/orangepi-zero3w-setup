@@ -4,6 +4,8 @@
 
 - Add host and board Make targets for testing the AI SDK custom-LUT NPU golden
   candidate without confusing it with the pinned operator smoke test.
+- Include the private NPU golden-candidate check in board validation when its
+  archive is present; report it as skipped when the archive is absent.
 - Add optional idempotent RetroArch/PowerVR Vulkan installation, validation,
   bounded ALSA testing, configuration repair, and tracked-package uninstall.
 - Add repository-core discovery, the `retroarch-powervr` launcher, and RetroArch
