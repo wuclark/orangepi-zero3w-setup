@@ -59,10 +59,13 @@ specified in `AGENTS.md`.
   Docker extraction command.
 - [x] Run generated archives through `prepare-vendor-archives.sh` on the target
   software stack.
-- [ ] Test GPU and VPU independently on the Orange Pi.
+- [x] Test GPU and VPU independently on the Orange Pi; the reference-board
+  validation pass includes GPU compute, visible `vkcube` presentation, and
+  H.264/H.265 decode evidence.
 - [x] Test NPU independently on the Orange Pi with the pinned VIPLite sample;
   retain the sanitized diagnostics and smoke-test evidence in the issue.
-- [ ] Add a real GPU workload test: `vulkaninfo`, GLES/EGL, and `vkcube`.
+- [x] Add and run real GPU workload tests: `vulkaninfo`, GLES/EGL, compute,
+  and visibly presented `vkcube`.
 - [x] Add real VPU GStreamer H.264/H.265 decode samples and board commands.
 - [ ] Strengthen VPU validation beyond EOS: generate reproducible local H.264
   and H.265 MP4 samples covering 720p/1080p, 30/60 fps, suitable profiles,
