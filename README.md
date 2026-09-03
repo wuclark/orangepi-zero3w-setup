@@ -34,110 +34,126 @@ archives into the repository's `vendor-files/` directory; the preparation
 guide documents the layout and permissions. Otherwise transfer them after boot
 with the Windows helper.
 
-For a fully prepared card, the Docker workflow can create two reproducible
-derived images: `prepare-preloaded-image-docker.sh` embeds the repository and
-GPU/VPU/NPU archives, then `prepare-firstboot-image-docker.sh` adds the local
-first-boot preset and provisioning hook. The base and preloaded images remain
-unchanged; the final image contains credentials and must stay outside Git.
-The image build also stages a sparse checkout of the matching
-`linux-orangepi` PowerVR module source under `build-pvrsrvkm/`, allowing the
-board to build the module without a later source download.
+### Build an SD-card image
+
+For a fully prepared card, the Docker workflow creates two reproducible
+derived images:
+
+1. `prepare-preloaded-image-docker.sh` embeds the repository and GPU/VPU/NPU
+   archives.
+2. `prepare-firstboot-image-docker.sh` adds the local first-boot preset and
+   provisioning hook.
+
+The base and preloaded images remain unchanged. The final image contains
+credentials and must stay outside Git. The image build also stages a sparse
+checkout of the matching `linux-orangepi` PowerVR module source under
+`build-pvrsrvkm/`, allowing the board to build the module without a later
+source download.
+
 The final SD image is named with its UTC creation timestamp, such as
 `*-preloaded-firstboot-20260901T143012Z.img`. Before writing it, run
 `make validate` to verify the checksum and partition table.
-The same sequence can be driven from WSL2/Linux with `make image`; existing
-archives and derived images are reused automatically. `make test` runs the
-host checks. An existing credential-bearing final image requires
-`REBUILD=1 make image`, which preserves the old image before rebuilding.
-Run `make preset` first when you need to interactively create the local
-first-boot files; it never runs implicitly as part of `make image`.
-For a completely fresh build that cleans generated outputs, prompts for the
-preset, builds both image stages, and validates the result, run `make newsd`.
-The normal `make summary` output redacts credentials; use
-`make show-unredacted` only for local troubleshooting.
-The release identity is stored in `VERSION`; `make version` shows it and the
-Git revision used in generated image names. For example, a final image may
-contain `v0.2.0-g1e98095-preloaded-firstboot-...`. Git pushes change the
-revision suffix, not the release version.
-Run `make help` for the complete SD-card-to-board handoff sequence. Run
-`make tests` for the host checks, or `sudo make board-test
-BOARD_LAYER=gpu|vpu|npu|all` for a selected diagnostic board pass. The
-per-layer `board-gpu-test`, `board-vpu-test`, and `board-npu-test` targets run
-the corresponding post-install checks. Use `sudo make board-diagnostics` for
-the broader evidence capture. These targets never install or reboot.
-For the initial board foundation, `sudo make board-foundation` runs the base,
-interactive package, core maintenance, and A733 sources setup in order. The
-individual `board-base`, `board-packages`, `board-core`, and `board-sources`
-targets are also available. Optional acceleration, desktop, and remote layers
-remain separate.
-Optional Docker support for board-side containers is available with
-`sudo make board-docker-install DOCKER_APT_UPDATE=1`; it installs Docker
-Engine, Buildx, and Compose and is not required for the GPU/display layers.
-After logging in again, verify it with `make board-docker-verify`.
-For optional RetroArch gaming with the isolated PowerVR Vulkan environment,
-run `sudo make board-retroarch-install`, then `sudo make board-retroarch-verify`.
-Use `sudo make board-retroarch-advanced` for repository-provided advanced cores
-or `RETROARCH_CORE_FILES='/path/to/core.so'` for user-supplied ARM64 cores.
-Use `sudo make board-retroarch-download-advanced` to fetch the official
-Libretro aarch64 PS/N64/PSP/Dreamcast cores.
-See [Retro Gaming / RetroArch](docs/optional/retroarch.md) for the launcher,
-ALSA audio test, repository cores, X11/SSH behavior, repair, and uninstall.
-Use `sudo make board-retroarch-core-check` to inspect advanced ARM64 cores,
-`sudo make board-retroarch-audio-auto` to select the working ALSA device, and
-`sudo make board-stability-test STABILITY_MINUTES=30` for bounded headless
-endurance testing. It prints an ASCII temperature snapshot, absolute and
-Skin-delta historical line graphs after each iteration, and saves CSV, text,
-and (with `gnuplot-nox`) a two-panel PNG graph.
-The default interval is zero for continuous high-load testing; use
-`STABILITY_INTERVAL_SECONDS=5` to insert a pause between iterations.
-For a complete initial board setup that also installs GPU, VPU, and experimental
-NPU acceleration, run `sudo make board-initial-setup`. It runs base, packages,
-core, and the acceleration installers; source-tree cloning is optional. It does
-not reboot; after it completes, reboot once and run `sudo make board-validation`.
-For the complete initial setup with a default XFCE/X11 desktop, x11vnc, and
-LightDM unmasked and enabled, run `sudo make board-initial-setup-gui`. The
-x11vnc setup prompts for its password and defaults to localhost/SSH-tunneled
-access; this target also does not reboot.
-To install all three acceleration layers in sequence, use
-`sudo make board-acceleration-install`. This runs the GPU, VPU, and
-experimental NPU installers but does not reboot; reboot once after it finishes,
-then run `sudo make board-validation`.
-After installing the desired layers, `sudo make board-validation` runs the
-available GPU, Vulkan compute, VPU decode, NPU, X11, and x11vnc checks and
-prints a PASS/FAIL/SKIP summary. It is diagnostic only and never installs or
-reboots. If the compute shader compiler is missing, the summary prints the
-exact `sudo make board-gpu-compute-deps` remediation; an x11vnc skip is called
-out as optional.
-Use `sudo make board-status` for a read-only summary of board identity, kernel,
-devices, firmware, services, installed tools, vendor archives, and recent logs.
-Run `sudo make board-gpu-abi-check` before GPU use after kernel or module
-changes; it verifies the running kernel, module `vermagic`, headers, firmware,
-and delayed-load service.
-For the optional compute benchmark, run `sudo make board-gpu-compute-deps` to
-install its build tools from the existing apt cache.
-For a broader display-free system baseline, install its tools with `sudo make
-board-system-benchmark-deps`, then run `sudo make board-system-benchmark`.
-This covers CPU, 7-Zip, OpenSSL, and memory bandwidth; add `--storage` to opt
-into the 256 MiB fio test or `--network HOST` to test against an iperf3 server.
-Use `sudo make board-thermal-monitor` to run the headless acceleration suite
-while recording temperatures, CPU frequencies, throttling counters, and
-available power sensors.
-Use `sudo make board-storage-health` for a read-only storage report covering
-mounts, space, block devices, MMC health data, SMART support, and kernel I/O
-errors.
-Use `sudo make board-display-status` to report HDMI and USB-C DisplayPort
-connector state, X11 outputs, and available modes. Use `sudo make
-board-audio-status` to enumerate ALSA cards and playback devices without
-starting playback.
-Use `make board-report` to collect one normalized report from the current board.
-From a workstation, use `make collect-boards` to collect reports over SSH; it
+
+The same sequence can be driven from WSL2/Linux with `make image`. Existing
+archives and derived images are reused automatically. An existing
+credential-bearing final image requires `REBUILD=1 make image`, which preserves
+the old image before rebuilding.
+
+Other image commands:
+
+- `make test` runs the host checks.
+- `make preset` interactively creates local first-boot files; it never runs
+  implicitly as part of `make image`.
+- `make newsd` cleans generated outputs, prompts for the preset, builds both
+  image stages, and validates the result.
+- `make summary` redacts credentials; use `make show-unredacted` only for local
+  troubleshooting.
+- `make version` shows the release identity from `VERSION` and the Git
+  revision used in generated image names. Git pushes change the revision
+  suffix, not the release version.
+
+See `make help` for the complete SD-card-to-board handoff sequence.
+
+### Set up the board
+
+For the initial board foundation:
+
+```bash
+sudo make board-foundation
+```
+
+This runs the base, interactive package, core maintenance, and A733 sources
+setup in order. The individual `board-base`, `board-packages`, `board-core`,
+and `board-sources` targets are also available. Optional acceleration, desktop,
+and remote layers remain separate.
+
+For a complete initial setup with GPU, VPU, and experimental NPU acceleration:
+
+```bash
+sudo make board-initial-setup
+```
+
+This does not reboot. After it completes, reboot once and run
+`sudo make board-validation`.
+
+For a complete initial setup with XFCE/X11, x11vnc, and LightDM:
+
+```bash
+sudo make board-initial-setup-gui
+```
+
+The x11vnc setup prompts for its password and defaults to localhost/
+SSH-tunneled access. This target also does not reboot.
+
+To install all three acceleration layers separately, use
+`sudo make board-acceleration-install`. Reboot once afterward, then run
+`sudo make board-validation`.
+
+### Validate and collect evidence
+
+Use these diagnostic commands after installation:
+
+- `make tests` runs the host checks.
+- `sudo make board-test BOARD_LAYER=gpu|vpu|npu|all` runs a selected board
+  diagnostic pass.
+- `sudo make board-diagnostics` captures broader evidence. These targets never
+  install or reboot.
+- `sudo make board-validation` runs available GPU, Vulkan compute, VPU decode,
+  NPU, X11, and x11vnc checks and prints a PASS/FAIL/SKIP summary.
+- `sudo make board-status` reports board identity, kernel, devices, firmware,
+  services, installed tools, vendor archives, and recent logs.
+- `sudo make board-gpu-abi-check` checks the running kernel, module `vermagic`,
+  headers, firmware, and delayed-load service before GPU use after changes.
+- `make board-report` collects one normalized report from the current board.
+
+If the compute shader compiler is missing, validation prints the exact
+`sudo make board-gpu-compute-deps` remediation. An x11vnc skip is optional.
+Install the optional compute benchmark tools with
+`sudo make board-gpu-compute-deps`.
+
+From a workstation, `make collect-boards` collects reports over SSH. It
 prompts for space-separated `user@host` values when `BOARDS` is omitted. Set
-`REMOTE_REPO=~/tmp/orangepi-zero3w-setup` when the checkout is elsewhere. Compare
-the collected results with `make compare-board-reports REPORT_DIR=...`.
-For the default Sway/Wayland and WayVNC setup, see the [GPU and Wayland setup
-guide](docs/gpu-wayland-setup.md), or run `sudo make board-gpu-wayland-setup`
-followed by `make board-gpu-wayland-verify`. The explicit Weston PowerVR
-service remains available with `sudo make board-gpu-weston-setup`.
+`REMOTE_REPO=~/tmp/orangepi-zero3w-setup` when the checkout is elsewhere, then
+compare results with `make compare-board-reports REPORT_DIR=...`.
+
+### Display, desktop, and remote access
+
+Use `sudo make board-display-status` to report HDMI and USB-C DisplayPort
+connector state, X11 outputs, and available modes. Use
+`sudo make board-audio-status` to enumerate ALSA cards and playback devices
+without starting playback.
+
+For the default Sway/Wayland and WayVNC setup, see the
+[GPU and Wayland setup guide](docs/gpu-wayland-setup.md), or run:
+
+```bash
+sudo make board-gpu-wayland-setup
+make board-gpu-wayland-verify
+```
+
+The explicit Weston PowerVR service remains available with
+`sudo make board-gpu-weston-setup`.
+
 The direct script sequence is:
 
 ```bash
@@ -148,27 +164,79 @@ sudo ./scripts/20-install-weston-service.sh
 To switch back to the established XFCE/Xorg path, run
 `sudo make board-gpu-x11-setup`. The X11 target masks the Weston service,
 unmasks/enables LightDM, installs XFCE if needed, and configures x11vnc.
-On WSL/Ubuntu, use `make wsl-vulkan-compute-deps` and
-`make wsl-vulkan-compute-test`; this explicitly selects Mesa’s CPU Lavapipe
-Vulkan driver and does not test the Orange Pi PowerVR hardware.
-Desktop profiles can also be installed or switched through Make, for example
-`sudo make desktop-openbox`, `sudo make desktop-xfce`, or `sudo make
-desktop-switch DESKTOP_PROFILE=labwc`. Use `sudo make desktop-list` and
-`sudo make desktop-current` to inspect sessions; add `DESKTOP_REBOOT=1` when
-switching should reboot immediately.
+
+Desktop profiles can be installed or switched through Make:
+
+```bash
+sudo make desktop-openbox
+sudo make desktop-xfce
+sudo make desktop-switch DESKTOP_PROFILE=labwc
+```
+
+Use `sudo make desktop-list` and `sudo make desktop-current` to inspect
+sessions. Add `DESKTOP_REBOOT=1` when switching should reboot immediately.
 Desktop setup installs visible white-on-black xterm defaults under
 `/etc/X11/Xresources/90-orangepi-xterm`.
+
 To stop LightDM and prevent its autologin Wayland/X11 session from starting,
 run `sudo make lightdm-mask`; this also stops the current LightDM session.
 Restore it with `sudo make lightdm-unmask`, which unmasks and enables LightDM.
-Clone the maintained A733 source trees separately only when needed for source
-inspection or development with `sudo make board-sources`.
-Remote backends are available through `sudo make remote-x11vnc`, `sudo make
-remote-wayvnc`, and `sudo make remote-tigervnc`, or the generic
-`sudo make remote REMOTE_BACKEND=x11vnc`. Use x11vnc with X11, wayvnc with an
-active Sway/Wayland session, and TigerVNC for a separate virtual X11 desktop. The
-remote targets install packages/configuration but do not expose services on
+
+Remote backends are available through `sudo make remote-x11vnc`,
+`sudo make remote-wayvnc`, and `sudo make remote-tigervnc`, or the generic
+`sudo make remote REMOTE_BACKEND=x11vnc`.
+
+- Use x11vnc with X11.
+- Use wayvnc with an active Sway/Wayland session.
+- Use TigerVNC for a separate virtual X11 desktop.
+
+Remote targets install packages/configuration but do not expose services on
 the LAN or reboot the board.
+
+On WSL/Ubuntu, `make wsl-vulkan-compute-deps` and
+`make wsl-vulkan-compute-test` explicitly select Mesa’s CPU Lavapipe Vulkan
+driver; they do not test Orange Pi PowerVR hardware.
+
+See the [project map](docs/development/project-map.md) for host/board
+directory boundaries and where to extend each workflow.
+
+### RetroArch and system health
+
+For optional RetroArch gaming with the isolated PowerVR Vulkan environment:
+
+```bash
+sudo make board-retroarch-install
+sudo make board-retroarch-verify
+```
+
+Use `sudo make board-retroarch-advanced` for repository-provided advanced cores
+or `RETROARCH_CORE_FILES='/path/to/core.so'` for user-supplied ARM64 cores.
+Use `sudo make board-retroarch-download-advanced` to fetch official Libretro
+aarch64 PS/N64/PSP/Dreamcast cores.
+
+See [Retro Gaming / RetroArch](docs/optional/retroarch.md) for the launcher,
+ALSA audio test, repository cores, X11/SSH behavior, repair, and uninstall.
+
+For health and endurance checks:
+
+- `sudo make board-retroarch-core-check` inspects advanced ARM64 cores.
+- `sudo make board-retroarch-audio-auto` selects the working ALSA device.
+- `sudo make board-stability-test STABILITY_MINUTES=30` runs bounded headless
+  endurance testing with temperature snapshots, historical graphs, and CSV/
+  text output. With `gnuplot-nox`, it also saves a two-panel PNG graph.
+- The default stability interval is zero for continuous high-load testing. Use
+  `STABILITY_INTERVAL_SECONDS=5` to pause between iterations.
+- `sudo make board-system-benchmark` runs the display-free CPU, 7-Zip, OpenSSL,
+  and memory baseline. Add `--storage` for the 256 MiB fio test or
+  `--network HOST` for an iperf3 test; install tools first with
+  `sudo make board-system-benchmark-deps`.
+- `sudo make board-thermal-monitor` records temperatures, CPU frequencies,
+  throttling counters, and available power sensors.
+- `sudo make board-storage-health` reports mounts, space, block devices, MMC
+  health data, SMART support, and kernel I/O errors.
+
+### Back up and restore
+
 Use `make clean` to remove generated archives, derived images, metadata, and
 local first-boot files while preserving source/base images under `work/images/`.
 
@@ -204,6 +272,8 @@ stored outside Git and sensitive backups should be encrypted.
 The first-boot generator asks for a hostname and creates a one-time
 `/root/provisioning.sh` hook to apply it after the first successful login.
 Armbian's preset file itself contains only documented first-boot variables.
+
+### Other setup options
 
 Package installation uses the existing apt cache. To explicitly refresh it:
 
@@ -257,9 +327,7 @@ Viewer instructions.
 
 The proven PowerVR stack remains available as an optional, safety-sensitive
 module. It is not required to boot, use Wi-Fi, run the CLI, or install a basic
-desktop. Its supported evidence remains narrowly limited to:
-
-This project reproduces a confirmed working stack:
+desktop. This project reproduces the following confirmed working stack:
 
 - PowerVR kernel module: `pvrsrvkm 24.2.6603887`
 - GPU/BVNC: `PowerVR B-Series BXM-4-64 MC1`, `36.56.104.183`
@@ -270,7 +338,10 @@ This project reproduces a confirmed working stack:
 
 ## Important scope
 
-The scripts intentionally do **not** redistribute proprietary Imagination/PowerVR binaries. You must provide legally generated userspace archives containing the matching DDK files and build or provide `pvrsrvkm.ko` for your exact kernel.
+The scripts intentionally do **not** redistribute proprietary
+Imagination/PowerVR binaries. You must provide legally generated userspace
+archives containing the matching DDK files and build or provide
+`pvrsrvkm.ko` for your exact kernel.
 
 The known-good target is deliberately narrow:
 
@@ -283,7 +354,10 @@ Firmware: rgx.fw.36.56.104.183 + rgx.sh.36.56.104.183
 OS: Armbian Debian 13 (Trixie), arm64
 ```
 
-Do not force installation on another kernel unless you understand the risks. An incompatible out-of-tree GPU module can crash the kernel.
+Do not force installation on another kernel unless you understand the risks. An
+incompatible out-of-tree GPU module can crash the kernel.
+
+### Install the reference GPU stack
 
 To install the reference GPU stack after the base setup, place the legally
 generated PowerVR archive in `vendor-files/pvr-userspace.tar.gz` and run:
@@ -293,14 +367,16 @@ sudo ./setup.sh gpu
 ```
 
 For a fresh board with the generated archives stored on Windows, follow
-[Fresh Armbian installation from Windows](docs/legacy/fresh-armbian-install.md). It uses:
+[Fresh Armbian installation from Windows](docs/legacy/fresh-armbian-install.md).
+It uses:
 
 - `windows/Copy-VendorArchives.ps1` on Windows; then
 - `./armbian-startup.sh` on the Orange Pi.
 
-For a completely headless board, begin with [Prepare the SD card](docs/guide/00-prepare-sd-card.md).
-The base image installs no extra software; `scripts/armbian-provision.sh`
-offers an explicit opt-in menu after SSH is working.
+For a completely headless board, begin with
+[Prepare the SD card](docs/guide/00-prepare-sd-card.md). The base image installs
+no extra software; `scripts/armbian-provision.sh` offers an explicit opt-in
+menu after SSH is working.
 
 Additional documentation:
 
@@ -313,26 +389,34 @@ Additional documentation:
 - [Hardware references](docs/reference/hardware.md)
 - [Troubleshooting and recovery](docs/reference/troubleshooting.md)
 
+### Validate acceleration layers
+
 On the board, validate and install one acceleration layer at a time with
 `scripts/board-acceleration-workflow.sh`. It records checks, installation
 results, reboot requirements, and evidence under
 `/var/log/orangepi-zero3w-setup/`.
+
 The equivalent Make targets are `board-gpu-*`, `board-vpu-*`, and
-`board-npu-precheck`/`board-npu-install`/`board-npu-verify`. When `work/images/ai-sdk.tar.gz` is
-available, `make newsd` also places a selected A733 NPU test bundle in the
-image; the full SDK remains outside the image.
+`board-npu-precheck`/`board-npu-install`/`board-npu-verify`. When
+`work/images/ai-sdk.tar.gz` is available, `make newsd` also places a selected
+A733 NPU test bundle in the image; the full SDK remains outside the image.
+
 Prechecks may report expected missing-layer warnings but still record a
-successful baseline; verification steps fail when required checks are absent.
+successful baseline. Verification steps fail when required checks are absent.
+
 The VPU install also installs the Cedar configuration and GStreamer parser
-plugins; `board-vpu-generate-videos` creates local synthetic 720p/1080p
-H.264/H.265 samples, and `board-vpu-verify` uses the generated 720p samples
-for headless hardware decode tests, falling back to cached downloads if they
-are absent. Re-run only those media tests with `make board-vpu-decode-test`.
+plugins. `board-vpu-generate-videos` creates local synthetic 720p/1080p H.264
+and H.265 samples, and `board-vpu-verify` uses the generated 720p samples for
+headless hardware decode tests, falling back to cached downloads if they are
+absent. Re-run only those media tests with `make board-vpu-decode-test`.
 The individual generated fixtures can be fetched from a pinned GitHub Release
 with `make board-vpu-fetch-videos VPU_TESTDATA_TAG=vpu-testdata-v1`.
+
 Use `scripts/run-pvr-app.sh COMMAND` for EGL/GLES applications that must use
 the isolated PowerVR environment. Wayland requires a separate local-console
 test; see the GPU troubleshooting guide before switching sessions.
+
+### Legacy and low-level GPU paths
 
 The legacy all-in-one GPU command remains available as `install.sh`; it builds
 or validates `pvrsrvkm.ko`, installs the matching runtime, and configures the
@@ -466,7 +550,7 @@ The board exposes two DRM devices:
 
 | Node | Purpose |
 |---|---|
-| `/dev/dri/card0` | Sunxi display controller and HDMI scanout |
+| `/dev/dri/card0` | Sunxi display controller and HDMI/USB-C DisplayPort scanout |
 | `/dev/dri/card1` | PowerVR DRM device |
 | `/dev/dri/renderD128` | PowerVR render node |
 
