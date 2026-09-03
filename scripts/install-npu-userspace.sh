@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Install staged VIPLite NPU userspace and its smoke-test assets.
+# Board assumptions: arm64 Orange Pi Zero 3W with a matching /dev/vipcore driver.
+# Inputs: --vendor-root and --test-archive; both must come from private staging.
+# Writes: /usr/local/lib/npu, /opt/orangepi-zero3w-setup/npu-test, and backups.
+# Safety: validates archive paths and never installs the kernel module from userspace.
+# Repeat behavior: replaces the staged runtime while retaining timestamped backups.
+# Recovery: restore the newest NPU backup, then rerun board-npu-verify.
+# Verification: board-npu-test and board-validation must complete successfully.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

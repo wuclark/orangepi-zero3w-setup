@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Remove only packages and files tracked by the RetroArch feature.
+# Platform: Debian/Armbian board; operates on a selected non-root desktop user.
+# Inputs: optional RETROARCH_USER; interactive confirmation is always required.
+# Writes: removes tracked packages, launcher, desktop entry, and feature state.
+# Safety: preserves ROMs, saves, and user configuration unless separately chosen.
+# Repeat behavior: cancellation is safe; already-removed tracked items are skipped.
+# Recovery: reinstall the feature or restore the timestamped RetroArch config backup.
+# Verification: run board-status and board-retroarch-verify after reinstalling.
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

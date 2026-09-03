@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Install and select one supported desktop profile through LightDM.
+# Platform: Debian/Armbian board image; profile packages come from configured APT.
+# Inputs: --profile and optional --user; apt metadata is never refreshed implicitly.
+# Writes: desktop packages, project state, session files, and LightDM configuration.
+# Safety: only project-managed profile files are changed; remote access is separate.
+# Repeat behavior: selecting the same profile is idempotent; switching updates state.
+# Recovery: use setup-reset.sh or the desktop rollback target; packages are preserved.
+# Verification: run board-status and the relevant X11 or Wayland verification target.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

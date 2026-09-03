@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Legacy read-only verification of the Weston PowerVR service path.
+# Platform: board with the reference PowerVR DDK, Weston service, and user session.
+# Inputs: optional PVR_DDK_DIR, WESTON_USER, and WESTON_LOG environment variables.
+# Writes: none; reports module, linker, Vulkan, EGL, Weston, and HDMI state.
+# Safety: does not install, modify services, load modules, or reboot the board.
+# Repeat behavior: safe to run repeatedly; it reads current service/log state.
+# Recovery: use the current board GPU workflow rather than this legacy checker.
+# Verification: use only as supplemental evidence; prefer scripts/verify.sh.
 set -u
 
 PVR_DDK_DIR="${PVR_DDK_DIR:-/opt/pvr-ddk-24.2}"

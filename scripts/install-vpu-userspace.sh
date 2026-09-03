@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Install the staged Cedar/libcedarc VPU runtime and udev configuration.
+# Board assumptions: arm64 Orange Pi Zero 3W with the matching vendor kernel.
+# Inputs: --vendor-root containing the allowlisted VPU runtime tree.
+# Writes: selected /usr/lib, /usr/bin, /etc, and udev paths; creates backups.
+# Safety: copies documented runtime roots only and does not extract over / blindly.
+# Repeat behavior: replaces matching files and keeps timestamped rollback backups.
+# Recovery: restore the generated VPU backup, reload rules, and reboot if required.
+# Verification: board-vpu-verify and the H.264/H.265 decode tests.
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

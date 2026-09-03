@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Extract allowlisted runtime files from already mounted source roots.
+# Platform: native Linux/WSL2 host; this tool does not mount or install anything.
+# Inputs: one --source-root or separate GPU/VPU and NPU roots plus --output-dir.
+# Writes: generated userspace archives and file/hash manifests in the output directory.
+# Safety: applies explicit path allowlists and keeps proprietary results outside Git.
+# Repeat behavior: output is generated as a private derived artifact for validation.
+# Recovery: inspect the source/output manifests and rerun after correcting inputs.
+# Verification: run tests/test-archives.sh and prepare-vendor-archives.sh.
 set -Eeuo pipefail
 
 usage() {

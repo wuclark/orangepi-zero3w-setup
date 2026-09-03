@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Read-only verification of the installed PowerVR/DRM/EGL stack.
+# Platform: Orange Pi board with the reference kernel and PowerVR DDK paths.
+# Inputs: optional PVR environment and the active X11/Wayland session.
+# Writes: none; emits PASS/FAIL/WARN diagnostics to stdout.
+# Safety: never installs, loads, unloads, changes configuration, or reboots.
+# Repeat behavior: safe to run repeatedly; results depend on the active session.
+# Recovery: use the corresponding install/repair target only after reviewing failures.
+# Verification: successful output is evidence for board support claims.
 set -u
 
 PASS=0

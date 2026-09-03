@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Produce a read-only summary of board hardware, services, tools, and state.
+# Platform: Orange Pi Zero 3W running the vendor Armbian kernel; requires root.
+# Inputs: current system state only; no configuration arguments are required.
+# Writes: report output only, including the configured log-path references.
+# Safety: does not install, modify, load, unload, restart, or reboot anything.
+# Repeat behavior: safe to run repeatedly and suitable for post-reboot comparison.
+# Recovery: use the named setup/repair target only after reviewing reported gaps.
+# Verification: compare with board-validation and board-report evidence.
 set -Eeuo pipefail
 
 [[ $EUID -eq 0 ]] || { echo 'ERROR: run with sudo.' >&2; exit 1; }

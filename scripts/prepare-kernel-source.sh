@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Stage the matching Orange Pi kernel source for PowerVR module builds.
+# Platform: host or preloaded board checkout with Git and network/source access.
+# Inputs: SOURCE_ROOT, KERNEL_REPO, KERNEL_BRANCH environment overrides.
+# Writes: a sparse Git checkout at build-pvrsrvkm/linux-orangepi by default.
+# Safety: uses the board-specific branch and refuses to overwrite a non-Git path.
+# Repeat behavior: reuses an existing checkout and fetches the configured revision.
+# Recovery: remove only a verified failed private checkout, then rerun kernel-source.
+# Verification: inspect the branch/revision and run the module ABI check on the board.
 set -Eeuo pipefail
 
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)

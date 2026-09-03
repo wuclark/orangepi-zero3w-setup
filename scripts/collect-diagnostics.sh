@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Capture broad board diagnostics for troubleshooting and support evidence.
+# Platform: running Orange Pi board; commands may need sudo for debugfs/service data.
+# Inputs: optional output filename; default is a timestamped file in the user home.
+# Writes: one diagnostic text file containing system, services, DRM, Vulkan, and logs.
+# Safety: output can contain host/session details; sanitize before sharing or committing.
+# Repeat behavior: creates a new timestamped file unless an explicit path is supplied.
+# Recovery: collection tolerates unavailable optional commands and continues.
+# Verification: inspect the file for kernel, module vermagic, BVNC, DRM, and GPU evidence.
 set -Eeuo pipefail
 OUTPUT=${1:-"$HOME/zero3w-pvr-diagnostics-$(date -u +%Y%m%dT%H%M%SZ).txt"}
 
@@ -27,4 +35,3 @@ OUTPUT=${1:-"$HOME/zero3w-pvr-diagnostics-$(date -u +%Y%m%dT%H%M%SZ).txt"}
 } 2>&1 | tee "$OUTPUT"
 
 echo "Saved diagnostics to $OUTPUT"
-

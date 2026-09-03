@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Remove project-managed desktop/remote selection and restore the CLI target.
+# Platform: systemd-based Armbian/Debian board image; requires root.
+# Inputs: none; state under /etc/orangepi-zero3w-setup controls the prior target.
+# Writes: systemd default target and project-managed LightDM/session/state files.
+# Safety: removes only explicitly project-owned files and preserves installed packages.
+# Repeat behavior: safe to run repeatedly; missing files and services are tolerated.
+# Recovery: select a desktop again with setup-desktop.sh; package removal is separate.
+# Verification: run setup-status and board-status after the reset.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

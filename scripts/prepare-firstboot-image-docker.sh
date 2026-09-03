@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Run the containerized first-boot image preparation workflow.
+# Platform: Linux/WSL2 host with Docker privileged image-mount support.
+# Inputs: optional INPUT_IMAGE, PRESET_FILE, PROVISIONING_FILE, and output overrides.
+# Writes: a new first-boot image beside the preloaded image; source files are read-only.
+# Safety: requires the pinned extraction image and refuses an existing output file.
+# Repeat behavior: intentionally refuses to overwrite; choose a new output or remove it.
+# Recovery: preserve the base image and recreate the derived output after failure.
+# Verification: run validate-image-before-write.sh before writing an SD card.
 set -Eeuo pipefail
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 INPUT_IMAGE=${INPUT_IMAGE:-}

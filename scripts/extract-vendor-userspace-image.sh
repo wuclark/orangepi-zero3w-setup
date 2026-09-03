@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Extract vendor userspace directly from two local disk images.
+# Platform: native Linux/WSL2 with root, loop, mount, and image inspection tools.
+# Inputs: --gpu-vpu-image, --npu-image, and --output-dir.
+# Writes: private generated archives and manifests in the requested output directory.
+# Safety: source filesystems are mounted read-only and temporary resources are trapped.
+# Repeat behavior: output must be selected deliberately; existing output is validated.
+# Recovery: cleanup runs on exit; inspect logs and remove only failed private output.
+# Verification: run tests/test-archives.sh and compare manifests with source images.
 set -Eeuo pipefail
 GPU_VPU_IMAGE=""; NPU_IMAGE=""; OUTPUT_DIR=""
 while (($#)); do

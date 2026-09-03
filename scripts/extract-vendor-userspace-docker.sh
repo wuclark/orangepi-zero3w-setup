@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Extract allowlisted GPU/VPU/NPU userspace from source images in Docker.
+# Platform: Linux/WSL2 host with Docker privileged loop/mount support.
+# Inputs: source images, optional SHA-256 values, output directory, Docker image.
+# Writes: generated private vendor archives and manifests under work/vendor-output.
+# Safety: source images are mounted read-only and proprietary output stays untracked.
+# Repeat behavior: regenerates or reuses output according to the extraction workflow.
+# Recovery: preserve source images and inspect the Docker log before retrying.
+# Verification: run tests/test-archives.sh and prepare-vendor-archives.sh.
 set -Eeuo pipefail
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 IMAGE_DIR=${IMAGE_DIR:-$REPO_ROOT/work/images}

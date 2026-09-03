@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Produce a read-only storage, mount, MMC, and kernel-message health report.
+# Platform: running Orange Pi board; root is recommended for complete device details.
+# Inputs: optional OUTPUT path; the root device is detected from the mounted system.
+# Writes: report output only; no filesystem repair, benchmark, or device mutation.
+# Safety: does not run fsck or destructive tests; SD cards do not expose eMMC EXT_CSD.
+# Repeat behavior: safe to repeat; kernel-message history may include older events.
+# Recovery: investigate MMC/SDIO errors separately before performing write tests.
+# Verification: review mounts, free space, block device identity, and dmesg sections.
 set -Eeuo pipefail
 
 OUTPUT=${OUTPUT:-/var/log/orangepi-zero3w-setup/storage-health-$(date -u +%Y%m%dT%H%M%SZ).txt}

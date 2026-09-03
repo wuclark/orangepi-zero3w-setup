@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Selectively restore verified external inputs into the local checkout.
+# Platform: host checkout; requires a backup set with a valid SHA-256 manifest.
+# Inputs: BACKUP_DIR and RESTORE_SET; --force bypasses confirmation only when intended.
+# Writes: repository input/cache/sensitive paths selected by the requested set.
+# Safety: validates checksums and separately confirms credential-bearing restores.
+# Repeat behavior: overwrites matching restored paths after explicit confirmation.
+# Recovery: keep the original backup; rerun with the correct set if interrupted.
+# Verification: inspect restored files and rerun make test or the relevant build.
 set -Eeuo pipefail
 
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)

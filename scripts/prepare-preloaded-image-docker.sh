@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Run the containerized repository/vendor preloading workflow.
+# Platform: Linux/WSL2 host with Docker privileged image-mount support.
+# Inputs: optional BASE_IMAGE, image/output directories, and pinned Docker image.
+# Writes: a new preloaded image; the source image and repository are mounted read-only.
+# Safety: requires generated vendor archives and refuses an existing output image.
+# Repeat behavior: intentionally refuses to overwrite an existing derived image.
+# Recovery: preserve the base image and rerun after removing only a verified partial.
+# Verification: validate the preloaded image and continue with first-boot preparation.
 set -Eeuo pipefail
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 BASE_IMAGE=${BASE_IMAGE:-}

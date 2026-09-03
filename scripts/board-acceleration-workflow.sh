@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Run exactly one board GPU, VPU, or NPU precheck/install/verify phase.
+# Board assumptions: Orange Pi Zero 3W, arm64, vendor kernel, root access.
+# Inputs: --layer, --action, optional --log/--yes; vendor archives are local.
+# Writes: selected drivers, libraries, firmware/rules, and persistent progress log.
+# Safety: layers are isolated; GPU verification follows a required manual reboot.
+# Repeat behavior: install phases are intended to be repeatable and preserve logs.
+# Recovery: use the layer backups and recorded progress log before retrying.
+# Verification: run the matching board-*verify target and collect diagnostics.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Sample thermal, frequency, throttle, and power sensors during a command.
+# Platform: running Orange Pi board exposing Linux thermal/cpufreq/hwmon sysfs.
+# Inputs: --interval, --duration, --output, or a command after `--`.
+# Writes: timestamped samples and the monitored command result to the output file.
+# Safety: read-only monitoring; the child command itself determines its side effects.
+# Repeat behavior: safe to repeat and suitable for bounded benchmark monitoring.
+# Recovery: inspect the final command status and samples; no persistent repair occurs.
+# Verification: correlate samples with workload results and kernel diagnostics.
 set -Eeuo pipefail
 
 OUTPUT=${OUTPUT:-/var/log/orangepi-zero3w-setup/thermal-monitor-$(date -u +%Y%m%dT%H%M%SZ).txt}

@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Back up external image inputs, generated caches, or sensitive presets.
+# Platform: host checkout; destination may be local removable or network storage.
+# Inputs: BACKUP_SET and BACKUP_DIR, or --set/--destination; sensitive sets prompt.
+# Writes: categorized backup directories, checksums, and backup-info.txt.
+# Safety: sensitive credentials are separated and require explicit confirmation.
+# Repeat behavior: creates/replaces files in the selected destination categories.
+# Recovery: use restore.sh with a verified set; encrypt sensitive backups externally.
+# Verification: inspect manifest.sha256 and restore only after checksum validation.
 set -Eeuo pipefail
 
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)

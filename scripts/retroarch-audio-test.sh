@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Run a bounded direct-ALSA speaker test for the board HDMI device.
+# Platform: Orange Pi HDMI ALSA card; no PulseAudio or PipeWire is required.
+# Inputs: RETROARCH_AUDIO_DEVICE, defaulting to plughw:CARD=allwinnerhdmi,DEV=0.
+# Writes: audio output only and a bounded command log; no RetroArch configuration.
+# Safety: timeout prevents an unattended speaker test from running indefinitely.
+# Repeat behavior: safe to repeat; it does not alter system state.
+# Recovery: stop early with Ctrl-C; a timeout is reported as a non-installer result.
+# Verification: use board-audio-status before testing and board-retroarch-verify after.
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

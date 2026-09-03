@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Prepare a mounted image inside the pinned Docker userspace container.
+# Platform: privileged Linux container with loop, partition, and mount utilities.
+# Inputs: base image/format, first-boot preset, provisioning hook, output image.
+# Writes: output image root filesystem and first-boot files; temporary mounts are used.
+# Safety: validates arguments, mounts the root partition, and cleans up on exit.
+# Repeat behavior: produces a new output and must not overwrite an existing image.
+# Recovery: cleanup trap releases temporary mounts/loops; discard partial output safely.
+# Verification: validate the resulting image before SD-card deployment.
 set -Eeuo pipefail
 BASE_IMAGE=""; BASE_FORMAT=""; PRESET=""; PROVISIONING=""; OUTPUT_IMAGE=""
 progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }

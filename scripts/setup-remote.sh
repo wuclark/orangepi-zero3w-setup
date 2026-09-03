@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Install one optional remote-display backend for the selected desktop.
+# Platform: Debian/Armbian board image with an existing desktop session.
+# Inputs: --backend x11vnc, wayvnc, or tigervnc; optional non-root --user.
+# Writes: backend packages, service configuration, and project state.
+# Safety: services default to SSH-tunneled/local access; no public exposure is added.
+# Repeat behavior: backend installation is delegated to its idempotent installer.
+# Recovery: use setup-reset.sh and the backend-specific uninstall/recovery guide.
+# Verification: run remote-status, board-status, and the backend verification target.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

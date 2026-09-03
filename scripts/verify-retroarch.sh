@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Read-only validation of RetroArch PowerVR Vulkan, X11, and ALSA setup.
+# Platform: arm64 Orange Pi board with the active non-root X11 desktop session.
+# Inputs: optional RETROARCH_USER and the installed RetroArch configuration.
+# Writes: validation output only; no packages, configuration, or services change.
+# Safety: uses the isolated launcher and does not force a nonexistent Xauthority file.
+# Repeat behavior: safe to run repeatedly; X11 checks depend on session availability.
+# Recovery: review failures, then use board-retroarch-repair or the documented setup.
+# Verification: expected PASS output includes PowerVR GPU, X11 Vulkan, and ALSA.
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

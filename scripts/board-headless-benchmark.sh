@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Run no-display GPU Vulkan, VPU decode, and NPU inference workloads.
+# Platform: validated Orange Pi arm64 board with installed acceleration layers.
+# Inputs: optional OUTPUT path; workload commands and test assets are board-local.
+# Writes: timestamped benchmark evidence under /var/log by default.
+# Safety: workloads are bounded and do not change configuration or reboot.
+# Repeat behavior: safe to repeat; results vary with frequency, cooling, and load.
+# Recovery: inspect the component evidence and rerun that component independently.
+# Verification: all three sections must report PASS for a passing benchmark.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

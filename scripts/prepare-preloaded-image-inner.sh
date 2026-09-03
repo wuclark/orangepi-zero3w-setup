@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Copy the repository and staged vendor archives into an image root.
+# Platform: privileged Linux container with loop, partition, and mount utilities.
+# Inputs: base image/format and output image; repository is supplied at /repo.
+# Writes: output image root filesystem, excluding Git and generated video fixtures.
+# Safety: uses temporary mounts and cleanup traps; never extracts an archive over /.
+# Repeat behavior: creates a separate derived image and refuses no explicit overwrite.
+# Recovery: cleanup releases temporary mounts/loops; discard a failed partial output.
+# Verification: validate the image and confirm archive hashes before SD deployment.
 set -Eeuo pipefail
 BASE_IMAGE=""; BASE_FORMAT=""; OUTPUT_IMAGE=""
 progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }

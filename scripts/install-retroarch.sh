@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Install/configure Debian RetroArch with isolated PowerVR Vulkan and ALSA.
+# Platform: arm64 Orange Pi Zero 3W, X11 display :0, DDK under /opt/pvr-ddk-24.2.
+# Inputs: install/repair/core/download/audio options and RETROARCH_* environment.
+# Writes: packages, user config, launcher/desktop entry, state, and config backups.
+# Safety: never exports the PVR directory globally as LD_LIBRARY_PATH.
+# Repeat behavior: idempotently replaces managed keys and tracks newly installed packages.
+# Recovery: --repair restores the newest config backup; uninstall preserves ROMs by default.
+# Verification: board-retroarch-verify and board-retroarch-core-check on the board.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

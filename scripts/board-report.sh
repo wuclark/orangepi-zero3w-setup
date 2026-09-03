@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Collect one normalized, machine-readable board capability report.
+# Platform: Orange Pi board with installed optional acceleration layers.
+# Inputs: optional --output directory or BOARD_REPORT_OUTPUT.
+# Writes: results.env, summary.txt, and component evidence below the output directory.
+# Safety: diagnostics are read-only; secrets and private credentials must be sanitized.
+# Repeat behavior: each invocation uses a new timestamped default directory.
+# Recovery: rerun after a failed component check; prior reports remain intact.
+# Verification: use compare-board-reports.sh for reports from multiple boards.
 set -Eeuo pipefail
 
 [[ $EUID -eq 0 ]] || { echo 'ERROR: run with sudo.' >&2; exit 1; }

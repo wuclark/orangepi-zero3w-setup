@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Check downloaded advanced Libretro cores and bounded RetroArch loading.
+# Platform: arm64 Orange Pi board with retroarch-powervr and X11 display :0.
+# Inputs: optional RETROARCH_USER and RETROARCH_CORE_DIR.
+# Writes: temporary smoke-test logs only; core files and user configuration are read.
+# Safety: never installs, downloads, changes configuration, or globally sets PVR paths.
+# Repeat behavior: safe to repeat; missing optional cores are warnings.
+# Recovery: download/reinstall the affected core, then rerun this check.
+# Verification: checks ARM64 format, ldd dependencies, and RetroArch load evidence.
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Purpose: Measure CPU, compression, crypto, memory, optional storage/network results.
+# Platform: arm64 Orange Pi board with benchmark dependencies installed from APT.
+# Inputs: --storage, --network HOST, and --output; storage/network are opt-in.
+# Writes: timestamped evidence and, with --storage, a temporary 256 MiB test file.
+# Safety: storage mode writes the selected root storage; network mode needs a peer.
+# Repeat behavior: safe to repeat; results depend on thermal state and background load.
+# Recovery: temporary storage data is removed after the fio test; inspect failed logs.
+# Verification: each section reports PASS/FAIL and the final summary is authoritative.
 set -Eeuo pipefail
 
 OUTPUT=${OUTPUT:-/var/log/orangepi-zero3w-setup/system-benchmark-$(date -u +%Y%m%dT%H%M%SZ).txt}
