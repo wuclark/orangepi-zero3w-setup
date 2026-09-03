@@ -32,6 +32,12 @@ specified in `AGENTS.md`.
   a separate Armbian target image.
 - [x] Build and verify a preloaded image from the current Armbian base image;
   the base remains unchanged and the three archive hashes match.
+- [ ] Add a dependency-free interactive `sudo make board-config` menu with an
+  ANSI dashboard, arrow-key navigation when available, and a numbered-menu
+  fallback for serial and limited terminals. It should expose status,
+  validation, acceleration, desktop/remote, benchmark, health, backup/restore,
+  and reboot actions while showing the equivalent command and requiring
+  confirmation for installs, desktop changes, restores, and reboots.
 
 ## Immediate validation TODO
 
@@ -81,6 +87,10 @@ specified in `AGENTS.md`.
    including repeated reboot tests and presentation/media/inference tests.
 8. Update README, CLI help, guides, tutorial, changelog, manifests, and
    support claims only after the corresponding evidence exists.
+9. Implement the interactive `board-config` front end as a thin wrapper around
+   the existing Make targets. Keep it display-independent, use high-contrast
+   PASS/WARN/FAIL status colors with a plain-text fallback, and never duplicate
+   setup logic or silently install/reboot.
 
 ## Evidence gate for support claims
 
