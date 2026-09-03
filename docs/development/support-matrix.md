@@ -13,7 +13,7 @@ promise that every feature works on every A733 board or kernel.
 | X11 DRI2/DRI3/Present | Xorg/LightDM | Verified with session access | Wrong user or missing X11 authorization can make checks fail. |
 | X11 GLX | Mesa GLX | Known limitation | Uses llvmpipe; Vulkan/EGL PowerVR remain functional. |
 | VPU | Cedar/libcedarc | Verified | H.264 and H.265 GStreamer decode tests. |
-| NPU | VIPLite 2.0.3.2 | Verified smoke level | Pinned inference sample; independent golden output remains TODO. |
+| NPU | VIPLite 2.0.3.2 | Verified smoke plus candidate golden | Pinned `network_binary.nb` executes successfully; the SDK custom-LUT candidate matches its supplied golden. A golden for the pinned sample remains unavailable. |
 | USB-C DisplayPort | Board connector/driver path | Runtime-dependent | Use `board-display-status` and record whether `DP-1` is connected. |
 | HDMI audio | `allwinnerhdmi`, ALSA device 0 | Playback path verified | Actual sound requires a connected HDMI sink. |
 | RetroArch | Debian package with isolated Vulkan launcher | Verified | PowerVR GPU, X11 Vulkan context, swapchain, and core checks. |

@@ -73,10 +73,11 @@ sudo reboot
 sudo ./scripts/board-acceleration-workflow.sh --layer gpu --action verify
 ```
 
-Repeat the same sequence for `vpu`. VPU verification downloads test media and
+Repeat the same sequence for `vpu` and `npu` when the corresponding private
+archives and board ABI are available. VPU verification downloads test media and
 runs explicit H.264/H.265 OMX decode pipelines; use
 `make board-vpu-decode-test` to rerun those tests directly. Use `npu` for
-precheck only until the board-side NPU installer is implemented. Progress is appended to
+precheck/install/verify when the NPU ABI has been confirmed. Progress is appended to
 `/var/log/orangepi-zero3w-setup/acceleration-progress.log`, with per-step
 evidence files beside it. The orchestrator never reboots automatically.
 Prechecks record missing layers as a baseline and exit successfully; verify
@@ -111,6 +112,11 @@ board-npu-test` runs the NPU smoke test. Use `make board-diagnostics` to
 capture the broader pre/post hardware evidence. These targets never install,
 reboot, or change boot ordering; visible `vkcube` presentation remains a
 manual test.
+
+If the private SDK candidate archive is installed under
+`/opt/orangepi-zero3w-setup/vendor-files/`, `make board-validation` also runs
+`board-npu-golden-test`. This is a separate custom-LUT golden comparison; it
+does not provide a golden for the pinned `network_binary.nb` sample.
 
 For one consolidated post-install report, run:
 
