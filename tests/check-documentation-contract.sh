@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Purpose: Enforce the repository's minimum documentation contract for maintained entrypoints.
+# Purpose: Enforce the repository's minimum documentation contract for maintained entrypoints and configuration.
 # Platform: Host-side read-only test; it does not require a board or root.
 # Inputs: Shell/configuration files, sidecars, and tests/documentation-contract-exceptions.txt.
 # Writes: No persistent files; diagnostics go to stdout/stderr.
@@ -26,9 +26,8 @@ done < "$EXCEPTIONS"
 mapfile -t candidates < <(
     find "$REPO_ROOT/scripts" "$REPO_ROOT/tests" -type f -name '*.sh' -print
     printf '%s\n' "$REPO_ROOT/Makefile"
-    find "$REPO_ROOT/config" "$REPO_ROOT/systemd" "$REPO_ROOT/manifests" "$REPO_ROOT/docker" -maxdepth 1 -type f \
-        \( -name '*.conf' -o -name '*.service' -o -name '*.rules' -o -name '*.json' -o -name '*.env' -o -name '*.Dockerfile' \
-        -o -name 'Xorg-*' -o -name '90-*' -o -name '95-*' \) -print
+    find "$REPO_ROOT/config" "$REPO_ROOT/systemd" "$REPO_ROOT/manifests" "$REPO_ROOT/docker" \
+        -type f ! -name '*.md' ! -name 'README*' -print
 )
 
 failures=0
