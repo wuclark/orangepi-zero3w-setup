@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Remove managed display, remote-access, linker, and delayed-module configuration.
+# Platform: Orange Pi target board with repository-managed optional layers installed.
+# Inputs: No command-line options; operates on fixed managed paths.
+# Dependencies: Bash, root, systemd, ldconfig, and scripts/lib.sh.
+# Writes: Disables services and removes managed configuration files; preserves runtime/module files for recovery.
+# Safety: Does not remove packages or proprietary runtime files; delayed-load and recovery concerns remain explicit.
+# Repeat: Safe to repeat because managed removal tolerates already-absent paths.
+# Recovery: Restore timestamped backups under /var/backups/orangepi-zero3w-setup, then reboot only after review.
+# Outputs: Cleanup actions and warnings describing preserved runtime/VPU files.
+# Verification: Inspect systemd state, display configuration, and board-status after cleanup.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

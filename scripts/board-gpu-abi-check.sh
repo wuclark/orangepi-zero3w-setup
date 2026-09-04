@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Check the running kernel, pvrsrvkm module ABI, headers, firmware, and delayed-load service.
+# Platform: Orange Pi Zero 3W with the reference PowerVR kernel/DDR stack.
+# Inputs: Running kernel state and managed module, firmware, headers, and systemd paths.
+# Dependencies: Bash, modinfo, systemctl, sysfs, matching kernel headers, and root-capable diagnostics.
+# Writes: No persistent files; prints PASS/FAIL ABI evidence to stdout.
+# Safety: Read-only safety gate; it does not load modules, reboot, install files, or alter boot ordering.
+# Repeat: Safe to run repeatedly; results reflect the current kernel and installed stack.
+# Recovery: Do not use the GPU or reboot into a changed kernel; rebuild the module per the GPU guide.
+# Outputs: Component checks, summary counts, and an actionable failure message.
+# Verification: Require zero failures before using the PowerVR stack after kernel/module changes.
+# Documentation: docs/optional/gpu/gpu.md
 set -Eeuo pipefail
 
 MODULE=/opt/pvrsrvkm.ko

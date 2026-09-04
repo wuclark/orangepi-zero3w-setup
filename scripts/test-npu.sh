@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Run the experimental VIPLite NPU smoke test and optionally save evidence.
+# Platform: Orange Pi Zero 3W target board with the NPU runtime/test assets installed.
+# Inputs: Optional --test-root and --output paths.
+# Dependencies: Bash, root, vpm_run, NPU model/input assets, VIPLite libraries, modinfo, and dmesg.
+# Writes: Optional timestamped test evidence at OUTPUT; workload itself uses the NPU device.
+# Safety: Runs only the fixed repository sample; does not install software or change boot ordering.
+# Repeat: Repeats the same smoke workload and replaces only the explicitly requested evidence output.
+# Recovery: No system rollback is required; preserve failed evidence for diagnosis and sanitize before sharing.
+# Outputs: Runner logs, optional runtime/module hashes, device data, and PASS/FAIL exit status.
+# Verification: Require the runner return marker and inspect evidence with the NPU support boundary in mind.
+# Documentation: docs/optional/npu.md
 set -Eeuo pipefail
 
 TEST_ROOT=/opt/orangepi-zero3w-setup/npu-test

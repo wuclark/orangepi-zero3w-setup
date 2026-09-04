@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Validate architecture, board identity, kernel, and pvrsrvkm module ABI before installation.
+# Platform: Orange Pi Zero 3W AArch64 target; reference kernel required unless --allow-untested is explicit.
+# Inputs: Required --module and optional --allow-untested.
+# Dependencies: Bash, scripts/lib.sh, uname, modinfo, procfs/device-tree, and the candidate module.
+# Writes: No persistent files; emits validation logs only.
+# Safety: Read-only gate that never installs, loads, removes, or reorders kernel modules.
+# Repeat: Safe to run repeatedly against the same board/module pair.
+# Recovery: Resolve architecture/kernel/vermagic mismatch before installation; use UART recovery for board changes.
+# Outputs: Preflight PASS or a specific failure/warning explaining the mismatch.
+# Verification: Require a matching pvrsrvkm name and vermagic before continuing the installer.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"
@@ -45,4 +56,3 @@ if [[ -r /proc/device-tree/compatible ]]; then
 fi
 
 log "Preflight passed: arch=$(uname -m), kernel=$RUNNING_KERNEL, module=$MODULE_NAME."
-

@@ -2,7 +2,17 @@
 
 ## Unreleased
 
+- Make the real NPU golden targets automatically clone or reuse the public
+  `a733_npu_driver` checkout, while keeping Docker image setup explicit.
+- Document the official Allwinner ACUITY archive, Radxa setup guide, and the
+  fact that the proprietary image is imported or pulled rather than built from
+  a repository Dockerfile.
+- Record the Radxa ACUITY usage workflow and its correspondence to this
+  project's host-golden and board-side NBG validation flow.
+
 - Add a documentation-contract checker and validated, path-specific legacy exceptions.
+- Require sidecars for commentless machine-valid configuration files, including
+  schema, consumer, safe-change, and verification documentation.
 
 - Add host and board Make targets for testing the AI SDK custom-LUT NPU golden
   candidate without confusing it with the pinned operator smoke test.

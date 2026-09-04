@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Inspect credential-bearing files embedded in an image and print a redacted build summary.
+# Platform: Host workstation with loop/mount tools and sudo permission for read-only image inspection.
+# Inputs: Final image, optional preset/provisioning paths, and optional --unredacted.
+# Dependencies: Bash, losetup, mount, partx, blkid, sudo, and a readable image filesystem.
+# Writes: Temporary read-only mount state under /tmp; no repository or image contents are modified.
+# Safety: Redacts credentials by default; --unredacted is for local troubleshooting only.
+# Repeat: Recreates temporary inspection mounts and removes them through the cleanup trap.
+# Recovery: Cleanup is automatic; detach any stale loop/mount resources only after validating exact targets.
+# Outputs: Image metadata, embedded file summary, and optional unredacted local values.
+# Verification: Confirm the final image contains the intended preset/provisioning paths without exposing secrets.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 UNREDACTED=no
 POSITIONAL=()

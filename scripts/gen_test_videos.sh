@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Generate synthetic H.264/H.265 video fixtures for VPU decode tests.
+# Platform: Host with FFmpeg; generated media is local test input, not support evidence by itself.
+# Inputs: Optional --only, --decode-pair, and --force generation options.
+# Dependencies: Bash, ffmpeg, ffprobe, and writable repository testdata/videos.
+# Writes: MP4 and framemd5 files under testdata/videos; --force permits replacement.
+# Safety: Generates local reproducible fixtures only; never installs software or touches board state.
+# Repeat: Reuses existing files by default and replaces them only with --force.
+# Recovery: Remove generated testdata/videos files and regenerate from the same command.
+# Outputs: Synthetic video fixtures, hashes, and FFmpeg/FFprobe diagnostics.
+# Verification: Confirm generated files have expected codec metadata and matching framemd5 output.
+# Documentation: docs/optional/vpu.md
 set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

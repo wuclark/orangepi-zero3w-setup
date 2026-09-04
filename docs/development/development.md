@@ -44,11 +44,23 @@ find . -type f -name '*.sh' -print0 | xargs -0 -n1 bash -n
 git diff --check
 ```
 
+The shell syntax gate is `bash -n` for every tracked shell script; ShellCheck
+is not required. Review Make recipes separately as shell embedded in Make, with
+special attention to quoting paths in image rebuild and credential-preserving
+logic.
+
 When the documentation contract checker is implemented, run it with the other
 local checks. Until then, review every changed script or configuration file for
 the contract described in `AGENTS.md` and `CONTRIBUTING.md`: purpose, platform
 assumptions, inputs, dependencies, writes, safety, repeat behavior, recovery,
 outputs, provenance, and verification.
+
+Commentless machine-valid configuration files need a same-name Markdown
+sidecar. For example, `config/img_icd.json.md` documents the JSON manifest's
+consumer, exact schema, safe compatibility changes, verification, and why the
+manifest cannot contain comments. The documentation-contract checker validates
+these sidecars; use a path-specific exception only when a linked guide is a
+better maintained contract.
 
 Do not ask an agent to execute `install.sh` on a laptop or generic VM. Installation
 tests belong on a recoverable Orange Pi with UART available. Use a separate SD

@@ -1,4 +1,6 @@
 ! Defaults for visible xterm text on the Orange Pi desktop profiles.
+! Purpose: Set readable white-on-black xterm defaults for repository desktops.
+! Documentation: docs/guide/03-desktop-sessions.md
 XTerm*foreground: white
 XTerm*background: black
 XTerm*faceName: Monospace

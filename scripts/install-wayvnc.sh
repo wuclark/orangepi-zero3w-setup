@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Install and configure localhost-bound WayVNC for the selected desktop user.
+# Platform: Orange Pi board using Sway, labwc, or Weston session integration.
+# Inputs: Optional --user; otherwise the invoking real user is selected.
+# Dependencies: Bash, root, apt-get, wayvnc, systemd/session launcher files, and a valid user home.
+# Writes: WayVNC config/marker under the user's home and the managed session launcher under /usr/local/libexec.
+# Safety: Defaults to 127.0.0.1:5900 and does not expose the service on the LAN.
+# Repeat: Preserves an existing WayVNC config and refreshes managed launcher/marker paths.
+# Recovery: Remove the marker/config or uninstall the remote backend using the remote-access recovery guide.
+# Outputs: Configuration log naming the user and localhost port.
+# Verification: Enter a supported graphical session and run the WayVNC verification helper.
+# Documentation: docs/guide/04-remote-access.md
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

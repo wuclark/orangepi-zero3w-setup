@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Interactively install explicitly selected optional Armbian software.
+# Platform: Orange Pi Zero 3W board installation; run as root on the target.
+# Inputs: Optional --update and interactive package/feature selections and confirmation.
+# Dependencies: Bash, apt-get, and repository helpers for selected RetroArch features.
+# Writes: Installs selected Debian packages and may configure RetroArch and its optional assets.
+# Safety: Nothing is selected by default; apt metadata refresh occurs only with --update.
+# Repeat: Repeating the flow is package-manager idempotent; each run requires interactive confirmation.
+# Recovery: Uninstall optional layers with their documented repository targets; no automatic rollback is provided.
+# Outputs: Selection summary, apt/install output, and delegated RetroArch results.
+# Verification: Verify installed options with the corresponding `make` status or validation target.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo 'Run with sudo.' >&2; exit 1; }

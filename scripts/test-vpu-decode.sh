@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Run headless Cedar H.264/H.265 decode tests using pinned or generated media.
+# Platform: Orange Pi Zero 3W target board with VPU userspace and GStreamer installed.
+# Inputs: Optional --media-dir and --output; generated repository fixtures or pinned fallback URLs.
+# Dependencies: Bash, root, GStreamer parsers/OMX decoders, curl, and /etc/cedarc.conf.
+# Writes: Cached media under MEDIA_DIR and optional timestamped decode evidence at OUTPUT.
+# Safety: Headless decode only; does not present video, install packages, reboot, or alter boot ordering.
+# Repeat: Reuses cached media and writes a fresh optional evidence report per run.
+# Recovery: Remove only cached test media/evidence; restore VPU configuration through the recovery guide if needed.
+# Outputs: Decoder pipeline logs, codec results, checksums, and PASS/FAIL status.
+# Verification: Require both H.264 and H.265 pipelines to open the device and reach EOS.
+# Documentation: docs/optional/vpu.md
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

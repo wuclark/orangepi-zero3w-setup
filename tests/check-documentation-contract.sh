@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Purpose: Enforce the repository's minimum documentation contract for maintained entrypoints.
 # Platform: Host-side read-only test; it does not require a board or root.
-# Inputs: Shell/configuration files and tests/documentation-contract-exceptions.txt.
+# Inputs: Shell/configuration files, sidecars, and tests/documentation-contract-exceptions.txt.
 # Writes: No persistent files; diagnostics go to stdout/stderr.
 # Safety: Reads repository files only and never executes an entrypoint.
 # Repeat: Idempotent and safe to run from any working directory.
@@ -36,6 +36,22 @@ for file in "${candidates[@]}"; do
     relative=${file#"$REPO_ROOT/"}
     if [[ -n ${exception_docs[$relative]+x} ]]; then
         printf 'EXEMPT %s (%s; see %s)\n' "$relative" "${exception_reasons[$relative]}" "${exception_docs[$relative]}"
+        continue
+    fi
+    if [[ $relative == config/* || $relative == systemd/* || $relative == manifests/* || $relative == docker/* ]] &&
+        ! grep -Eq '^[[:space:]]*(#|!|;|//|/\*|<!--)' "$file"; then
+        sidecar="$REPO_ROOT/${relative}.md"
+        if [[ ! -f $sidecar ]]; then
+            echo "FAIL $relative: commentless configuration requires ${relative}.md or a documented exception" >&2
+            failures=$((failures + 1))
+            continue
+        fi
+        for field in '## Purpose' '## Consumer' '## Exact schema constraints' '## Safe changes' '## Verification' '## Why comments are impossible'; do
+            if ! grep -Fq "$field" "$sidecar"; then
+                echo "FAIL $relative: sidecar ${relative}.md is missing '$field'" >&2
+                failures=$((failures + 1))
+            fi
+        done
         continue
     fi
     header=$(sed -n '1,45p' "$file")

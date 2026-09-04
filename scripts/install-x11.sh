@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Install the tested X11/Openbox display configuration for the PowerVR path.
+# Platform: Orange Pi Zero 3W AArch64 board with LightDM and optional PowerVR userspace.
+# Inputs: Optional --user, --video, and --no-force-video settings.
+# Dependencies: Bash, root, scripts/lib.sh, LightDM/Xorg packages, and repository X11 configuration files.
+# Writes: Xorg/LightDM configuration and optionally the video mode in /boot/armbianEnv.txt.
+# Safety: Keeps Sunxi card0 primary and does not reboot; forced video mode is optional and persistent.
+# Repeat: Replaces managed X11/LightDM configuration and avoids duplicating the video argument.
+# Recovery: Restore the setup backup or mask LightDM; retain delayed GPU module ordering per docs/guide/05-recovery.md.
+# Outputs: Installed X11 configuration and any requested boot video setting.
+# Verification: Run display status, EGL/GLES, and board validation checks after reboot.
+# Documentation: docs/guide/03-desktop-sessions.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
@@ -44,4 +55,3 @@ fi
 systemctl set-default graphical.target
 systemctl enable lightdm
 log "Configured Xorg card0 scanout, PowerVR DRI environment and LightDM autologin for $TARGET_USER."
-

@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Install Docker Engine, Compose, and the Docker repository for the board user.
+# Platform: Supported Debian/Orange Pi architecture or another explicitly supported host architecture.
+# Inputs: DOCKER_USER and DOCKER_APT_UPDATE; package/repository state from the current OS.
+# Dependencies: Bash, root, dpkg, apt-get, curl, systemd, and network access to download.docker.com.
+# Writes: Docker apt key/source files, installed packages, Docker service state, and user group membership.
+# Safety: apt metadata refresh is opt-in; adding the user to docker grants root-equivalent Docker access.
+# Repeat: Rewrites managed repository metadata and lets apt/systemd converge installed Docker state.
+# Recovery: Remove Docker packages/repository using the documented host/board recovery procedure.
+# Outputs: Installation logs and Docker verification commands.
+# Verification: Run `docker version`, `docker compose version`, and `docker run hello-world`.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/lib.sh"

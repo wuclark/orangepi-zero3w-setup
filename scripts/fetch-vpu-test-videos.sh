@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Fetch pinned synthetic H.264/H.265 VPU fixtures from a GitHub release.
+# Platform: Host or board with network access and repository testdata permissions.
+# Inputs: Optional VPU_TESTDATA_TAG, --tag, and --force.
+# Dependencies: Bash, curl, sha256sum, and the pinned release's SHA256SUMS asset.
+# Writes: Downloaded MP4/framemd5 fixtures under testdata/videos; --force permits replacement.
+# Safety: Verifies every downloaded asset against the release checksum before use.
+# Repeat: Reuses existing verified files unless --force is supplied.
+# Recovery: Remove only the generated testdata/videos fixtures and rerun with the pinned tag.
+# Outputs: Fixture files, checksum verification output, and an exit status.
+# Verification: Successful completion requires all downloaded files to match SHA256SUMS.
+# Documentation: docs/optional/vpu.md
 set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

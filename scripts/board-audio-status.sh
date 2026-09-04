@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Report ALSA cards, playback devices, and the known Allwinner HDMI device name.
+# Platform: Orange Pi Zero 3W target board.
+# Inputs: Current `/proc/asound` state and optional `aplay` availability.
+# Dependencies: Bash, scripts/lib.sh, root, and optional alsa-utils/aplay.
+# Writes: No persistent files; prints read-only audio diagnostics to stdout.
+# Safety: Does not start playback, change mixer state, install packages, or reboot.
+# Repeat: Safe to run repeatedly; output reflects the current kernel audio state.
+# Recovery: No recovery action is required; install alsa-utils if the diagnostic is incomplete.
+# Outputs: ALSA card/device listings and warnings for unavailable components.
+# Verification: Confirm the expected `allwinnerhdmi` card appears on the target board.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

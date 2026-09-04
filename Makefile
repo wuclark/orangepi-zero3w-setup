@@ -1,3 +1,5 @@
+# Purpose: Provide host image-building, board setup, validation, recovery, and evidence targets.
+# Documentation: docs/development/make-target-index.md
 SHELL := /usr/bin/env bash
 
 BASE := work/images/armbian/Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal
@@ -18,6 +20,8 @@ BOARD_REPORTS_OUTPUT ?=
 NPU_GOLDEN_ARCHIVE ?= /opt/orangepi-zero3w-setup/vendor-files/npu-golden-candidate.tar.gz
 NPU_GOLDEN_OUTPUT ?= /var/log/orangepi-zero3w-setup/npu-golden-candidate.txt
 NPU_DRIVER_REPO ?= work/sources/a733_npu_driver
+NPU_DRIVER_URL ?= https://github.com/wuclark/a733_npu_driver.git
+NPU_DRIVER_REF ?= main
 NPU_PUBLIC_ONNX ?=
 STABILITY_MINUTES ?= 30
 STABILITY_STORAGE ?= no
@@ -52,7 +56,7 @@ GIT_DEPTH ?= 1
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test board-npu-golden-test npu-test-assets npu-golden-candidate \
-	npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 \
+	npu-driver-source npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 \
 	board-npu-golden-test-lenet board-npu-golden-test-yolov5 board-npu-golden-test-resnet50 \
 	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports \
 	backup-required backup-cache backup-sensitive backup-all restore \
@@ -148,6 +152,7 @@ help:
 		'make board-npu-precheck/verify          Run supported NPU checks' \
 		'make board-npu-test                     Run NPU test and save evidence' \
 		'make npu-golden-candidate               Stage SDK custom-LUT NPU golden candidate' \
+		'make npu-driver-source                 Clone the public NPU driver/toolchain source if absent' \
 		'make board-npu-golden-test              Run the SDK golden candidate on the board' \
 		'make npu-golden-lenet/yolov5/resnet50   Generate a real ACUITY NPU golden (see docs/optional/npu.md)' \
 		'make board-npu-golden-test-lenet/yolov5/resnet50  Run one of those goldens on the board' \
@@ -209,27 +214,27 @@ firstboot: preloaded docker-toolchain
 	@[[ '$(RELEASE_VERSION)' =~ ^[0-9]+\.[0-9]+\.[0-9]+$$ ]] || { echo 'ERROR: VERSION must contain MAJOR.MINOR.PATCH.' >&2; exit 1; }
 	@test -f not_logged_in_yet || { echo 'ERROR: create not_logged_in_yet first.' >&2; exit 1; }
 	@test -f provisioning.sh || { echo 'ERROR: provisioning.sh not found.' >&2; exit 1; }
-	@if [[ -f $(FINAL_POINTER) && $(REBUILD) != 1 ]]; then \
+	@if [[ -f "$(FINAL_POINTER)" && $(REBUILD) != 1 ]]; then \
 		echo 'ERROR: final image already exists and contains credentials.' >&2; \
 		echo 'Use REBUILD=1 make image to preserve it and create a fresh one.' >&2; \
 		exit 1; \
-	elif [[ -f $(FINAL_POINTER) ]]; then \
-		previous=$$(cat $(FINAL_POINTER)); \
+	elif [[ -f "$(FINAL_POINTER)" ]]; then \
+		previous=$$(cat -- "$(FINAL_POINTER)"); \
 		backup=$${previous%.img}.previous.$$(date -u +%Y%m%dT%H%M%SZ).img; \
-		mv -- $$previous $$backup; \
-		[[ ! -f $$previous.sha256 ]] || mv -- $$previous.sha256 $$backup.sha256; \
+		mv -- "$$previous" "$$backup"; \
+		[[ ! -f "$$previous.sha256" ]] || mv -- "$$previous.sha256" "$$backup.sha256"; \
 		echo "Preserved previous final image as $$backup"; \
 	else \
 		true; \
 	fi
-	@rm -f -- $(FINAL_POINTER) $(FINAL_WORK) $(FINAL_WORK).sha256
+	@rm -f -- "$(FINAL_POINTER)" "$(FINAL_WORK)" "$(FINAL_WORK).sha256"
 	@./scripts/prepare-firstboot-image-docker.sh
 	@stamp=$$(date -u +%Y%m%dT%H%M%SZ); \
 	final=$(BASE)-$(IMAGE_RELEASE_TAG)-preloaded-firstboot-$$stamp.img; \
-	mv -- $(FINAL_WORK) $$final; \
-	rm -f -- $(FINAL_WORK).sha256; \
+	mv -- "$(FINAL_WORK)" "$$final"; \
+	rm -f -- "$(FINAL_WORK).sha256"; \
 	(cd "$$(dirname -- "$$final")" && sha256sum -- "$$(basename -- "$$final")" > "$$(basename -- "$$final").sha256"); \
-	printf '%s\n' "$$final" > $(FINAL_POINTER); \
+	printf '%s\n' "$$final" > "$(FINAL_POINTER)"; \
 	echo "Final SD image: $$final"
 
 image: firstboot validate
@@ -670,23 +675,35 @@ npu-golden-candidate:
 # goldens: the golden tensor comes from a separate ACUITY host inference
 # run, verified on the board with compare-npu-output.py, not vpm_run's
 # built-in memcmp() [golden] check.
-npu-golden-lenet:
+npu-driver-source:
+	@if [[ -d $(NPU_DRIVER_REPO)/.git ]]; then \
+		echo "Reusing existing NPU driver checkout: $(NPU_DRIVER_REPO)"; \
+	elif [[ -e $(NPU_DRIVER_REPO) ]]; then \
+		echo "ERROR: $(NPU_DRIVER_REPO) exists but is not a Git checkout; move it aside or set NPU_DRIVER_REPO=..." >&2; \
+		exit 1; \
+	else \
+		install -d "$(dir $(NPU_DRIVER_REPO))"; \
+		if [[ '$(GIT_DEPTH)' == 0 ]]; then \
+			git clone --branch '$(NPU_DRIVER_REF)' '$(NPU_DRIVER_URL)' '$(NPU_DRIVER_REPO)'; \
+		else \
+			git clone --depth '$(GIT_DEPTH)' --branch '$(NPU_DRIVER_REF)' '$(NPU_DRIVER_URL)' '$(NPU_DRIVER_REPO)'; \
+		fi; \
+	fi
+
+npu-golden-lenet: npu-driver-source
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
-	@test -d $(NPU_DRIVER_REPO) || { echo 'ERROR: $(NPU_DRIVER_REPO) not found; clone wuclark/a733_npu_driver there first.' >&2; exit 1; }
 	@install -d -m 755 $(VENDOR_OUTPUT)
 	@./scripts/generate-npu-golden.sh --model lenet --sdk-tarball work/images/ai-sdk.tar.gz \
 		--driver-repo $(NPU_DRIVER_REPO) --output $(VENDOR_OUTPUT)/npu-golden-lenet.tar.gz
 
-npu-golden-yolov5:
+npu-golden-yolov5: npu-driver-source
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
-	@test -d $(NPU_DRIVER_REPO) || { echo 'ERROR: $(NPU_DRIVER_REPO) not found; clone wuclark/a733_npu_driver there first.' >&2; exit 1; }
 	@install -d -m 755 $(VENDOR_OUTPUT)
 	@./scripts/generate-npu-golden.sh --model yolov5 --sdk-tarball work/images/ai-sdk.tar.gz \
 		--driver-repo $(NPU_DRIVER_REPO) --output $(VENDOR_OUTPUT)/npu-golden-yolov5.tar.gz
 
-npu-golden-resnet50:
+npu-golden-resnet50: npu-driver-source
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
-	@test -d $(NPU_DRIVER_REPO) || { echo 'ERROR: $(NPU_DRIVER_REPO) not found; clone wuclark/a733_npu_driver there first.' >&2; exit 1; }
 	@test -n '$(NPU_PUBLIC_ONNX)' || { echo 'ERROR: set NPU_PUBLIC_ONNX=/path/to/resnet50.onnx (an openly licensed file; the SDK ships no resnet50 source).' >&2; exit 1; }
 	@install -d -m 755 $(VENDOR_OUTPUT)
 	@./scripts/generate-npu-golden.sh --model resnet50 --sdk-tarball work/images/ai-sdk.tar.gz \

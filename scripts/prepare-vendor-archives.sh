@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Validate and safely extract staged proprietary userspace archives into a private vendor root.
+# Platform: Host-side archive preparation; output is later consumed by board installers.
+# Inputs: Required PVR tarball and optional VPU/NPU tarballs plus an absent/empty output directory.
+# Dependencies: Bash, Python tarfile, tar, find, and the repository archive layout.
+# Writes: Private mode-700 extraction output and temporary staging directories; never writes to system root.
+# Safety: Rejects absolute/traversal paths and unsafe links; never extracts an untrusted archive over `/`.
+# Repeat: Reuses only an empty explicit output directory; populated output is rejected.
+# Recovery: Delete only the private generated output and rerun after correcting the archive inputs.
+# Outputs: Validated vendor root containing accepted archive contents or a descriptive failure.
+# Verification: Confirm required usr/ layout and run tests/test-archives.sh.
+# Documentation: docs/optional/gpu/archive-workflow.md
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

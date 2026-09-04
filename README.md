@@ -406,6 +406,12 @@ To stage the SDK's separate custom-LUT golden candidate, run
 the board, and run `make board-npu-golden-test`. This candidate does not
 validate the pinned `operator/v3/network_binary.nb` sample.
 
+The real ACUITY golden targets automatically clone the public
+`a733_npu_driver` source into `work/sources/a733_npu_driver` when it is absent:
+`make npu-golden-lenet`. The target reuses existing checkouts but does not
+build the external Docker image; follow `docs/optional/npu.md` first for that
+one-time Docker/AI-SDK setup.
+
 Prechecks may report expected missing-layer warnings but still record a
 successful baseline. Verification steps fail when required checks are absent.
 

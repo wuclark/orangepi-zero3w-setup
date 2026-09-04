@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Initialize and validate the CLI-only Orange Pi setup foundation.
+# Platform: Orange Pi Zero 3W AArch64 board; rejects unrelated architectures/compatible strings.
+# Inputs: Optional hostname, timezone, and target user arguments.
+# Dependencies: Bash, root, board device-tree, system utilities, and scripts/lib.sh.
+# Writes: /etc/orangepi-zero3w-setup/config and state; optional hostname/timezone system settings.
+# Safety: Does not run apt update, install packages, change the GUI, or reboot.
+# Repeat: Preserves existing managed config while updating explicitly supplied settings.
+# Recovery: Restore the managed config or reverse optional hostname/timezone settings using board recovery guidance.
+# Outputs: Foundation state/configuration and validation diagnostics.
+# Verification: Run `sudo make board-status` and the relevant board foundation checks.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

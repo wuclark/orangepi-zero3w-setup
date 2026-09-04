@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Install the legacy complete Armbian GPU/display foundation from staged inputs.
+# Platform: Orange Pi Zero 3W AArch64 with the reference vendor kernel; other kernels require --allow-untested.
+# Inputs: Required --vendor-root and --module; optional firmware, user, video, and explicit --update settings.
+# Dependencies: Bash, root, apt packages, staged vendor userspace, matching pvrsrvkm.ko, and repository helpers.
+# Writes: Packages, PowerVR userspace/module, display configuration, services, firmware, and timestamped backups.
+# Safety: Preflights the module; never extracts archives; --update is opt-in; acceleration boot ordering is preserved.
+# Repeat: Creates a new backup and reruns managed installation steps; unrelated files are not intentionally removed.
+# Recovery: Use the timestamped backup under /var/backups/orangepi-zero3w-setup and docs/guide/05-recovery.md.
+# Outputs: Installation logs, configured board paths/services, and delegated verification results.
+# Verification: Run the relevant board ABI, acceleration, display, and validation targets after reboot.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)

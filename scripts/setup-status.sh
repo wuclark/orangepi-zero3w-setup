@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Report installed board identity, setup state, services, and acceleration device presence.
+# Platform: Orange Pi target board; read-only status helper.
+# Inputs: Current device-tree, kernel, systemd, setup state/config, and device nodes.
+# Dependencies: Bash, procfs/device-tree, systemd, lsmod, awk, and repository state paths.
+# Writes: No persistent files; prints a concise status report to stdout.
+# Safety: Does not install, enable, disable, modify, or reboot anything.
+# Repeat: Safe to run repeatedly; values reflect current board state.
+# Recovery: No recovery action is required; use the relevant layer guide for reported problems.
+# Outputs: Board/kernel/configuration/service/desktop/remote/GPU/NPU status lines.
+# Verification: Compare output with `make board-status` and layer-specific validation commands.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 
 echo "Board: $(tr '\0' ' ' </proc/device-tree/compatible 2>/dev/null || echo unknown)"

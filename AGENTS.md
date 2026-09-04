@@ -29,6 +29,8 @@ sequencing and ABI checks as safety-critical.
   be committed with mode `644`.
 - Run `tests/static-checks.sh`, `bash -n` on every shell script, PowerShell
   parsing when `pwsh` exists, `git diff --check`, and `tests/test-archives.sh`.
+  `bash -n` is the shell syntax check; ShellCheck is not required by this
+  repository process.
 - Keep the project map in `docs/development/project-map.md` aligned with new
   directories, entrypoints, and host/board boundaries. When the documentation
   contract checker is added, run it as part of the same local verification and
@@ -52,6 +54,12 @@ sequencing and ABI checks as safety-critical.
   the explanation is too large for the file. Documentation should teach a new
   maintainer how the component works and why it works that way, not merely list
   the command that invokes it.
+- For machine-valid, human-maintained commentless configuration files, use a
+  same-name `.md` sidecar when comments are impossible. The sidecar must name
+  the file's purpose and consumer, exact schema constraints, safe changes,
+  verification commands, and why comments cannot be used. A linked guide may
+  serve instead only when the documentation-contract checker explicitly records
+  that exception.
 - Include, where applicable, the supported board/OS/architecture/kernel,
   prerequisites and required packages/services/devices, permission and sudo
   requirements, idempotency and repeat-run behavior, created or modified

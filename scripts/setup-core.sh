@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Install or report the username-independent SSH and board-maintenance core.
+# Platform: Orange Pi target board; root is required for installation and status is read-only.
+# Inputs: Optional --update and --status flags.
+# Dependencies: Bash, root for installation, apt-get, systemd SSH service, and the existing apt cache.
+# Writes: Installs core packages and creates /opt/orangepi-zero3w-setup/sources plus log/backup directories.
+# Safety: apt metadata refresh occurs only with --update; no GUI installation or reboot is performed.
+# Repeat: Package and directory setup is idempotent; --status performs no writes.
+# Recovery: Remove optional core packages or restore managed directories using the recovery guide.
+# Outputs: Package/service status or installation logs.
+# Verification: Confirm SSH is enabled/active and run `sudo make board-status`.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 
 [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo 'Run with sudo.' >&2; exit 1; }

@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Install and start the isolated Weston PowerVR systemd service.
+# Platform: Orange Pi Zero 3W AArch64 board with the staged PowerVR DDK.
+# Inputs: WESTON_USER, WESTON_HOME-derived log path, WESTON_LOG, and PVR_DDK_DIR environment variables.
+# Dependencies: Bash, root, Weston, dbus-run-session, systemd, and an existing target user.
+# Writes: /usr/local/bin/weston-pvr-launch.sh, /etc/systemd/system/weston-pvr.service, and the Weston log.
+# Safety: Stops conflicting display services and replaces the managed service; it does not reboot.
+# Repeat: Stops the prior service, refreshes its unit and log, then enables and starts it again.
+# Recovery: Restore LightDM and the prior display configuration using docs/guide/05-recovery.md.
+# Outputs: systemd service state, Weston log, and the detected PowerVR renderer.
+# Verification: Successful completion requires the latest Weston renderer line to contain PowerVR.
+# Documentation: docs/guide/03-desktop-sessions.md
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

@@ -58,4 +58,12 @@ in comments or linked documentation. In particular, record why a setting is
 safe for this board, what compatibility boundary it reflects, and how a future
 maintainer can change it without weakening recovery or hardware safety.
 
+Machine-valid configuration formats that cannot contain comments, such as JSON,
+must have a same-name `.md` sidecar (for example,
+`config/img_icd.json.md`). The sidecar must document the purpose, consumer,
+exact schema constraints, safe changes, verification, and why comments are
+impossible. Run `./tests/static-checks.sh`; the documentation-contract check
+enforces this rule. Use an explicitly linked guide only for a reviewed,
+path-specific exception recorded in `tests/documentation-contract-exceptions.txt`.
+
 Kernel panics or boot failures must be treated as safety-critical regressions. Keep delayed module loading as the default until a tested kernel-specific alternative exists.

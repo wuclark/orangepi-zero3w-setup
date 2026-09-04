@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Compare normalized results from multiple collected board reports.
+# Platform: Host workstation; operates on repository/work evidence and does not require a board.
+# Inputs: REPORT_DIR or --equivalent environment selection and optional COMPARISON_OUTPUT.
+# Dependencies: Bash, find, awk, sort, and tee.
+# Writes: A comparison text report at COMPARISON_OUTPUT, defaulting inside REPORT_DIR.
+# Safety: Read-only with respect to board/system state; only creates or replaces the requested comparison output.
+# Repeat: Repeating regenerates the comparison from the current `results.env` files.
+# Recovery: Restore or remove only the generated comparison output if it was created at an unwanted path.
+# Outputs: Per-board result/revision table, per-check values, and PASS/FAIL exit status.
+# Verification: Confirm every expected board has a valid results.env and PASS result.
+# Documentation: docs/development/evidence-format.md
 set -Eeuo pipefail
 
 REPORT_DIR=${REPORT_DIR:-}

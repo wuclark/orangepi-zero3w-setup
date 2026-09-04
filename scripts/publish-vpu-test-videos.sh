@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Create a GitHub Release and publish generated VPU fixture files individually.
+# Platform: Host workstation with GitHub CLI authentication and repository release permissions.
+# Inputs: Required --tag, optional --target, and exactly 17 generated MP4/framemd5 files.
+# Dependencies: Bash, gh, sha256sum, generated testdata/videos, and network access to GitHub.
+# Writes: testdata/videos/SHA256SUMS and a remote GitHub Release with uploaded fixture assets.
+# Safety: This is an explicit external publishing operation; review generated files and tag before running.
+# Repeat: A tag/release is not safely repeatable unless GitHub accepts the requested release operation.
+# Recovery: Delete or replace the remote release/assets through GitHub administration; local checksum is disposable.
+# Outputs: Release creation/upload diagnostics and SHA256SUMS for published assets.
+# Verification: Fetch the pinned release and verify SHA256SUMS before board use.
+# Documentation: docs/optional/vpu.md
 set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

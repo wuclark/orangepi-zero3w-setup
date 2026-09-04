@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Purpose: Print a localhost VNC-over-SSH tunnel hint when a remote backend is enabled.
+# Documentation: docs/guide/04-remote-access.md
 
 if systemctl is-enabled --quiet x11vnc.service 2>/dev/null ||
     systemctl is-active --quiet x11vnc.service 2>/dev/null ||

@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# Purpose: Exercise archive extraction, component separation, manifest, and staging safety checks.
+# Platform: Host-side temporary-fixture test; no board, root, or proprietary inputs are required.
+# Inputs: Generated synthetic archives and fixture trees created inside a temporary directory.
+# Dependencies: Bash, tar, sha256sum, repository archive/extraction scripts, and Python validation helpers.
+# Writes: Temporary test fixtures and generated archives under /tmp; removes them on exit.
+# Safety: Uses synthetic data only and validates that archive outputs remain component-isolated.
+# Repeat: Safe to run repeatedly; each invocation uses a fresh temporary directory.
+# Outputs: Assertion failures or an archive-tests-passed message.
+# Verification: Exit 0 confirms archive layout, checksums, and exclusion invariants passed.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 TMP=$(mktemp -d -t zero3w-archive-test.XXXXXXXX)

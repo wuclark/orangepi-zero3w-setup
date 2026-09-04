@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Report DRM connector state, modes, and the current X11 display output.
+# Platform: Orange Pi Zero 3W target board with a non-root desktop user.
+# Inputs: DISPLAY_STATUS_USER or the resolved login user, DRM sysfs, and X11 :0 state.
+# Dependencies: Bash, scripts/lib.sh, root, getent, runuser, and optional xrandr.
+# Writes: No persistent files; prints read-only display diagnostics to stdout.
+# Safety: Refuses to inspect a root desktop session and never changes display configuration.
+# Repeat: Safe to run repeatedly; results reflect current connectors and session state.
+# Recovery: No recovery action is required; use the display guide for disconnected outputs.
+# Outputs: DRM connector/mode information, X11 output status, and interpretation hints.
+# Verification: Confirm expected HDMI/DP connector and X11 output state on the target board.
+# Documentation: docs/guide/03-desktop-sessions.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

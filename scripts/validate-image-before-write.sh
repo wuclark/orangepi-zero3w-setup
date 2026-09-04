@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Validate an SD-card image checksum and partition table before it is written.
+# Platform: Host workstation; this helper never writes an image to removable media.
+# Inputs: Required image path and adjacent IMAGE.sha256 checksum file.
+# Dependencies: Bash, sha256sum, file, and partx.
+# Writes: No persistent files; prints validation evidence only.
+# Safety: Read-only validation gate that does not open a block device or perform the write operation.
+# Repeat: Safe to run repeatedly against the same image/checksum pair.
+# Recovery: No changes are made; choose a known-good image if checksum or partition validation fails.
+# Outputs: Checksum result, image type, partition table, and explicit handoff warning.
+# Verification: Require checksum and recognized partition entries before writing the exact image path.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 IMAGE=${1:-}
 usage() { echo "Usage: $0 IMAGE"; }

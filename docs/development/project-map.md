@@ -10,7 +10,7 @@ remain outside Git.
 ├── setup.sh, install.sh, Makefile       public host/board entrypoints
 ├── README.md, ROADMAP.md, CHANGELOG.md  project usage and status
 ├── AGENTS.md, CONTRIBUTING.md           maintenance and review policy
-├── config/                              files staged into board images
+├── config/                              files staged into board images; commentless machine-valid files have `.md` sidecars
 ├── manifests/                           reference versions and support inputs
 ├── scripts/
 │   ├── extract-*, prepare-*, build-*    host image/archive production

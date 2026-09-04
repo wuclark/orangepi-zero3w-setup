@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Verify the expected Sway, LightDM, WayVNC, and Wayland session state.
+# Platform: Orange Pi Zero 3W board running the repository's Sway/WayVNC profile.
+# Inputs: Current user environment, process table, systemd state, and Wayland runtime directory.
+# Dependencies: Bash, pgrep, systemctl, find, and the active graphical session.
+# Writes: No persistent files; prints individual checks and a summary to stdout.
+# Safety: Read-only diagnostic helper; it does not install, configure, stop, or reboot services.
+# Repeat: Safe to run repeatedly; results reflect the current session state.
+# Recovery: This script does not repair failures; follow docs/guide/04-remote-access.md.
+# Outputs: PASS/FAIL lines and a nonzero exit status when any check fails.
+# Verification: Run after the Sway/WayVNC setup and confirm all checks pass.
+# Documentation: docs/guide/04-remote-access.md
 set -Eeuo pipefail
 
 passed=0

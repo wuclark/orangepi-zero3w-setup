@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# Purpose: Run selected post-boot GPU, VPU, and NPU device/workload prerequisite checks.
+# Platform: Orange Pi Zero 3W target board after boot; not a host-only test.
+# Inputs: Optional --gpu, --vpu, --npu, --all, and --output evidence path.
+# Dependencies: Bash, root-capable board tools, kernel device nodes, and installed acceleration layers.
+# Writes: Optional timestamped diagnostic output at OUTPUT; checks themselves are read-only.
+# Safety: Never installs, reboots, loads modules, or changes delayed boot ordering; warnings require review.
+# Repeat: Safe to run repeatedly; optional output is replaced with the current test report.
+# Outputs: PASS/WARN checks, summary, and optional evidence file.
+# Verification: Use after reboot and pair with full board-validation evidence before support claims.
+# Documentation: docs/reference/acceleration-status.md
 set -Eeuo pipefail
 
 pass=0

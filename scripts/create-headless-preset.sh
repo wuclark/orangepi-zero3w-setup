@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Create an Armbian first-boot preset and provisioning script for a headless board.
+# Platform: Host workstation preparing an Armbian root mount or first-boot file.
+# Inputs: Exactly one --root-mount or --output path, plus interactive hostname/user/password/Wi-Fi values.
+# Dependencies: Bash, sed, install, and a writable output or mounted Armbian root filesystem.
+# Writes: A mode-600 credential-bearing preset and mode-700 provisioning.sh beside it or under the root mount.
+# Safety: Prompts for secrets; uses umask 077; never commits or uploads output; delete both files after first boot.
+# Repeat: Replaces the selected output and provisioning file after fresh interactive prompts.
+# Recovery: Delete generated files before boot, or remove them after first boot; do not expose their contents.
+# Outputs: Paths of the created preset/provisioning files and cleanup reminder.
+# Verification: Check file modes and inspect only sanitized paths, never print credential contents.
+# Documentation: docs/optional/gpu/gpu.md
 set -Eeuo pipefail
 
 # Create Armbian's first-boot preset without placing credentials in the repo.

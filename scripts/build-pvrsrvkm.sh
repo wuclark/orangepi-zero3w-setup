@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Build the out-of-tree PowerVR pvrsrvkm module for the running kernel.
+# Platform: Host or board with matching kernel headers; output must target the supported A733 kernel.
+# Inputs: Optional output, work directory, kernel repository, and branch arguments.
+# Dependencies: Bash, git, make, gcc, modinfo, matching kernel headers, and network/source access when needed.
+# Writes: Reusable source/build files under WORK_DIR, a compatibility kernel header, and the requested module output.
+# Safety: Does not install or load the module; validates vermagic; modifies only the expected build tree/header.
+# Repeat: Reuses an existing checkout/build tree and replaces the requested output module.
+# Recovery: Remove only the generated work/output paths or restore the kernel header if this host requires it.
+# Outputs: pvrsrvkm.ko with reported vermagic and the next installation command.
+# Verification: Confirm vermagic matches `uname -r` before using install-kernel-module.sh.
+# Documentation: docs/optional/gpu/gpu.md
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"

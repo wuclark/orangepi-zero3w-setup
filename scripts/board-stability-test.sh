@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Run bounded headless acceleration/storage workloads while recording thermal stability.
+# Platform: Orange Pi Zero 3W target board; requires the installed acceleration test layers.
+# Inputs: STABILITY_MINUTES, STABILITY_STORAGE, STABILITY_INTERVAL_SECONDS, and output path variables.
+# Dependencies: Bash, root, thermal sysfs, dmesg, timeout, board benchmark helpers, and optional gnuplot.
+# Writes: Timestamped text/CSV/optional PNG evidence under the configured output paths.
+# Safety: Default storage testing is disabled; workload duration is bounded; no reboot or boot-order change occurs.
+# Repeat: Each run creates new evidence files and removes only temporary comparison files on exit.
+# Recovery: Stop the process if necessary and review the saved evidence; no system rollback is required.
+# Outputs: Iteration results, kernel warning delta, temperature summary, and evidence paths.
+# Verification: A zero exit status means all stability iterations passed; inspect evidence before support claims.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

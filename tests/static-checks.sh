@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# Purpose: Run repository static, syntax, executable-mode, and safety invariant checks.
+# Platform: Host-side read-only verification; no board or root is required.
+# Inputs: Repository scripts, configuration, documentation, and test fixtures.
+# Dependencies: Bash, grep, find, and the invoked repository checks.
+# Writes: No persistent repository files; subordinate tests may use temporary files under /tmp.
+# Safety: Does not execute installers or mutate board/system state.
+# Repeat: Safe to run repeatedly from any working directory.
+# Outputs: Individual check diagnostics and a final pass/failure result.
+# Verification: Exit 0 means all static, documentation, syntax, mode, and invariant checks passed.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 
@@ -91,6 +101,9 @@ grep -q 'STABILITY_STORAGE' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'gnuplot-nox' "$REPO_ROOT/scripts/install-system-benchmark-deps.sh"
 grep -q 'Temperature graph saved' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'set terminal dumb' "$REPO_ROOT/scripts/board-stability-test.sh"
+grep -q 'mv -- "\$\$previous" "\$\$backup"' "$REPO_ROOT/Makefile"
+grep -q 'rm -f -- "\$(FINAL_POINTER)" "\$(FINAL_WORK)"' "$REPO_ROOT/Makefile"
+grep -q 'printf.*> "\$(FINAL_POINTER)"' "$REPO_ROOT/Makefile"
 grep -q 'Delta from Skin history' "$REPO_ROOT/scripts/board-stability-test.sh"
 if grep -qE '<<[[:space:]]*[A-Za-z]' "$REPO_ROOT/scripts/board-stability-test.sh"; then
     echo 'Stability graph must not use a gnuplot heredoc.' >&2

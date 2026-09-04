@@ -1,3 +1,5 @@
+# Purpose: Load pvrsrvkm after a safety delay and before the display manager.
+# Documentation: docs/reference/architecture.md
 [Unit]
 Description=Delayed PowerVR GPU kernel module loading
 ConditionPathExists=/opt/pvrsrvkm.ko
@@ -12,4 +14,3 @@ RemainAfterExit=yes
 
 [Install]
 WantedBy=graphical.target
-

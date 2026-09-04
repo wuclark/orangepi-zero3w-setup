@@ -188,11 +188,69 @@ A733 VIP9000 board (same VIPLite `2.0.3.2-AW-2024-08-30`, and that repo's
 own hardware table includes the Orange Pi Zero 3W). This project reuses that
 toolchain rather than re-implementing ACUITY plumbing:
 
-1. One-time host setup: clone `wuclark/a733_npu_driver` to
-   `work/sources/a733_npu_driver` (or set `NPU_DRIVER_REPO=`), and follow
+1. One-time host setup: run `make npu-driver-source` to clone
+   `wuclark/a733_npu_driver` to `work/sources/a733_npu_driver` (or set
+   `NPU_DRIVER_REPO=`, `NPU_DRIVER_URL=`, and `NPU_DRIVER_REF=`), then follow
    *that* repo's `docs/01-setup-host.md` to build its ACUITY Docker image
    and populate its own `work/ai-sdk/ZIFENG278-ai-sdk/` checkout. This
    project's scripts drive that toolchain; they do not reproduce its setup.
+   The `npu-golden-*` targets call `npu-driver-source` automatically and
+   reuse an existing Git checkout, but they do not build Docker images or
+   silently replace a non-Git directory.
+### Obtain the ACUITY Docker image
+
+The official vendor download is the [Allwinner Netdisk
+`docker_images_v2.0.x.zip`](https://netstorage.allwinnertech.com:5001/fsdownload/Mh23BhPHq/docker_images_v2.0.x.zip)
+archive. It is approximately 11 GB. After downloading on the host, import the
+project-pinned image with:
+
+```bash
+unzip docker_images_v2.0.x.zip
+docker load < ubuntu-npu-v2.0.10.1.tar
+docker run --rm ubuntu-npu:v2.0.10.1 pegasus.py --help
+```
+
+The [Radxa ACUITY setup guide](https://docs.radxa.com/en/cubie/a7z/app-dev/npu-dev/cubie-acuity-env)
+is the related vendor documentation. It describes downloading and loading a
+prebuilt image; it does not provide Docker build instructions or a Dockerfile.
+The cloned `a733_npu_driver` repository likewise contains conversion scripts,
+not the proprietary ACUITY/Pegasus image contents. The current Radxa page may
+refer to A733 image `v2.0.10.2`; do not substitute that tag for this project's
+`v2.0.10.1` without repeating the golden and board validation.
+
+As a non-vendor fallback, the driver documentation also names the community
+Docker Hub mirror `khalida5/ubuntu-npu:v2.0.10`. Treat it as unverified for
+this project unless its contents are checked and the resulting toolchain is
+revalidated.
+
+### Radxa workflow correspondence
+
+The [Radxa ACUITY usage example](https://docs.radxa.com/en/cubie/a7z/app-dev/npu-dev/cubie-acuity-usage)
+uses MobileNetV2, but confirms the workflow used here for A733 (`v3`):
+
+```text
+source model
+  -> pegasus_import.sh
+  -> input preprocessing metadata
+  -> pegasus_quantize.sh
+  -> pegasus_inference.sh (host reference)
+  -> pegasus_export_ovx.sh / NBG export
+  -> vpm_run on the board
+```
+
+This repository applies the same sequence to the bundled LeNet source model.
+`scripts/generate-npu-golden.sh` runs the ACUITY import, int16 quantization,
+host inference, and NBG export inside Docker, then packages the NBG, input, and
+host output for `scripts/board-npu-model-test.sh`. The board test compares the
+NPU result with the separately generated ACUITY host output using numerical
+metrics; it is not a claim that the Radxa MobileNetV2 example or any other
+model is already supported on the Orange Pi.
+
+The Radxa guide documents use of a prebuilt ACUITY image and does not include
+a reproducible Dockerfile. The project therefore requires the exact pinned
+image to be imported or pulled before golden generation; Docker image setup is
+not silently performed by the golden target.
+
 2. Generate a golden:
 
    ```bash

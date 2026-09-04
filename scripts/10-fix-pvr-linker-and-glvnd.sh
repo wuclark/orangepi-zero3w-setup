@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Configure the PowerVR linker path and GLVND EGL vendor registration.
+# Platform: Orange Pi Zero 3W AArch64 board with the staged PowerVR DDK.
+# Inputs: Optional PVR_DDK_DIR; defaults to /opt/pvr-ddk-24.2.
+# Dependencies: Bash, root, ldconfig, eglinfo, and the installed PowerVR libraries.
+# Writes: /etc/ld.so.conf.d/pvr-ddk-24.2.conf and /usr/share/glvnd/egl_vendor.d/00_pvr.json.
+# Safety: Requires root; verifies directories before changing linker or GLVND configuration.
+# Repeat: Idempotently maintains the linker entry and replaces the managed EGL JSON file.
+# Recovery: Remove the managed files or restore the setup backup; see docs/optional/gpu/gpu.md.
+# Outputs: EGL renderer diagnostics and a success/failure result.
+# Verification: Successful completion must report a PowerVR OpenGL ES renderer.
+# Documentation: docs/optional/gpu/gpu.md
 set -Eeuo pipefail
 
 PVR_DDK_DIR="${PVR_DDK_DIR:-/opt/pvr-ddk-24.2}"

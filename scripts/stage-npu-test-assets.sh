@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Safely extract selected NPU SDK files into a deterministic test-assets archive.
+# Platform: Host-side preparation for the experimental Orange Pi NPU test flow.
+# Inputs: Required --sdk-tarball and absent --output archive path.
+# Dependencies: Bash, Python tarfile validation, tar, and scripts/lib.sh.
+# Writes: A generated NPU test archive at the requested output; temporary extraction is removed on exit.
+# Safety: Rejects traversal/absolute archive members and copies only an allowlisted SDK file set.
+# Repeat: Refuses an existing output; use a new path after reviewing prior artifacts.
+# Recovery: Remove only the generated output archive and temporary staging is automatically cleaned.
+# Outputs: Deterministic npu-test archive containing the selected runner, model, inputs, and headers.
+# Verification: Inspect the archive manifest and run the NPU test workflow on the target board.
+# Documentation: docs/optional/npu.md
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)

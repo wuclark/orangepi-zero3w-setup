@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Install and enable x11vnc for the DRM-backed Xorg desktop.
+# Platform: Orange Pi board using the repository's LightDM/X11 profile.
+# Inputs: Optional --user and explicit --listen-lan network exposure option.
+# Dependencies: Bash, root, apt-get, x11vnc, LightDM/Xorg, systemd, and an interactive VNC password prompt.
+# Writes: User VNC password/config, MOTD tunnel helper, and /etc/systemd/system/x11vnc.service.
+# Safety: Defaults to localhost; --listen-lan exposes port 5900 and must be an intentional choice.
+# Repeat: Preserves an existing password, refreshes the managed service, and enables it without forced reboot.
+# Recovery: Disable/remove x11vnc and restore the prior LightDM/X11 configuration using the remote guide.
+# Outputs: Service configuration/status logs and the selected listen address.
+# Verification: Confirm the service is active and use an SSH tunnel by default.
+# Documentation: docs/guide/04-remote-access.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"

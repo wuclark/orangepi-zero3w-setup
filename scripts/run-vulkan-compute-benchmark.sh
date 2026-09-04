@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Compile and run the repository Vulkan vector/matrix compute benchmark.
+# Platform: Host Lavapipe baseline or Orange Pi PowerVR board, depending on the selected Vulkan ICD.
+# Inputs: Optional output/build directories and benchmark options such as elements or iterations.
+# Dependencies: Bash, glslc or glslangValidator, g++, Vulkan loader/development files, and benchmark sources.
+# Writes: Shader/binary build artifacts under BUILD_DIR and optional timestamped evidence at OUTPUT.
+# Safety: Runs a bounded compute workload; does not install packages, change drivers, or reboot.
+# Repeat: Rebuilds the local benchmark artifacts and replaces only the explicitly requested evidence output.
+# Recovery: Remove the configured temporary build/output paths if generated artifacts are unwanted.
+# Outputs: Benchmark results, timings, optional evidence file, and child exit status.
+# Verification: Compare computed results with the benchmark's CPU references and inspect the saved log.
+# Documentation: docs/optional/gpu/gpu.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)

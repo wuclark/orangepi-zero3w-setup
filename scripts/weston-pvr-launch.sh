@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Launch Weston with isolated PowerVR libraries and optional view-only WayVNC.
+# Platform: Orange Pi board service user on tty1 with the staged PowerVR DDK.
+# Inputs: PVR_DDK_DIR, WESTON_LOG, WAYVNC_LOG, XDG state/runtime variables, and the WayVNC marker.
+# Dependencies: Bash, Weston DRM backend, PowerVR Mesa libraries, and optional wayvnc.
+# Writes: Weston and optional WayVNC logs under the configured paths; starts graphical processes.
+# Safety: Uses the delayed service ordering; WayVNC is optional and launched view-only with --disable-input.
+# Repeat: Intended for systemd restart; each invocation starts one Weston process and child WayVNC watcher.
+# Recovery: Stop weston-pvr.service and restore the prior display service using docs/guide/05-recovery.md.
+# Outputs: Weston process exit status and compositor/WayVNC logs.
+# Verification: Confirm Weston reports the expected renderer and inspect the service log after reboot testing.
+# Documentation: docs/guide/03-desktop-sessions.md
 set -Eeuo pipefail
 
 PVR_DDK_DIR="${PVR_DDK_DIR:-/opt/pvr-ddk-24.2}"

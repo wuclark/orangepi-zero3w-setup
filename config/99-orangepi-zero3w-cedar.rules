@@ -1,3 +1,5 @@
 # Allow desktop users in the video group to use the A733 Cedar VPU.
+# Purpose: Assign Cedar and system DMA-heap device access to the intended groups.
+# Documentation: docs/optional/vpu.md
 KERNEL=="cedar_dev*", GROUP="video", MODE="0660"
 SUBSYSTEM=="dma_heap", KERNEL=="system", GROUP="render", MODE="0660"

@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# Purpose: Verify preboot vendor extraction produces separated, checksummed component archives.
+# Platform: Host-side temporary-fixture test; no board or proprietary archive is required.
+# Inputs: Synthetic source tree created by the test itself.
+# Dependencies: Bash, tar, sha256sum, and repository vendor extraction scripts.
+# Writes: Temporary source/output trees and archives under /tmp; removes them on exit.
+# Safety: Uses synthetic files and checks that kernel modules and components are not misplaced.
+# Repeat: Safe to run repeatedly; each invocation creates a fresh temporary workspace.
+# Outputs: Assertion failures or a preboot extraction tests passed message.
+# Verification: Exit 0 confirms archive existence, manifests, checksums, and component placement.
+# Documentation: docs/development/development.md
 set -Eeuo pipefail
 
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)

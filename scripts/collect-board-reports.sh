@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Collect normalized board reports from one or more boards over SSH.
+# Platform: Host workstation with SSH access to supported Orange Pi boards.
+# Inputs: BOARDS or --boards, REMOTE_REPO or --remote-repo, and output directory options.
+# Dependencies: Bash, ssh, tar, make board-report on each remote board, and writable host output.
+# Writes: Per-board logs, extracted report files, and summaries under the configured output directory.
+# Safety: Reads board evidence and removes only its temporary remote report directory after retrieval.
+# Repeat: Creates a new timestamped collection directory by default; existing explicit output may receive new files.
+# Recovery: Preserve failed collection logs and rerun against the affected board; no board installation changes occur.
+# Outputs: Board report files, collection logs, PASS/FAIL status, and an aggregate exit code.
+# Verification: Review each summary and sanitize reports before sharing or committing evidence.
+# Documentation: docs/development/evidence-format.md
 set -Eeuo pipefail
 
 BOARDS=${BOARDS:-}

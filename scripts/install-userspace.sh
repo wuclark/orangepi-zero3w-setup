@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# Purpose: Install PowerVR userspace libraries, DRI/ICD files, and matching firmware from a staged root.
+# Platform: Orange Pi Zero 3W AArch64 reference PowerVR DDK stack.
+# Inputs: Required --vendor-root and optional --firmware-dir paths from a privately staged vendor archive.
+# Dependencies: Bash, root, scripts/lib.sh, and the expected proprietary vendor file layout.
+# Writes: /opt/pvr-ddk-24.2 managed libraries/DRI/ICD files and /usr/lib/firmware PowerVR firmware.
+# Safety: Reads only the supplied staged root; never extracts archives and validates required files before install.
+# Repeat: Replaces managed files and symlinks while preserving unrelated system files.
+# Recovery: Restore the userspace backup from the setup workflow; do not delete shared system firmware blindly.
+# Outputs: Installed PowerVR userspace/firmware paths and failure diagnostics for missing vendor files.
+# Verification: Run the GPU ABI, EGL/GLES, Vulkan, and board validation checks.
+# Documentation: docs/optional/gpu/gpu.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
@@ -88,4 +99,3 @@ for library in "$PVR_ROOT/lib/libVK_IMG.so" "$PVR_ROOT/lib/libpvr_mesa_wsi.so" "
 done
 
 log "Installed isolated PowerVR userspace under $PVR_ROOT."
-
