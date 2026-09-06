@@ -192,8 +192,12 @@ toolchain rather than re-implementing ACUITY plumbing:
    `wuclark/a733_npu_driver` to `work/sources/a733_npu_driver` (or set
    `NPU_DRIVER_REPO=`, `NPU_DRIVER_URL=`, and `NPU_DRIVER_REF=`), then follow
    *that* repo's `docs/01-setup-host.md` to build its ACUITY Docker image
-   and populate its own `work/ai-sdk/ZIFENG278-ai-sdk/` checkout. This
-   project's scripts drive that toolchain; they do not reproduce its setup.
+   and populate its own `work/ai-sdk/ZIFENG278-ai-sdk/` checkout. That
+   checkout may come from the maintained `wuclark/ai-sdk` mirror instead of
+   upstream `ZIFENG278/ai-sdk` (same content; verified identical HEAD
+   `fc90006`, cloned here at `aae9287` — re-check the SHA if the mirror
+   moves). This project's scripts drive that toolchain; they do not
+   reproduce its setup.
    The `npu-golden-*` targets call `npu-driver-source` automatically and
    reuse an existing Git checkout, but they do not build Docker images or
    silently replace a non-Git directory.
@@ -307,13 +311,18 @@ not silently performed by the golden target.
    exit, so a successful conversion is not turned into a cleanup error by the
    root user inside the vendor image.
 
-   Each produces `work/vendor-output/npu-golden-<model>.tar.gz`: an NBG,
-   packed input, and an ACUITY *host* golden tensor (`host_output_N.txt`)
-   from the same quantization run — see `scripts/generate-npu-golden.sh`
-   for the exact recipe per model. `--inputs`/`--input-size-list`/`--outputs`
-   for the ONNX models (yolov5, resnet50) are best-effort defaults; inspect
-   the real ONNX graph node names before trusting a first run (the script's
-   `--help` shows how).
+    Each produces `work/vendor-output/npu-golden-<model>.tar.gz`: an NBG,
+    packed input, and an ACUITY *host* golden tensor (`host_output_N.txt`)
+    from the same quantization run — see `scripts/generate-npu-golden.sh`
+    for the exact recipe per model. The yolov5s-sim
+    `--inputs`/`--input-size-list`/`--outputs` defaults come from the SDK's
+    own `models/yolov5s-sim/inputs_outputs.txt` and have been run end-to-end
+    on `ubuntu-npu:v2.0.10.2` (12.6 MB int16 NBG, three host output tensors
+    matching the three detection heads); the resnet50 defaults are still
+    best-effort, so inspect the real ONNX graph node names before trusting
+    a first run (the script's `--help` shows how). The generator also
+    restores host ownership of the driver checkout's model directory after
+    the root-running container exits, keeping reruns working.
 3. Copy the resulting archive to the board's
    `/opt/orangepi-zero3w-setup/vendor-files/`, or just run `make newsd` —
    `scripts/prepare-preloaded-image-inner.sh` automatically bakes in any

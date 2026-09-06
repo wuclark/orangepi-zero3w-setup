@@ -53,18 +53,19 @@ Usage: scripts/generate-npu-golden.sh --model {lenet,yolov5,resnet50} \
                        image must already be built per that repo's
                        docs/01-setup-host.md; this script does not build it.
   --output FILE       Destination tarball; must not already exist.
-  --inputs NAMES / --input-size-list SIZES / --outputs NAMES
-                       Override ACUITY's ONNX graph input/output node names
-                       and input size list for --model yolov5/resnet50. The
-                       built-in defaults are best-effort starting points
-                       (yolov5s-sim: inputs=images, 640,640,3, outputs=output;
-                       resnet50: inputs=input, 224,224,3, outputs=output) and
-                       have NOT been run end-to-end; inspect the real ONNX
-                       graph first, e.g.:
-                         python3 -c "import onnx; m=onnx.load('MODEL.onnx'); \
-                           print([i.name for i in m.graph.input], \
-                                 [o.name for o in m.graph.output])"
-                       and pass corrected values here if they differ.
+   --inputs NAMES / --input-size-list SIZES / --outputs NAMES
+                        Override ACUITY's ONNX graph input/output node names
+                        and input size list for --model yolov5/resnet50. The
+                        yolov5s-sim defaults come from the SDK's own
+                        models/yolov5s-sim/inputs_outputs.txt (inputs=images,
+                        3,640,640, outputs='350 498 646'); the resnet50
+                        defaults (inputs=input, 224,224,3, outputs=output)
+                        have NOT been run end-to-end, so inspect the real ONNX
+                        graph first, e.g.:
+                          python3 -c "import onnx; m=onnx.load('MODEL.onnx'); \
+                            print([i.name for i in m.graph.input], \
+                                  [o.name for o in m.graph.output])"
+                        and pass corrected values here if they differ.
 
 Environment:
   NPU_ACUITY_IMAGE     Docker image tag (default: ubuntu-npu:v2.0.10.1)
@@ -180,9 +181,10 @@ yolov5|resnet50)
         onnx_path="$work/ai-sdk/models/yolov5s-sim/yolov5s-sim.onnx"
         dataset_path="$work/ai-sdk/models/yolov5s-sim/dataset.txt"
         name=yolov5s_sim
+        # Defaults match the SDK's own models/yolov5s-sim/inputs_outputs.txt.
         inputs=${ONNX_INPUTS:-images}
-        input_size_list=${ONNX_INPUT_SIZE_LIST:-640,640,3}
-        outputs=${ONNX_OUTPUTS:-output}
+        input_size_list=${ONNX_INPUT_SIZE_LIST:-3,640,640}
+        outputs=${ONNX_OUTPUTS:-350 498 646}
     else
         log "Using supplied public ResNet50 ONNX: $PUBLIC_ONNX"
         install -d -m 755 "$work/resnet50-public"
@@ -196,11 +198,32 @@ yolov5|resnet50)
         outputs=${ONNX_OUTPUTS:-output}
     fi
     log "Running ACUITY ONNX conversion for $name (int16) via a733_npu_driver's flow"
-    "$DRIVER_REPO/scripts/host/convert_onnx_to_nbg.sh" \
+    # Invoked via bash because the driver checkout stores its helpers
+    # non-executable; chmod would pollute that separate checkout.
+    bash "$DRIVER_REPO/scripts/host/convert_onnx_to_nbg.sh" \
         --name "$name" --onnx "$onnx_path" --dataset "$dataset_path" \
         --quant int16 --inputs "$inputs" --input-size-list "$input_size_list" \
         --outputs "$outputs" --image "$IMAGE" --target "$TARGET" \
         --package-root "$work/model-packages"
+    # The driver flow runs as root inside the vendor image and leaves both
+    # its model dir (inside the driver checkout) and our package root
+    # root-owned. Restore host ownership first so packaging, reruns, and
+    # the temporary directory cleanup work as the invoking user.
+    log "Restoring host ownership of ACUITY outputs"
+    driver_model_dir="$DRIVER_REPO/work/ai-sdk/ZIFENG278-ai-sdk/models/$name"
+    fix_args=()
+    # $work is already absolute (mktemp); the driver repo path may be
+    # relative, and Docker bind mounts require absolute host paths.
+    [[ -d $work/model-packages ]] && fix_args+=(-v "$work/model-packages:/fix/packages")
+    if [[ -d $driver_model_dir ]]; then
+        fix_args+=(-v "$(cd -- "$driver_model_dir" && pwd -P):/fix/model")
+    fi
+    if ((${#fix_args[@]})); then
+        docker run --rm "${fix_args[@]}" \
+            -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
+            --entrypoint bash "$IMAGE" \
+            -c 'chown -R "$HOST_UID:$HOST_GID" /fix/packages /fix/model 2>/dev/null || true'
+    fi
     cp -a "$work/model-packages/$name/int16/." "$package_dir/"
     ;;
 esac

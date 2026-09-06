@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Fix the YOLOv5 NPU golden defaults to the SDK's own
+  `models/yolov5s-sim/inputs_outputs.txt` (`images`, `3,640,640`,
+  `350 498 646`) instead of the incorrect `640,640,3`/`output` guesses, run
+  the driver checkout's non-executable converter via `bash`, and restore host
+  ownership of the container-written model and package trees. Host-side
+  YOLOv5 generation on `ubuntu-npu:v2.0.10.2` produces a 12.6 MB int16 NBG
+  with three host output tensors; board validation is still pending. The
+  driver's `work/ai-sdk/ZIFENG278-ai-sdk/` checkout may be cloned from the
+  maintained `wuclark/ai-sdk` mirror (content-identical; cloned at
+  `aae9287`).
+
 - Fix the LeNet NPU golden recipe, which called the SDK `env.sh` shell function
   `pegasus_one` as if it were a toolkit binary: it now runs the SDK's explicit
   import/quantize/inference/export helpers (which fall back to `python3
