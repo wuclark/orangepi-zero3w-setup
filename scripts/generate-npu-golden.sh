@@ -145,13 +145,20 @@ lenet)
     sdk_dir="$work/ai-sdk"
     model_src="$sdk_dir/models/lenet"
     log "Running ACUITY import/quantize/inference/export for lenet (int16) in Docker"
+    # The vendor image runs as root and writes into both host-mounted trees.
+    # Restore ownership before every container exit so the outer temporary
+    # directory cleanup cannot fail after an otherwise successful conversion.
+    host_uid=$(id -u)
+    host_gid=$(id -g)
     docker run --rm -v "$sdk_dir/models:/work/models" -v "$sdk_dir/scripts:/work/scripts" \
+        -e HOST_UID="$host_uid" -e HOST_GID="$host_gid" \
         -e ACUITY_PATH=/root/acuity-toolkit-whl-6.30.22/bin \
         -e VIV_SDK=/root/Vivante_IDE/VivanteIDE5.11.0/cmdtools \
         -e "VSIMULATOR_CONFIG=$TARGET" \
         -e VSIMULATOR_SHADER_CORE_COUNT=1 \
         "$IMAGE" bash -lc '
             set -Eeuo pipefail
+            trap '\''chown -R "$HOST_UID:$HOST_GID" /work/models /work/scripts 2>/dev/null || true'\'' EXIT
             export PATH="$ACUITY_PATH:$PATH"
             cd /work/models
             # Absolute helper paths: pegasus_import.sh resolves its

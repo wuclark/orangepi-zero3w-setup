@@ -303,6 +303,9 @@ not silently performed by the golden target.
    These targets print the selected driver checkout, ACUITY image, model
    inputs, and output archive before the conversion script begins. The
    conversion script then reports its own working directory and model stages.
+   The container restores host ownership of its temporary mounted files before
+   exit, so a successful conversion is not turned into a cleanup error by the
+   root user inside the vendor image.
 
    Each produces `work/vendor-output/npu-golden-<model>.tar.gz`: an NBG,
    packed input, and an ACUITY *host* golden tensor (`host_output_N.txt`)
