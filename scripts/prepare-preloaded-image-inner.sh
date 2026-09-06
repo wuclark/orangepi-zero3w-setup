@@ -1,24 +1,26 @@
 #!/usr/bin/env bash
 # Purpose: Copy the repository and staged vendor archives into an image root.
 # Platform: privileged Linux container with loop, partition, and mount utilities.
-# Inputs: base image/format and output image; repository is supplied at /repo.
+# Inputs: base image/format, output image, and growth in MB; repository is supplied at /repo.
 # Writes: output image root filesystem, excluding Git and generated video fixtures.
 # Safety: uses temporary mounts and cleanup traps; never extracts an archive over /.
 # Repeat behavior: creates a separate derived image and refuses no explicit overwrite.
 # Recovery: cleanup releases temporary mounts/loops; discard a failed partial output.
 # Verification: validate the image and confirm archive hashes before SD deployment.
 set -Eeuo pipefail
-BASE_IMAGE=""; BASE_FORMAT=""; OUTPUT_IMAGE=""
+BASE_IMAGE=""; BASE_FORMAT=""; OUTPUT_IMAGE=""; GROW_MB=512
 progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
 while (($#)); do
     case "$1" in
         --base-image) BASE_IMAGE=${2:?}; shift 2;;
         --base-format) BASE_FORMAT=${2:?}; shift 2;;
         --output-image) OUTPUT_IMAGE=${2:?}; shift 2;;
+        --grow-mb) GROW_MB=${2:?}; shift 2;;
         *) echo "ERROR: unknown argument: $1" >&2; exit 2;;
     esac
 done
 [[ -f $BASE_IMAGE && -n $BASE_FORMAT && -n $OUTPUT_IMAGE ]] || { echo 'ERROR: image arguments missing' >&2; exit 2; }
+[[ $GROW_MB =~ ^[0-9]+$ ]] || { echo "ERROR: --grow-mb must be a non-negative integer (MB): $GROW_MB" >&2; exit 2; }
 case "$BASE_FORMAT" in
     xz) progress 'Decompressing base image'; xz -dc -- "$BASE_IMAGE" > "$OUTPUT_IMAGE";;
     7z) progress 'Extracting base image'; 7z x -so -- "$BASE_IMAGE" '*.img' > "$OUTPUT_IMAGE";;
@@ -27,6 +29,18 @@ esac
 WORK=$(mktemp -d -p /tmp zero3w-preload.XXXXXXXX)
 trap 'umount -l "$WORK/root" 2>/dev/null || true; losetup -D 2>/dev/null || true; rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/root"
+if ((GROW_MB > 0)); then
+    # The base root filesystem ships tight (first-boot resize happens after
+    # our writes), so extend the image file, stretch the partition, and grow
+    # the filesystem up front. Only a single-partition layout is supported;
+    # anything else aborts rather than rewriting an unknown table.
+    progress "Growing output image by ${GROW_MB} MB"
+    truncate -s "+${GROW_MB}M" -- "$OUTPUT_IMAGE"
+    [[ $(partx -g -o START,SECTORS -r "$OUTPUT_IMAGE" | wc -l) -eq 1 ]] || \
+        { echo 'ERROR: expected a single-partition layout to grow' >&2; exit 1; }
+    printf ', +\n' | sfdisk --no-reread --force -N 1 "$OUTPUT_IMAGE" >/dev/null
+    progress "Extended root partition by ${GROW_MB} MB"
+fi
 progress 'Mounting output image root filesystem'
 start=0; sectors=0; loop=""
 while read -r start sectors; do
@@ -38,15 +52,21 @@ while read -r start sectors; do
     fi
 done < <(partx -g -o START,SECTORS -r "$OUTPUT_IMAGE")
 [[ -n $loop ]] || { echo 'ERROR: no ext4 root partition found' >&2; exit 1; }
+if ((GROW_MB > 0)); then
+    progress 'Growing root filesystem to fill the extended partition'
+    resize2fs "$loop"
+    progress "Root filesystem free space: $(df -h --output=avail "$WORK/root" | tail -1)"
+fi
 TARGET="$WORK/root/opt/orangepi-zero3w-setup"
 install -d -m 755 "$TARGET/vendor-files"
 chmod 755 "$(dirname "$TARGET")"
 progress 'Copying repository into the image'
 # Generated VPU fixtures are intentionally kept outside Git and can consume
 # more space than the base image's root filesystem has available. The board
-# test downloads or generates them on demand after installation.
+# test downloads or generates them on demand after installation. The local
+# backup/ tree (multi-GB, host-only) must never enter the image either.
 tar -C /repo \
-    --exclude=.git --exclude=work --exclude=vendor-files \
+    --exclude=.git --exclude=work --exclude=vendor-files --exclude=backup \
     --exclude='testdata/videos/*.mp4' \
     --exclude='testdata/videos/*.md5' \
     --exclude='testdata/videos/SHA256SUMS' \

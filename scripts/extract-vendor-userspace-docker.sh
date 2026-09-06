@@ -54,7 +54,9 @@ verify_hash() {
 verify_hash GPU_VPU "$GPU_VPU_IMAGE" "$GPU_VPU_SHA256"
 verify_hash NPU "$NPU_IMAGE" "$NPU_SHA256"
 if [[ -e $OUTPUT_DIR ]]; then
-    [[ -d $OUTPUT_DIR && -z $(find "$OUTPUT_DIR" -mindepth 1 ! -name .gitkeep -print -quit) ]] || {
+    # NPU goldens are preserved across make clean and must not block
+    # re-extraction; the inner flow only adds files, never wipes the dir.
+    [[ -d $OUTPUT_DIR && -z $(find "$OUTPUT_DIR" -mindepth 1 ! -name .gitkeep ! -name 'npu-golden-*.tar.gz' -print -quit) ]] || {
         echo "ERROR: output must be absent or empty: $OUTPUT_DIR" >&2; exit 1;
     }
 fi

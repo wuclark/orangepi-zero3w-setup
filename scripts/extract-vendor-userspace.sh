@@ -58,7 +58,9 @@ GPU_VPU_ROOT=$(cd -- "$GPU_VPU_ROOT" && pwd)
 NPU_ROOT=$(cd -- "$NPU_ROOT" && pwd)
 OUTPUT_DIR=${OUTPUT_DIR:-$(mktemp -d -t zero3w-vendor-output.XXXXXXXX)}
 if [[ -e $OUTPUT_DIR ]]; then
-    [[ -d $OUTPUT_DIR && -z $(find "$OUTPUT_DIR" -mindepth 1 ! -name .gitkeep -print -quit) ]] || {
+    # NPU goldens are preserved across make clean and must not block
+    # re-extraction; this flow only adds files, never wipes the dir.
+    [[ -d $OUTPUT_DIR && -z $(find "$OUTPUT_DIR" -mindepth 1 ! -name .gitkeep ! -name 'npu-golden-*.tar.gz' -print -quit) ]] || {
         echo "ERROR: output must be absent or empty: $OUTPUT_DIR" >&2; exit 1;
     }
 fi
@@ -108,6 +110,16 @@ copy_glob() {
     done < <(find "$SOURCE_ROOT" \( -path "$SOURCE_ROOT/$pattern" -type f -o -path "$SOURCE_ROOT/$pattern" -type l \) -print0 2>/dev/null)
 }
 
+# One-line heartbeat: how many files are staged and their total size, so
+# long silent walks and compressions show bounded, informative progress.
+stage_summary() {
+    local stage=$1 count size plural=s
+    count=$(find "$stage" \( -type f -o -type l \) -printf . 2>/dev/null | wc -c)
+    [[ $count -eq 1 ]] && plural=
+    size=$(du -sh -- "$stage" 2>/dev/null | awk '{print $1}')
+    printf '%s file%s (%s staged)' "$count" "$plural" "${size:-unknown size}"
+}
+
 CURRENT_STAGE=$PVR_STAGE
 for manifest in "$SOURCE_ROOT"/var/lib/dpkg/info/*img-bxm*.list; do
     copy_manifest_files "$manifest"
@@ -117,6 +129,7 @@ for pattern in lib/firmware/rgx.* usr/share/vulkan/icd.d/img_icd.json \
     usr/lib/aarch64-linux-gnu/dri/pvr_dri.so; do
     copy_glob "$pattern"
 done
+progress "PowerVR userspace staged: $(stage_summary "$PVR_STAGE")"
 
 CURRENT_STAGE=$VPU_STAGE
 progress 'Collecting VPU userspace files'
@@ -130,6 +143,7 @@ copy_path etc/xdg/gstomx.conf
 copy_path etc/cedarc.conf
 copy_path lib/udev/rules.d/99-sunxi-ve.rules etc/udev/rules.d/99-cedar-ve.rules
 copy_path etc/udev/rules.d/99-cedar-ve.rules
+progress "VPU userspace staged: $(stage_summary "$VPU_STAGE")"
 
 CURRENT_STAGE=$NPU_STAGE
 progress 'Collecting NPU userspace files'
@@ -146,6 +160,7 @@ for pattern in usr/lib/libVIPhal.so* usr/lib/libNBGlinker.so* \
     opt/*/lib/libVIPhal.so* opt/*/lib/libNBGlinker.so*; do
     copy_glob "$pattern" usr/local/lib/npu
 done
+progress "NPU userspace staged: $(stage_summary "$NPU_STAGE")"
 
 require_component() {
     local component=$1 stage=$2 pattern
@@ -165,11 +180,12 @@ require_component npu "$NPU_STAGE" usr/lib/libvip*.so* usr/lib/aarch64-linux-gnu
     usr/lib/lib*vip*.so* usr/local/lib/npu/libVIPhal.so* usr/local/lib/npu/libNBGlinker.so*
 
 for component in pvr vpu npu; do
-    progress "Creating ${component} userspace archive"
+    progress "Creating ${component} userspace archive from $(stage_summary "$WORK/$component")"
     tar -C "$WORK/$component" --sort=name --mtime='UTC 1970-01-01' \
         --owner=0 --group=0 --numeric-owner -czf "$OUTPUT_DIR/${component}-userspace.tar.gz" .
     (cd "$OUTPUT_DIR" && sha256sum "${component}-userspace.tar.gz" > \
         "${component}-manifest.sha256")
+    progress "Created ${component}-userspace.tar.gz ($(du -h -- "$OUTPUT_DIR/${component}-userspace.tar.gz" | awk '{print $1}'))"
 done
 for component in pvr vpu npu; do
     find "$WORK/$component" \( -type f -o -type l \) -printf "$component/%P\n" | sort

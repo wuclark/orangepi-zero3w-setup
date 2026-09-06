@@ -62,6 +62,13 @@ manifest cannot contain comments. The documentation-contract checker validates
 these sidecars; use a path-specific exception only when a linked guide is a
 better maintained contract.
 
+Keep long-running host steps visibly alive: any stage that can run silently
+for more than about thirty seconds gets timestamped `progress()` heartbeats
+bracketing it, ideally with file counts or sizes before and after (see
+`stage_summary` in `scripts/extract-vendor-userspace.sh`). A silent
+loop-mount walk or compression is indistinguishable from a frozen terminal,
+so err on the side of one extra line over silence.
+
 Do not ask an agent to execute `install.sh` on a laptop or generic VM. Installation
 tests belong on a recoverable Orange Pi with UART available. Use a separate SD
 card, save diagnostics before and after, and keep the prior bootable card.

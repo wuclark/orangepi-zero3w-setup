@@ -3,6 +3,10 @@
 SHELL := /usr/bin/env bash
 
 BASE := work/images/armbian/Armbian_26.8.1_Orangepizero3w_trixie_vendor_6.6.98_minimal
+# Extra MB added to the preloaded SD image before the repo is copied in. The
+# base root filesystem ships tight (first-boot resize happens after our
+# writes); raise this if a future payload outgrows the headroom again.
+PRELOAD_GROW_MB ?= 512
 RELEASE_VERSION := $(strip $(shell /usr/bin/cat VERSION 2>/dev/null))
 GIT_REVISION := $(strip $(shell /usr/bin/git rev-parse --short HEAD 2>/dev/null || echo nogit))
 IMAGE_RELEASE_TAG := v$(RELEASE_VERSION)-g$(GIT_REVISION)
@@ -221,7 +225,7 @@ preloaded: extract kernel-source docker-toolchain
 	@if [[ -f $(PRELOADED) ]]; then \
 		echo 'Reusing existing preloaded image: $(PRELOADED)'; \
 	else \
-		./scripts/prepare-preloaded-image-docker.sh; \
+		PRELOAD_GROW_MB='$(PRELOAD_GROW_MB)' ./scripts/prepare-preloaded-image-docker.sh; \
 	fi
 
 firstboot: preloaded docker-toolchain

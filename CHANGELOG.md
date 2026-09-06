@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Grow the preloaded SD image by `PRELOAD_GROW_MB` (default 512) before
+  copying the repo in: the base root filesystem ships too tight for the
+  ~230 MB payload plus vendor archives. The flow extends the single root
+  partition (`sfdisk`) and grows the filesystem (`resize2fs`, both newly
+  available via the `fdisk` package in the toolchain image), and
+  structurally excludes the host-only `backup/` tree from the image.
+
+- Report staged file counts and archive sizes during vendor userspace
+  extraction so long silent collection and compression steps show progress.
+
 - Keep `npu-golden-*.tar.gz` across `make clean` (and therefore across
   `make newsd`, which starts from clean): golden archives cost a
   proprietary-toolchain run that `newsd` cannot reproduce, while everything
