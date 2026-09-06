@@ -202,12 +202,53 @@ toolchain rather than re-implementing ACUITY plumbing:
 The official vendor download is the [Allwinner Netdisk
 `docker_images_v2.0.x.zip`](https://netstorage.allwinnertech.com:5001/fsdownload/Mh23BhPHq/docker_images_v2.0.x.zip)
 archive. It is approximately 11 GB. After downloading on the host, import the
-project-pinned image with:
+nested image with:
 
 ```bash
-unzip docker_images_v2.0.x.zip
-docker load < ubuntu-npu-v2.0.10.1.tar
-docker run --rm ubuntu-npu:v2.0.10.1 pegasus.py --help
+make npu-acuity-image-load \
+  NPU_ACUITY_ARCHIVE=work/images/docker_images_v2.0.x.zip
+```
+
+The current official archive contains `ubuntu-npu:v2.0.10.2` inside a nested
+ZIP. The target extracts only into a private temporary directory, loads the
+image, and verifies the image's `pegasus.py` ACUITY command using Python.
+The LeNet recipe in `scripts/generate-npu-golden.sh` used to call `pegasus_one`
+bare; that name is a shell function defined by the SDK's `models/env.sh`, not a
+toolkit binary, so the call failed with "command not found" on every image —
+and the container layout did not even provide the `../scripts/` helpers. The
+recipe now runs the SDK's explicit `pegasus_import.sh`, `pegasus_quantize.sh`,
+`pegasus_inference.sh`, and `pegasus_export_ovx.sh` instead: those helpers fall
+back to `python3 pegasus.py` when `$ACUITY_PATH/pegasus` is absent, so the flow
+works on both images, with `VSIMULATOR_CONFIG` carried in from
+`NPU_ACUITY_TARGET`. Host-side generation on `v2.0.10.2` produces a
+`network_binary.nb` of 845,256 bytes, matching the board-validated int16 NBG
+size in `reports/g2-acuity-lenet.md`. Generation still defaults to
+`ubuntu-npu:v2.0.10.1` until a `v2.0.10.2`-generated golden passes
+`board-npu-golden-test-lenet` on real hardware. To use the image
+currently supplied in `work/images`, override it explicitly:
+
+The image import can take several minutes because the archive contains a large
+Docker tar. If `pv` is installed, `npu-acuity-image-load` displays a progress
+bar while extracting and importing it. Without `pv`, it falls back to the
+GNU `dd status=progress` byte counter; the target also prints a message before
+each long-running stage.
+
+After the image has already been loaded, check it without processing the large
+archive again:
+
+```bash
+make npu-acuity-image-check
+```
+
+This prints the local image tags, ID, creation time, size, platform, working
+directory, and command. It then prints the container architecture, Python
+version, ACUITY directory listing, and full `pegasus.py --help` output inside a
+temporary container. It does not modify the image or leave a container running.
+Use `make npu-acuity-image-load` only when the image must be imported from the
+nested vendor archive.
+
+```bash
+NPU_ACUITY_IMAGE=ubuntu-npu:v2.0.10.2 make npu-golden-lenet
 ```
 
 The [Radxa ACUITY setup guide](https://docs.radxa.com/en/cubie/a7z/app-dev/npu-dev/cubie-acuity-env)
@@ -258,6 +299,10 @@ not silently performed by the golden target.
    make npu-golden-yolov5
    NPU_PUBLIC_ONNX=/path/to/resnet50.onnx make npu-golden-resnet50
    ```
+
+   These targets print the selected driver checkout, ACUITY image, model
+   inputs, and output archive before the conversion script begins. The
+   conversion script then reports its own working directory and model stages.
 
    Each produces `work/vendor-output/npu-golden-<model>.tar.gz`: an NBG,
    packed input, and an ACUITY *host* golden tensor (`host_output_N.txt`)

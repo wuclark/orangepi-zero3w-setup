@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Fix the LeNet NPU golden recipe, which called the SDK `env.sh` shell function
+  `pegasus_one` as if it were a toolkit binary: it now runs the SDK's explicit
+  import/quantize/inference/export helpers (which fall back to `python3
+  pegasus.py`, so both ACUITY images work) and reproduces the SDK `models/` +
+  `../scripts/` layout in the container. Host-side generation on
+  `ubuntu-npu:v2.0.10.2` reproduces the board-validated 845,256-byte int16 NBG
+  size; the default stays pinned to `v2.0.10.1` pending a board run of
+  `v2.0.10.2`-generated output.
+- Document the Imagination open-source driver developer page alongside the
+  Vulkan 1.2 blog, with an explicit GPU table showing A733 BXM-4-64 as
+  unsupported, and clarify that only a Wayland-enabled build of the same
+  closed DDK/BVNC could give native PowerVR Wayland clients.
+- Add the host-only `npu-acuity-image-load` target to safely load and verify
+  the nested ACUITY Docker image supplied in `work/images`.
 - Make the real NPU golden targets automatically clone or reuse the public
   `a733_npu_driver` checkout, while keeping Docker image setup explicit.
 - Document the official Allwinner ACUITY archive, Radxa setup guide, and the

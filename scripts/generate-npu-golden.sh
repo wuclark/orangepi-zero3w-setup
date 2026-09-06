@@ -127,25 +127,40 @@ install -d -m 755 "$package_dir"
 case "$MODEL" in
 lenet)
     # Recipe matches wuclark/a733_npu_driver reports/g2-acuity-lenet.md,
-    # already board-validated (uint8 + int16) on a real A733 VIP9000 board.
-    log "Extracting lenet Caffe source from the AI SDK archive"
+    # already board-validated (uint8 + int16) on a real A733 VIP9000 board,
+    # but runs the SDK's explicit pegasus_import/quantize/inference/export
+    # scripts instead of the env.sh pegasus_one wrapper: pegasus_one is a
+    # shell function defined by ai-sdk/models/env.sh, not a toolkit binary,
+    # so calling it bare fails with "command not found" on every image.
+    # The helper scripts already fall back to "python3 pegasus.py" when
+    # $ACUITY_PATH/pegasus is absent (as in ubuntu-npu:v2.0.10.2), so this
+    # explicit flow works on both the pinned v2.0.10.1 image and v2.0.10.2.
+    # The mounts reproduce the SDK's models/ + ../scripts/ sibling layout
+    # the helpers expect; VSIMULATOR_CONFIG carries NPU_ACUITY_TARGET into
+    # the container (same value the SDK's pegasus_setup.sh v3 sets by
+    # default) so the export step packs the nbg_unify output.
+    log "Extracting lenet Caffe source and ACUITY helper scripts from the AI SDK archive"
     tar -xzf "$SDK_TARBALL" -C "$work" \
-        ai-sdk/models/lenet/lenet.prototxt ai-sdk/models/lenet/lenet.caffemodel \
-        ai-sdk/models/lenet/channel_mean_value.txt ai-sdk/models/lenet/dataset.txt \
-        ai-sdk/models/lenet/input_image
-    model_src="$work/ai-sdk/models/lenet"
+        ai-sdk/models/lenet ai-sdk/scripts
+    sdk_dir="$work/ai-sdk"
+    model_src="$sdk_dir/models/lenet"
     log "Running ACUITY import/quantize/inference/export for lenet (int16) in Docker"
-    docker run --rm -v "$model_src:/work/lenet" -w /work \
+    docker run --rm -v "$sdk_dir/models:/work/models" -v "$sdk_dir/scripts:/work/scripts" \
         -e ACUITY_PATH=/root/acuity-toolkit-whl-6.30.22/bin \
         -e VIV_SDK=/root/Vivante_IDE/VivanteIDE5.11.0/cmdtools \
+        -e "VSIMULATOR_CONFIG=$TARGET" \
+        -e VSIMULATOR_SHADER_CORE_COUNT=1 \
         "$IMAGE" bash -lc '
             set -Eeuo pipefail
             export PATH="$ACUITY_PATH:$PATH"
-            cd /work
-            pegasus_one lenet
-            ../scripts/pegasus_quantize.sh lenet int16
-            ../scripts/pegasus_inference.sh lenet int16
-            ../scripts/pegasus_export_ovx.sh lenet int16
+            cd /work/models
+            # Absolute helper paths: pegasus_import.sh resolves its
+            # awnet_normalize.py sidecar via dirname $0 after pushd lenet,
+            # so a relative ../scripts/ invocation would miss it.
+            /work/scripts/pegasus_import.sh lenet
+            /work/scripts/pegasus_quantize.sh lenet int16
+            /work/scripts/pegasus_inference.sh lenet int16
+            /work/scripts/pegasus_export_ovx.sh lenet int16
         '
     log "Packaging ACUITY outputs for board deployment"
     python3 "$DRIVER_REPO/scripts/host/package_acuity_nbg.py" \
