@@ -61,7 +61,9 @@ targets `5.15.147-21.1-a733` and must not be installed on this board.
 
 1. Obtain a legally usable ARM/A733 DDK userspace with Wayland client support,
    matching DDK/BVNC and kernel ABI; or obtain licensed DDK sources and rebuild
-   that component with Wayland enabled.
+   that component with Wayland enabled. Candidate sources, comparison steps,
+   and native-client test commands are collected in
+   [Vendor sources and provenance](../optional/gpu/vendor-sources.md#wayland-enabled-userspace-candidates-research-only-no-support-claim).
 2. Stage candidates privately and compare dependencies, DRI/WSI files,
    firmware, and ABI identifiers before board installation.
 3. Test a native PowerVR Wayland client, visible HDMI presentation, Vulkan

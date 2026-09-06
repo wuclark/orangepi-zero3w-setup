@@ -17,6 +17,8 @@ promise that every feature works on every A733 board or kernel.
 | USB-C DisplayPort | Board connector/driver path | Runtime-dependent | Use `board-display-status` and record whether `DP-1` is connected. |
 | HDMI audio | `allwinnerhdmi`, ALSA device 0 | Playback path verified | Actual sound requires a connected HDMI sink. |
 | RetroArch | Debian package with isolated Vulkan launcher | Verified | PowerVR GPU, X11 Vulkan context, swapchain, and core checks. |
+| Native PowerVR Wayland client (`weston-simple-egl`) | DDK 24.2 `libEGL.so` reports `Wayland platform not built` | Known limitation, research only | Compositor renders on PowerVR; native client needs a Wayland-enabled build of the same DDK/BVNC, see `docs/optional/gpu/vendor-sources.md`. |
+| Open-source Mesa `drm/imagination` driver | BXM-4-64 not listed (only AXE-1-16, BXS-4-64 on kernel 6.16+/6.18) | Not supported on this board/kernel | Developer page and Vulkan 1.2 blog tracked in `docs/optional/gpu/vendor-sources.md`; keep closed DDK 24.2.6603887. |
 
 New support claims require sanitized diagnostics containing kernel release,
 module vermagic, DDK build, BVNC, DRM nodes, DRI3 output,

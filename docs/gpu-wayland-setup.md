@@ -160,4 +160,6 @@ shipped vendor `libEGL.so` contains `Wayland platform not built`, so
 `weston-simple-egl` fails under the vendor client stack even though the Weston
 compositor itself renders with PowerVR. This guide does not claim native
 PowerVR Wayland client or Wayland Vulkan presentation support until a licensed
-DDK with a working Wayland client platform is tested.
+DDK with a working Wayland client platform is tested. For candidate sources,
+private comparison steps, native-client probes, and SDK sample instructions,
+see [Vendor sources and provenance](optional/gpu/vendor-sources.md#wayland-enabled-userspace-candidates-research-only-no-support-claim).

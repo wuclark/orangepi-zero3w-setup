@@ -6,6 +6,58 @@ source; it is not automatically a supported software combination. Hardware
 claims still require evidence from the exact Orange Pi board, kernel, module,
 firmware, and userspace being tested.
 
+## Official silicon and graphics references
+
+These references define the hardware and track upstream PowerVR work. The
+Imagination open-source driver is a graphics stack for Vulkan/OpenGL/DRM; it
+does not replace the A733's separate Allwinner video engine. The current
+Imagination support page lists AXE-1-16(M) and BXS-4-64, not the A733's
+BXM-4-64 MC1, so these links are tracking resources rather than an A733
+support claim.
+
+| Resource | Role | Provenance/status |
+| --- | --- | --- |
+| [Allwinner A733 product page](https://www.allwinnertech.com/index.php?a=index&c=product&id=139&solveid=34) | GPU, VPU codec, encoder, decoder, and display capability summary | Official silicon vendor reference; product variants can differ |
+| [A733 family datasheet](https://dl.radxa.com/cubie/a7a/docs/hw/datasheet/A733_Datasheet_V0.93.pdf) | Hardware and interface details | Radxa-hosted vendor datasheet; reference only |
+| [Imagination open-source GPU driver](https://developer.imaginationtech.com/solutions/open-source-gpu-driver/) | Mesa Vulkan, Linux DRM driver, firmware, and hardware-documentation entrypoint | Official Imagination developer reference; does not currently list A733 BXM support |
+| [Imagination driver announcement](https://blog.imaginationtech.com/open-source-graphics-driver-adds-vulkan-1.2-support-and-additional-gpus) | Mesa 25.3, Linux 6.16, AXE/BXS, and future-support status | Official announcement dated October 2025; track claims against current upstream code |
+| [Mesa](https://gitlab.freedesktop.org/mesa/mesa/) | Upstream PowerVR userspace and Vulkan implementation | Upstream source; verify the exact GPU and Mesa revision before testing |
+| [Linux](https://github.com/torvalds/linux) | Upstream DRM and device-tree history | Upstream source; it does not replace the current vendor kernel |
+| [linux-firmware](https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/) | Upstream firmware delivery | Upstream source; firmware must match the GPU/BVNC and kernel driver |
+
+## A733 vendor images and BSP downloads
+
+The tested GPU/VPU userspace came from the Radxa A733 image below. Obtain
+vendor images only from sources and licenses the user is authorized to use;
+do not commit the image or extracted proprietary files.
+
+| Resource | Role | Provenance/status |
+| --- | --- | --- |
+| [Radxa Cubie A7S downloads](https://docs.radxa.com/en/cubie/a7s/download) | Download location for the referenced A733 Debian image | Vendor download reference; verify the archive checksum before staging |
+| [radxa/allwinner-bsp](https://github.com/radxa/allwinner-bsp) | A733 BSP, kernel, and platform support | Radxa vendor/BSP reference |
+| [radxa/allwinner-target](https://github.com/radxa/allwinner-target) | A733 target filesystem overlays and vendor userspace layout | Radxa vendor reference; possible GPU/VPU extraction source |
+| [radxa/allwinner-device](https://github.com/radxa/allwinner-device) | A733 board configuration and device files | Radxa vendor board reference |
+| [radxa-pkg/linux-a733](https://github.com/radxa-pkg/linux-a733) | Packaged Radxa A733 kernel configuration | Radxa packaging reference, primarily for Cubie boards |
+| [radxa-build/radxa-a733](https://github.com/radxa-build/radxa-a733) | Radxa A733 image-build workflow | Radxa image-build reference |
+
+## Operational documentation and evidence entrypoints
+
+Use these maintained project documents and commands when comparing a new
+driver, image, or VPU pipeline. They report or validate the current board;
+they do not turn a research source into a supported combination.
+
+| Entry point | Purpose |
+| --- | --- |
+| [GPU setup guide](../optional/gpu/gpu.md) | Install and verify the optional proprietary GPU layer |
+| [GPU vendor sources](../optional/gpu/vendor-sources.md) | GPU provenance, open-source-driver status, and safe candidate comparison |
+| [VPU guide](../optional/vpu.md) | Cedar/OpenMAX userspace, GStreamer decode tests, and presentation limitations |
+| [Architecture](architecture.md) | DRM split, GPU/VPU separation, and delayed module-load ordering |
+| `make board-status` | Report board identity, kernel, devices, firmware, services, and installed tools |
+| `make board-gpu-abi-check` | Check the running kernel, module vermagic, firmware, and delayed-load prerequisites |
+| `make board-vpu-verify` | Run the board-side H.264/H.265 VPU decode verification |
+| `make board-diagnostics` | Collect broad board evidence without installing or rebooting |
+| `scripts/collect-diagnostics.sh` | Produce sanitized hardware evidence for support decisions |
+
 ## Maintained `wuclark` repositories
 
 These are the repositories intended to remain available as the project's
