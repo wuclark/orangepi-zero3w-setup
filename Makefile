@@ -23,6 +23,12 @@ NPU_DRIVER_REPO ?= work/sources/a733_npu_driver
 NPU_DRIVER_URL ?= https://github.com/wuclark/a733_npu_driver.git
 NPU_DRIVER_REF ?= main
 NPU_PUBLIC_ONNX ?=
+# Keep generation pinned to v2.0.10.1 until a newer toolchain is revalidated.
+# The currently staged official archive supplies v2.0.10.2 for explicit use.
+NPU_ACUITY_IMAGE ?= ubuntu-npu:v2.0.10.1
+NPU_ACUITY_LOADED_IMAGE ?= ubuntu-npu:v2.0.10.2
+NPU_ACUITY_ARCHIVE ?= work/images/docker_images_v2.0.x.zip
+NPU_ACUITY_MEMBER ?= docker_images_v2.0.x/ubuntu-npu_v2.0.10.2.tar.zip
 STABILITY_MINUTES ?= 30
 STABILITY_STORAGE ?= no
 STABILITY_INTERVAL_SECONDS ?= 0
@@ -56,7 +62,7 @@ GIT_DEPTH ?= 1
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test board-npu-golden-test npu-test-assets npu-golden-candidate \
-	npu-driver-source npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 \
+	npu-driver-source npu-acuity-image-load npu-acuity-image-check npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 \
 	board-npu-golden-test-lenet board-npu-golden-test-yolov5 board-npu-golden-test-resnet50 \
 	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports \
 	backup-required backup-cache backup-sensitive backup-all restore \
@@ -153,6 +159,8 @@ help:
 		'make board-npu-test                     Run NPU test and save evidence' \
 		'make npu-golden-candidate               Stage SDK custom-LUT NPU golden candidate' \
 		'make npu-driver-source                 Clone the public NPU driver/toolchain source if absent' \
+		'make npu-acuity-image-load              Load the nested ACUITY Docker image from work/images' \
+		'make npu-acuity-image-check             Check an already-loaded ACUITY Docker image' \
 		'make board-npu-golden-test              Run the SDK golden candidate on the board' \
 		'make npu-golden-lenet/yolov5/resnet50   Generate a real ACUITY NPU golden (see docs/optional/npu.md)' \
 		'make board-npu-golden-test-lenet/yolov5/resnet50  Run one of those goldens on the board' \
@@ -676,7 +684,9 @@ npu-golden-candidate:
 # run, verified on the board with compare-npu-output.py, not vpm_run's
 # built-in memcmp() [golden] check.
 npu-driver-source:
-	@if [[ -d $(NPU_DRIVER_REPO)/.git ]]; then \
+	@echo "INFO: NPU driver source: $(NPU_DRIVER_REPO)"; \
+	echo "INFO: repository: $(NPU_DRIVER_URL) (ref $(NPU_DRIVER_REF), depth $(GIT_DEPTH))"; \
+	if [[ -d $(NPU_DRIVER_REPO)/.git ]]; then \
 		echo "Reusing existing NPU driver checkout: $(NPU_DRIVER_REPO)"; \
 	elif [[ -e $(NPU_DRIVER_REPO) ]]; then \
 		echo "ERROR: $(NPU_DRIVER_REPO) exists but is not a Git checkout; move it aside or set NPU_DRIVER_REPO=..." >&2; \
@@ -690,22 +700,82 @@ npu-driver-source:
 		fi; \
 	fi
 
+# Host-only and separate from golden generation: the vendor download is a ZIP
+# containing another ZIP containing a Docker tar. Stream both archives through
+# a private temporary directory so untrusted members are never extracted over
+# the checkout or system filesystem. `pv` is optional: when installed it shows
+# a progress bar for the large streams; otherwise GNU `dd` reports bytes.
+npu-acuity-image-load:
+	@test -f '$(NPU_ACUITY_ARCHIVE)' || { echo 'ERROR: ACUITY archive not found: $(NPU_ACUITY_ARCHIVE)' >&2; exit 1; }
+	@command -v unzip >/dev/null || { echo 'ERROR: unzip is required.' >&2; exit 1; }
+	@command -v docker >/dev/null || { echo 'ERROR: docker is required.' >&2; exit 1; }
+	@set -Eeuo pipefail; tmp=$$(mktemp -d -t zero3w-acuity-image.XXXXXXXX); \
+	trap 'rm -rf -- "$$tmp"' EXIT; \
+	if command -v pv >/dev/null 2>&1; then \
+		progress_copy() { pv -ptebar > "$$1"; }; \
+	else \
+		echo 'INFO: pv is not installed; using dd byte counters. Install pv for a progress bar.' >&2; \
+		progress_copy() { dd of="$$1" status=progress; }; \
+	fi; \
+	echo 'INFO: locating nested ACUITY image archive...'; \
+	if ! unzip -Z1 '$(NPU_ACUITY_ARCHIVE)' | grep -Fqx '$(NPU_ACUITY_MEMBER)'; then \
+		echo 'ERROR: nested ACUITY member not found: $(NPU_ACUITY_MEMBER)' >&2; exit 1; \
+	fi; \
+	echo 'INFO: extracting nested ACUITY archive...'; \
+	unzip -p '$(NPU_ACUITY_ARCHIVE)' '$(NPU_ACUITY_MEMBER)' | progress_copy "$$tmp/image.zip"; \
+	tar_member=$$(unzip -Z1 "$$tmp/image.zip" | awk '$$0 !~ /\/$$/ && $$0 ~ /\.tar$$/ { print; exit }'); \
+	[[ -n "$$tar_member" ]] || { echo 'ERROR: no Docker tar found inside $(NPU_ACUITY_MEMBER).' >&2; exit 1; }; \
+	echo "INFO: extracting Docker image tar ($$tar_member)..."; \
+	unzip -p "$$tmp/image.zip" "$$tar_member" | progress_copy "$$tmp/image.tar"; \
+	echo 'INFO: importing Docker image; this may take several minutes...'; \
+	if command -v pv >/dev/null 2>&1; then pv -ptebar "$$tmp/image.tar" | docker load; else dd if="$$tmp/image.tar" status=progress | docker load; fi; \
+	docker image inspect '$(NPU_ACUITY_LOADED_IMAGE)' >/dev/null 2>&1 || { echo 'ERROR: expected Docker tag not loaded: $(NPU_ACUITY_LOADED_IMAGE)' >&2; exit 1; }; \
+	echo 'INFO: checking ACUITY toolkit command...'; \
+	docker run --rm --entrypoint bash '$(NPU_ACUITY_LOADED_IMAGE)' -lc 'set -Eeuo pipefail; export ACUITY_PATH=/root/acuity-toolkit-whl-6.30.22/bin; test -f "$$ACUITY_PATH/pegasus.py"; python3 "$$ACUITY_PATH/pegasus.py" --help >/dev/null'; \
+	echo 'ACUITY Docker image verified: $(NPU_ACUITY_LOADED_IMAGE)'
+
+# Host-only check for an image that has already been imported. This deliberately
+# does not inspect or extract the source archive, so it is quick and safe to
+# repeat after the large load operation has completed.
+npu-acuity-image-check:
+	@command -v docker >/dev/null || { echo 'ERROR: docker is required.' >&2; exit 1; }
+	@set -Eeuo pipefail; \
+	docker image inspect '$(NPU_ACUITY_LOADED_IMAGE)' --format 'ACUITY image: {{.RepoTags}}\nImage ID: {{.Id}}\nCreated: {{.Created}}\nSize: {{.Size}} bytes\nPlatform: {{.Os}}/{{.Architecture}}\nWorking directory: {{.Config.WorkingDir}}\nCommand: {{json .Config.Cmd}}' || { echo 'ERROR: Docker image not found: $(NPU_ACUITY_LOADED_IMAGE). Run make npu-acuity-image-load first.' >&2; exit 1; }; \
+	echo 'INFO: inspecting ACUITY toolkit inside a temporary container...'; \
+	docker run --rm --entrypoint bash '$(NPU_ACUITY_LOADED_IMAGE)' -lc 'set -Eeuo pipefail; export ACUITY_PATH=/root/acuity-toolkit-whl-6.30.22/bin; echo "Container architecture: $$(uname -m)"; python3 --version; echo "ACUITY_PATH: $$ACUITY_PATH"; ls -la "$$ACUITY_PATH"; test -f "$$ACUITY_PATH/pegasus.py"; echo "Pegasus executable: $$ACUITY_PATH/pegasus.py"; echo "Pegasus help:"; python3 "$$ACUITY_PATH/pegasus.py" --help'; \
+	echo 'ACUITY Docker image verified: $(NPU_ACUITY_LOADED_IMAGE)'
+
 npu-golden-lenet: npu-driver-source
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
 	@install -d -m 755 $(VENDOR_OUTPUT)
-	@./scripts/generate-npu-golden.sh --model lenet --sdk-tarball work/images/ai-sdk.tar.gz \
+	@echo 'INFO: generating LeNet ACUITY golden'; \
+	echo 'INFO: image: $(NPU_ACUITY_IMAGE)'; \
+	echo 'INFO: SDK: work/images/ai-sdk.tar.gz'; \
+	echo 'INFO: output: $(VENDOR_OUTPUT)/npu-golden-lenet.tar.gz'
+	@NPU_ACUITY_IMAGE='$(NPU_ACUITY_IMAGE)' ./scripts/generate-npu-golden.sh --model lenet --sdk-tarball work/images/ai-sdk.tar.gz \
 		--driver-repo $(NPU_DRIVER_REPO) --output $(VENDOR_OUTPUT)/npu-golden-lenet.tar.gz
+	@echo 'INFO: LeNet ACUITY golden generation completed.'
 
 npu-golden-yolov5: npu-driver-source
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
 	@install -d -m 755 $(VENDOR_OUTPUT)
-	@./scripts/generate-npu-golden.sh --model yolov5 --sdk-tarball work/images/ai-sdk.tar.gz \
+	@echo 'INFO: generating YOLOv5 ACUITY golden'; \
+	echo 'INFO: image: $(NPU_ACUITY_IMAGE)'; \
+	echo 'INFO: SDK: work/images/ai-sdk.tar.gz'; \
+	echo 'INFO: output: $(VENDOR_OUTPUT)/npu-golden-yolov5.tar.gz'
+	@NPU_ACUITY_IMAGE='$(NPU_ACUITY_IMAGE)' ./scripts/generate-npu-golden.sh --model yolov5 --sdk-tarball work/images/ai-sdk.tar.gz \
 		--driver-repo $(NPU_DRIVER_REPO) --output $(VENDOR_OUTPUT)/npu-golden-yolov5.tar.gz
+	@echo 'INFO: YOLOv5 ACUITY golden generation completed.'
 
 npu-golden-resnet50: npu-driver-source
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
 	@test -n '$(NPU_PUBLIC_ONNX)' || { echo 'ERROR: set NPU_PUBLIC_ONNX=/path/to/resnet50.onnx (an openly licensed file; the SDK ships no resnet50 source).' >&2; exit 1; }
 	@install -d -m 755 $(VENDOR_OUTPUT)
-	@./scripts/generate-npu-golden.sh --model resnet50 --sdk-tarball work/images/ai-sdk.tar.gz \
+	@echo 'INFO: generating ResNet50 ACUITY golden'; \
+	echo 'INFO: image: $(NPU_ACUITY_IMAGE)'; \
+	echo 'INFO: public ONNX: $(NPU_PUBLIC_ONNX)'; \
+	echo 'INFO: output: $(VENDOR_OUTPUT)/npu-golden-resnet50.tar.gz'
+	@NPU_ACUITY_IMAGE='$(NPU_ACUITY_IMAGE)' ./scripts/generate-npu-golden.sh --model resnet50 --sdk-tarball work/images/ai-sdk.tar.gz \
 		--driver-repo $(NPU_DRIVER_REPO) --public-onnx '$(NPU_PUBLIC_ONNX)' \
 		--output $(VENDOR_OUTPUT)/npu-golden-resnet50.tar.gz
+	@echo 'INFO: ResNet50 ACUITY golden generation completed.'
