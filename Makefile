@@ -104,7 +104,7 @@ help:
 		'make validate   Validate the final image before writing to SD' \
 		'make test       Run host/static/archive checks' \
 		'make tests      Alias for make test' \
-		'make clean      Remove generated outputs but preserve source images' \
+		'make clean      Remove generated outputs but preserve source images and NPU goldens' \
 		'make board-gpu-precheck/install/verify  Run GPU phases on the board' \
 		'make board-gpu-test                     Run GPU checks and runtime validation' \
 		'make board-gpu-compute-deps              Install Vulkan compute build tools' \
@@ -499,7 +499,7 @@ remote-status:
 	@echo 'wayvnc and TigerVNC are package-only targets; configure/start their session separately.'
 
 clean:
-	@find $(VENDOR_OUTPUT) -mindepth 1 ! -name .gitkeep -exec rm -rf -- {} + 2>/dev/null || true
+	@find $(VENDOR_OUTPUT) -mindepth 1 ! -name .gitkeep ! -name 'npu-golden-*.tar.gz' -exec rm -rf -- {} + 2>/dev/null || true
 	@rm -rf -- work/vendor-output-first-run
 	@find work/images/armbian -maxdepth 1 -type f \( \
 		-name '$(notdir $(BASE))-preloaded.img' -o \
@@ -512,7 +512,7 @@ clean:
 	@rm -f -- not_logged_in_yet provisioning.sh
 	@rm -f -- not_logged_in_yet.previous.* provisioning.sh.previous.*
 	@echo 'Removed generated archives, derived images, metadata, and local first-boot files.'
-	@echo 'Preserved source/base images under work/images/.'
+	@echo 'Preserved source/base images under work/images/ and NPU goldens under $(VENDOR_OUTPUT)/.'
 
 board-gpu-precheck:
 	sudo $(BOARD_WORKFLOW) --layer gpu --action precheck $(BOARD_ARGS)

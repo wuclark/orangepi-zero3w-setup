@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Keep `npu-golden-*.tar.gz` across `make clean` (and therefore across
+  `make newsd`, which starts from clean): golden archives cost a
+  proprietary-toolchain run that `newsd` cannot reproduce, while everything
+  else `clean` removes is cheaply rebuilt. Stale goldens are still safe
+  because generation refuses to overwrite existing outputs.
+
+- Wire the lenet/yolov5/resnet50 ACUITY goldens into board validation: each
+  runs `board-npu-model-test.sh` when its vendor-files archive and the runner
+  stack are present, otherwise reports SKIP naming the exact prior step
+  (board-npu-install, base setup, or host-side golden generation and
+  bake/copy). Existing GPU-compute, VPU, NPU smoke, and golden-candidate
+  skips name their remediation the same way.
+
 - Add the `npu-public-onnx` target, which fetches the pinned Apache 2.0 ONNX
   Model Zoo ResNet50 to `work/images/` with SHA-256 verification when absent
   (a custom `NPU_PUBLIC_ONNX` is reused as-is), and wire it into

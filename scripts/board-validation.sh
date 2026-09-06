@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Purpose: Run read-only validation for installed GPU, VPU, NPU, and display layers.
 # Platform: Orange Pi board with the reference kernel; requires root.
-# Inputs: optional --output and private NPU golden-candidate archive in vendor-files.
+# Inputs: optional --output and private NPU golden archives in vendor-files
+#          (npu-golden-candidate.tar.gz and npu-golden-{lenet,yolov5,resnet50}.tar.gz).
 # Writes: timestamped validation output and component evidence under /var/log.
 # Safety: never installs, loads modules, changes configuration, or reboots.
 # Repeat behavior: safe to repeat; unavailable optional layers are reported SKIP.
-# Recovery: follow the printed remediation target for a failed component.
+# Recovery: every SKIP names the exact prior step that provides the missing
+#          piece; follow the printed remediation target for a failed component.
 # Verification: PASS/FAIL/SKIP summary is the authoritative result of this check.
 set -Eeuo pipefail
 
@@ -45,27 +47,44 @@ run_check 'GPU Vulkan/EGL verification' "$REPO_ROOT/scripts/verify.sh"
 if command -v g++ >/dev/null && command -v vulkaninfo >/dev/null; then
     run_check 'GPU Vulkan compute benchmark' "$REPO_ROOT/scripts/run-vulkan-compute-benchmark.sh" --output /var/log/orangepi-zero3w-setup/vulkan-compute-validation.txt
 else
-    skip_check 'GPU Vulkan compute benchmark (build tools unavailable)'
+    skip_check 'GPU Vulkan compute benchmark (build tools unavailable; run: sudo make board-gpu-compute-deps)'
 fi
 run_check 'VPU device/runtime checks' "$REPO_ROOT/tests/board/test-postboot-acceleration.sh" --vpu
 if [[ -e /etc/cedarc.conf ]]; then
     run_check 'VPU H.264/H.265 decode' "$REPO_ROOT/scripts/test-vpu-decode.sh" --output /var/log/orangepi-zero3w-setup/vpu-validation.txt
 else
-    skip_check 'VPU H.264/H.265 decode (Cedar is not installed)'
+    skip_check 'VPU H.264/H.265 decode (Cedar is not installed; run: sudo make board-vpu-install)'
 fi
 run_check 'NPU device/runtime checks' "$REPO_ROOT/tests/board/test-postboot-acceleration.sh" --npu
 if [[ -x /opt/orangepi-zero3w-setup/npu-test/bin/vpm_run ]]; then
     run_check 'NPU VIPLite smoke test' "$REPO_ROOT/scripts/test-npu.sh" --output /var/log/orangepi-zero3w-setup/npu-validation.txt
 else
-    skip_check 'NPU VIPLite smoke test (runner is not installed)'
+    skip_check 'NPU VIPLite smoke test (runner is not installed; run: sudo make board-npu-install)'
 fi
 if [[ -f $NPU_GOLDEN_ARCHIVE ]]; then
     run_check 'NPU SDK golden candidate' "$REPO_ROOT/scripts/board-npu-golden-test.sh" \
         --archive "$NPU_GOLDEN_ARCHIVE" \
         --output /var/log/orangepi-zero3w-setup/npu-golden-validation.txt
 else
-    skip_check 'NPU SDK golden candidate (private archive is not installed)'
+    skip_check 'NPU SDK golden candidate (private archive is not installed; generate host-side: make npu-golden-candidate, then bake work/vendor-output/npu-golden-candidate.tar.gz into the image or copy it to /opt/orangepi-zero3w-setup/vendor-files/)'
 fi
+# ACUITY goldens produced host-side by scripts/generate-npu-golden.sh. Each
+# check runs only when its archive and the full runner stack are present;
+# anything missing is a SKIP naming the prior step, never a FAIL.
+for NPU_GOLDEN_MODEL in lenet yolov5 resnet50; do
+    NPU_MODEL_ARCHIVE=/opt/orangepi-zero3w-setup/vendor-files/npu-golden-$NPU_GOLDEN_MODEL.tar.gz
+    if [[ ! -x /opt/orangepi-zero3w-setup/npu-test/bin/vpm_run ]]; then
+        skip_check "NPU ACUITY golden ($NPU_GOLDEN_MODEL runner is not installed; run: sudo make board-npu-install)"
+    elif ! command -v python3 >/dev/null; then
+        skip_check "NPU ACUITY golden ($NPU_GOLDEN_MODEL python3 is not installed; rerun the board base setup)"
+    elif [[ ! -f $NPU_MODEL_ARCHIVE ]]; then
+        skip_check "NPU ACUITY golden ($NPU_GOLDEN_MODEL archive is not installed; generate host-side: NPU_ACUITY_IMAGE=ubuntu-npu:v2.0.10.2 make npu-golden-$NPU_GOLDEN_MODEL, then bake work/vendor-output/npu-golden-$NPU_GOLDEN_MODEL.tar.gz into the image or copy it to /opt/orangepi-zero3w-setup/vendor-files/)"
+    else
+        run_check "NPU ACUITY golden ($NPU_GOLDEN_MODEL)" "$REPO_ROOT/scripts/board-npu-model-test.sh" \
+            --model "$NPU_GOLDEN_MODEL" \
+            --output /var/log/orangepi-zero3w-setup/npu-golden-$NPU_GOLDEN_MODEL.txt
+    fi
+done
 if [[ -S /tmp/.X11-unix/X0 ]]; then
     run_check 'X11 display :0' test -S /tmp/.X11-unix/X0
 else
