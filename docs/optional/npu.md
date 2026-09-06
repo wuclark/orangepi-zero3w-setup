@@ -304,6 +304,24 @@ not silently performed by the golden target.
    NPU_PUBLIC_ONNX=/path/to/resnet50.onnx make npu-golden-resnet50
    ```
 
+   Or generate every golden in one step (candidate first, then the three
+   ACUITY conversions):
+
+   ```bash
+   NPU_ACUITY_IMAGE=ubuntu-npu:v2.0.10.2 make npu-generate-goldens
+   ```
+
+   The resnet50 leg needs a public ONNX (the SDK ships no source weights).
+   `npu-golden-resnet50` fetches the pinned Apache 2.0 ONNX Model Zoo file
+   automatically via `make npu-public-onnx` (URL and SHA-256 pinned in the
+   Makefile, stored under `work/images/`); set `NPU_PUBLIC_ONNX` to use a
+   different file, which is then used as-is.
+
+   The aggregate never loads the Docker image itself: it uses the already
+   loaded `NPU_ACUITY_IMAGE` and fails fast when that image is missing, so a
+   repeat run after `make npu-acuity-image-load` never pays the large import
+   again. Verify a loaded image any time with `make npu-acuity-image-check`.
+
    These targets print the selected driver checkout, ACUITY image, model
    inputs, and output archive before the conversion script begins. The
    conversion script then reports its own working directory and model stages.
@@ -318,9 +336,13 @@ not silently performed by the golden target.
     `--inputs`/`--input-size-list`/`--outputs` defaults come from the SDK's
     own `models/yolov5s-sim/inputs_outputs.txt` and have been run end-to-end
     on `ubuntu-npu:v2.0.10.2` (12.6 MB int16 NBG, three host output tensors
-    matching the three detection heads); the resnet50 defaults are still
-    best-effort, so inspect the real ONNX graph node names before trusting
-    a first run (the script's `--help` shows how). The generator also
+    matching the three detection heads). The resnet50 defaults match ONNX
+    Model Zoo `resnet50-v1-12` (inputs=data, 3,224,224,
+    outputs=resnetv17_dense0_fwd; Apache 2.0) and have likewise been run
+    end-to-end (40.5 MB int16 NBG, 1000-class host output, calibrated and
+    inferred on an SDK-bundled COCO sample image); other ResNet50 files may
+    need corrected values — inspect the real ONNX graph node names before
+    trusting a first run (the script's `--help` shows how). The generator also
     restores host ownership of the driver checkout's model directory after
     the root-running container exits, keeping reruns working.
 3. Copy the resulting archive to the board's

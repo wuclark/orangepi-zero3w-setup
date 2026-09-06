@@ -22,7 +22,12 @@ NPU_GOLDEN_OUTPUT ?= /var/log/orangepi-zero3w-setup/npu-golden-candidate.txt
 NPU_DRIVER_REPO ?= work/sources/a733_npu_driver
 NPU_DRIVER_URL ?= https://github.com/wuclark/a733_npu_driver.git
 NPU_DRIVER_REF ?= main
-NPU_PUBLIC_ONNX ?=
+NPU_PUBLIC_ONNX_DEFAULT ?= work/images/resnet50-v1-12.onnx
+NPU_PUBLIC_ONNX ?= $(NPU_PUBLIC_ONNX_DEFAULT)
+# Openly licensed (Apache 2.0) public ResNet50 used for the resnet50 golden.
+# Pinned by URL and SHA-256; override NPU_PUBLIC_ONNX to use another file.
+NPU_PUBLIC_ONNX_URL ?= https://github.com/onnx/models/raw/main/validated/vision/classification/resnet/model/resnet50-v1-12.onnx
+NPU_PUBLIC_ONNX_SHA256 ?= 3f03fdef724b22947eed826f1eef1dc5c34151bb4c37d634f1db89dfa2dd1526
 # Keep generation pinned to v2.0.10.1 until a newer toolchain is revalidated.
 # The currently staged official archive supplies v2.0.10.2 for explicit use.
 NPU_ACUITY_IMAGE ?= ubuntu-npu:v2.0.10.1
@@ -62,7 +67,7 @@ GIT_DEPTH ?= 1
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test board-npu-golden-test npu-test-assets npu-golden-candidate \
-	npu-driver-source npu-acuity-image-load npu-acuity-image-check npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 \
+	npu-driver-source npu-public-onnx npu-acuity-image-load npu-acuity-image-check npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 npu-generate-goldens \
 	board-npu-golden-test-lenet board-npu-golden-test-yolov5 board-npu-golden-test-resnet50 \
 	board-core-install board-core-status board-a733-sources board-status board-report collect-boards compare-board-reports \
 	backup-required backup-cache backup-sensitive backup-all restore \
@@ -159,10 +164,12 @@ help:
 		'make board-npu-test                     Run NPU test and save evidence' \
 		'make npu-golden-candidate               Stage SDK custom-LUT NPU golden candidate' \
 		'make npu-driver-source                 Clone the public NPU driver/toolchain source if absent' \
+		'make npu-public-onnx                   Fetch the pinned public ResNet50 ONNX if absent' \
 		'make npu-acuity-image-load              Load the nested ACUITY Docker image from work/images' \
 		'make npu-acuity-image-check             Check an already-loaded ACUITY Docker image' \
 		'make board-npu-golden-test              Run the SDK golden candidate on the board' \
 		'make npu-golden-lenet/yolov5/resnet50   Generate a real ACUITY NPU golden (see docs/optional/npu.md)' \
+		'make npu-generate-goldens               Generate all NPU golden archives (fetches pinned ResNet50 ONNX if absent)' \
 		'make board-npu-golden-test-lenet/yolov5/resnet50  Run one of those goldens on the board' \
 		'make board-test BOARD_LAYER=gpu|vpu|npu|all  Run diagnostic board checks' \
 		'make board-tests BOARD_LAYER=...        Alias for board-test' \
@@ -700,6 +707,26 @@ npu-driver-source:
 		fi; \
 	fi
 
+# Pinned public ResNet50 for the resnet50 golden (the SDK ships no source
+# weights). Reuses an existing file; downloads the pinned URL only for the
+# default path and verifies its SHA-256. A custom NPU_PUBLIC_ONNX is used
+# as-is and never overwritten or checksum-gated.
+npu-public-onnx:
+	@if [[ '$(NPU_PUBLIC_ONNX)' != '$(NPU_PUBLIC_ONNX_DEFAULT)' ]]; then \
+		[[ -f '$(NPU_PUBLIC_ONNX)' ]] || { echo 'ERROR: custom NPU_PUBLIC_ONNX not found: $(NPU_PUBLIC_ONNX). Provide an openly licensed ResNet50 ONNX file.' >&2; exit 1; }; \
+		echo 'Reusing custom public ONNX: $(NPU_PUBLIC_ONNX)'; \
+	elif [[ -f '$(NPU_PUBLIC_ONNX_DEFAULT)' ]]; then \
+		echo 'Reusing pinned public ONNX: $(NPU_PUBLIC_ONNX_DEFAULT)'; \
+		echo '$(NPU_PUBLIC_ONNX_SHA256)  $(NPU_PUBLIC_ONNX_DEFAULT)' | sha256sum -c - >/dev/null || { echo 'ERROR: SHA-256 mismatch for $(NPU_PUBLIC_ONNX_DEFAULT); move it aside and rerun to refetch.' >&2; exit 1; }; \
+	else \
+		command -v curl >/dev/null || { echo 'ERROR: curl is required to fetch the public ONNX.' >&2; exit 1; }; \
+		echo 'INFO: fetching pinned public ONNX...'; \
+		install -d -m 755 '$(dir $(NPU_PUBLIC_ONNX_DEFAULT))'; \
+		curl -L --fail -o '$(NPU_PUBLIC_ONNX_DEFAULT)' '$(NPU_PUBLIC_ONNX_URL)'; \
+		echo '$(NPU_PUBLIC_ONNX_SHA256)  $(NPU_PUBLIC_ONNX_DEFAULT)' | sha256sum -c - >/dev/null || { echo 'ERROR: SHA-256 mismatch after download; removed nothing, check the network path.' >&2; exit 1; }; \
+		echo 'Fetched and verified: $(NPU_PUBLIC_ONNX_DEFAULT)'; \
+	fi
+
 # Host-only and separate from golden generation: the vendor download is a ZIP
 # containing another ZIP containing a Docker tar. Stream both archives through
 # a private temporary directory so untrusted members are never extracted over
@@ -767,7 +794,7 @@ npu-golden-yolov5: npu-driver-source
 		--driver-repo $(NPU_DRIVER_REPO) --output $(VENDOR_OUTPUT)/npu-golden-yolov5.tar.gz
 	@echo 'INFO: YOLOv5 ACUITY golden generation completed.'
 
-npu-golden-resnet50: npu-driver-source
+npu-golden-resnet50: npu-driver-source npu-public-onnx
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
 	@test -n '$(NPU_PUBLIC_ONNX)' || { echo 'ERROR: set NPU_PUBLIC_ONNX=/path/to/resnet50.onnx (an openly licensed file; the SDK ships no resnet50 source).' >&2; exit 1; }
 	@install -d -m 755 $(VENDOR_OUTPUT)
@@ -779,3 +806,18 @@ npu-golden-resnet50: npu-driver-source
 		--driver-repo $(NPU_DRIVER_REPO) --public-onnx '$(NPU_PUBLIC_ONNX)' \
 		--output $(VENDOR_OUTPUT)/npu-golden-resnet50.tar.gz
 	@echo 'INFO: ResNet50 ACUITY golden generation completed.'
+
+# Generate every NPU golden archive in dependency order (candidate first: it
+# needs no Docker image). This target never loads the Docker image itself;
+# generation uses whatever NPU_ACUITY_IMAGE already points to and fails fast
+# when that image is not loaded. Import it once with
+# make npu-acuity-image-load (or verify with make npu-acuity-image-check).
+# The resnet50 leg fetches the pinned public ONNX automatically via
+# npu-public-onnx when it is absent.
+npu-generate-goldens:
+	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
+	@$(MAKE) npu-golden-candidate
+	@$(MAKE) npu-golden-lenet
+	@$(MAKE) npu-golden-yolov5
+	@$(MAKE) npu-golden-resnet50
+	@echo 'INFO: all NPU golden archives generated in $(VENDOR_OUTPUT).'

@@ -29,6 +29,7 @@ provisioning.sh.previous.*
 *.img.sha256
 *.img.manifest.txt
 *.log
+*.onnx
 *.strace
 *.tar
 *.tar.gz

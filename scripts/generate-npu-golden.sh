@@ -59,9 +59,10 @@ Usage: scripts/generate-npu-golden.sh --model {lenet,yolov5,resnet50} \
                         yolov5s-sim defaults come from the SDK's own
                         models/yolov5s-sim/inputs_outputs.txt (inputs=images,
                         3,640,640, outputs='350 498 646'); the resnet50
-                        defaults (inputs=input, 224,224,3, outputs=output)
-                        have NOT been run end-to-end, so inspect the real ONNX
-                        graph first, e.g.:
+                        defaults match ONNX Model Zoo resnet50-v1-12
+                        (inputs=data, 3,224,224, outputs=resnetv17_dense0_fwd)
+                        and other files may need corrected values. Inspect
+                        the real ONNX graph first, e.g.:
                           python3 -c "import onnx; m=onnx.load('MODEL.onnx'); \
                             print([i.name for i in m.graph.input], \
                                   [o.name for o in m.graph.output])"
@@ -100,7 +101,7 @@ esac
 [[ -n $OUTPUT && ! -e $OUTPUT ]] || die "Output is missing or already exists: $OUTPUT"
 require_command docker
 docker image inspect "$IMAGE" >/dev/null 2>&1 || \
-    die "ACUITY Docker image not found: $IMAGE (build it per a733_npu_driver's docs/01-setup-host.md)"
+    die "ACUITY Docker image not found: $IMAGE (run make npu-acuity-image-load for the staged official archive, or provide the image per a733_npu_driver's docs/01-setup-host.md)"
 [[ $MODEL != resnet50 || -f $PUBLIC_ONNX ]] || \
     die "--model resnet50 requires --public-onnx FILE (an openly licensed ResNet50 ONNX file)"
 if [[ $MODEL != lenet ]]; then
@@ -189,13 +190,20 @@ yolov5|resnet50)
         log "Using supplied public ResNet50 ONNX: $PUBLIC_ONNX"
         install -d -m 755 "$work/resnet50-public"
         cp -a "$PUBLIC_ONNX" "$work/resnet50-public/resnet50.onnx"
-        printf 'resnet50.onnx\n' > "$work/resnet50-public/dataset.txt"
+        # ACUITY calibrates and runs inference on real image files, so the
+        # dataset needs a sample picture, not the model file. Reuse a vendor
+        # COCO sample already present in the AI SDK archive.
+        tar -xzf "$SDK_TARBALL" -C "$work" ai-sdk/models/yolov5s-sim/images/dog.jpg
+        cp -a "$work/ai-sdk/models/yolov5s-sim/images/dog.jpg" "$work/resnet50-public/dog.jpg"
+        printf 'dog.jpg\n' > "$work/resnet50-public/dataset.txt"
         onnx_path="$work/resnet50-public/resnet50.onnx"
         dataset_path="$work/resnet50-public/dataset.txt"
         name=resnet50_public
-        inputs=${ONNX_INPUTS:-input}
-        input_size_list=${ONNX_INPUT_SIZE_LIST:-224,224,3}
-        outputs=${ONNX_OUTPUTS:-output}
+        # Defaults verified against ONNX Model Zoo resnet50-v1-12 (opset 12,
+        # fp32); other ResNet50 files may use different node names.
+        inputs=${ONNX_INPUTS:-data}
+        input_size_list=${ONNX_INPUT_SIZE_LIST:-3,224,224}
+        outputs=${ONNX_OUTPUTS:-resnetv17_dense0_fwd}
     fi
     log "Running ACUITY ONNX conversion for $name (int16) via a733_npu_driver's flow"
     # Invoked via bash because the driver checkout stores its helpers

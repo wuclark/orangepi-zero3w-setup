@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Add the `npu-public-onnx` target, which fetches the pinned Apache 2.0 ONNX
+  Model Zoo ResNet50 to `work/images/` with SHA-256 verification when absent
+  (a custom `NPU_PUBLIC_ONNX` is reused as-is), and wire it into
+  `npu-golden-resnet50` so `npu-generate-goldens` runs unattended.
+
+- Verify the ResNet50 NPU golden path end-to-end on `ubuntu-npu:v2.0.10.2`
+  with ONNX Model Zoo `resnet50-v1-12` (inputs=data, 3,224,224,
+  outputs=resnetv17_dense0_fwd, now the built-in defaults): 40.5 MB int16
+  NBG with a 1000-class host output. The converter needs a real image, so
+  the generator calibrates on an SDK-bundled COCO sample; board validation
+  is still pending.
+
+- Add the `npu-generate-goldens` aggregate target, which generates every NPU
+  golden archive in order (candidate, lenet, yolov5, resnet50) after checking
+  that `work/images/ai-sdk.tar.gz` and `NPU_PUBLIC_ONNX` are present. It never
+  loads the Docker image itself; generation uses the already-loaded
+  `NPU_ACUITY_IMAGE` and fails fast otherwise.
+
 - Fix the YOLOv5 NPU golden defaults to the SDK's own
   `models/yolov5s-sim/inputs_outputs.txt` (`images`, `3,640,640`,
   `350 498 646`) instead of the incorrect `640,640,3`/`output` guesses, run
