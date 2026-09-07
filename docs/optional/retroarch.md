@@ -13,6 +13,11 @@ sudo make board-retroarch-install
 sudo make board-retroarch-verify
 ```
 
+Selecting RetroArch in the `board-packages` menu only configures it when the
+GPU layer is already installed with `pvrsrvkm` loaded; otherwise the menu
+installs the Debian packages, skips configuration with the exact recovery
+command, and lets setup continue.
+
 To install advanced cores, use only packages exposed by the existing Debian
 APT sources and/or provide legally obtained ARM64 Libretro `.so` files:
 

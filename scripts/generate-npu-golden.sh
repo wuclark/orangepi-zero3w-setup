@@ -238,6 +238,17 @@ esac
 
 [[ -f $package_dir/network_binary.nb ]] || die "ACUITY did not produce network_binary.nb"
 [[ -f $package_dir/host_output_0.txt ]] || die "ACUITY did not produce a host golden tensor (host_output_0.txt)"
+# Board vpm_run only writes output_N.txt files named in sample.txt's
+# [output] section (unconditionally, unlike --save_txt which needs a
+# compile-time flag the board runner was built without). Name one .txt per
+# host golden tensor so the board run saves comparable outputs.
+{
+    printf '[output]\n'
+    for golden in "$package_dir"/host_output_*.txt; do
+        index=$(sed -E 's/.*host_output_([0-9]+)\.txt/\1/' <<<"${golden##*/}")
+        printf './output_%s.txt\n' "$index"
+    done
+} >> "$package_dir/sample.txt"
 install -d -m 755 "$(dirname "$OUTPUT")"
 tar -C "$package_dir" --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 \
     --numeric-owner -czf "$OUTPUT" .

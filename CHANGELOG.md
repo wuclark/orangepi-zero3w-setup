@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Show installed state in the packages menu (`[installed]` per package group
+  backed by `dpkg-query`, GPU-layer readiness for the RetroArch options) so
+  re-runs show what is already done without hiding any option.
+
+- Skip RetroArch PowerVR configuration in the packages menu when the board
+  GPU layer is absent (missing ICD, `/dev/dri`, or loaded `pvrsrvkm`)
+  instead of failing late: Debian packages stay installed, setup continues,
+  and the message names the GPU-install then `board-retroarch-install`
+  recovery path.
+
+- Write an `[output]` section (`output_N.txt` per host golden tensor) into
+  generated NPU golden `sample.txt` files: board `vpm_run` was built without
+  `SAVE_OUTPUT_TXT_FILE`, so `--save_txt` silently saved nothing and every
+  board comparison failed with "did not produce output_N.txt". The
+  `[output]` path saves unconditionally regardless of that compile flag.
+
 - Grow the preloaded SD image by `PRELOAD_GROW_MB` (default 512) before
   copying the repo in: the base root filesystem ships too tight for the
   ~230 MB payload plus vendor archives. The flow extends the single root
