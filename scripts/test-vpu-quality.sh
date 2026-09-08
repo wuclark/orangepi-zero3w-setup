@@ -44,6 +44,7 @@ gst-inspect-1.0 h264parse >/dev/null || die "gstreamer1.0-plugins-bad h264parse 
 gst-inspect-1.0 h265parse >/dev/null || die "gstreamer1.0-plugins-bad h265parse is required"
 gst-inspect-1.0 omxh264dec >/dev/null || die "OMX H.264 decoder is not registered"
 gst-inspect-1.0 omxhevcvideodec >/dev/null || die "OMX H.265 decoder is not registered"
+gst-inspect-1.0 videoscale >/dev/null || die "videoscale is required (gstreamer1.0-plugins-base)"
 ffmpeg -hide_banner -h filter=psnr >/dev/null 2>&1 || die "ffmpeg psnr filter is unavailable; reinstall ffmpeg"
 ffmpeg -hide_banner -h filter=ssim >/dev/null 2>&1 || die "ffmpeg ssim filter is unavailable; reinstall ffmpeg"
 
@@ -99,9 +100,12 @@ compare_one() {
     local hw_log="$WORK/$base-hw.log" sw_log="$WORK/$base-sw.log" cmp_log="$WORK/$base-cmp.log"
     printf 'Testing %s (%s %sx%s)\n' "$base" "$label" "$width" "$height"
 
+    # Cedar pads decoded height to its alignment (e.g. 720 -> 736), so scale
+    # the hardware output back to the probed dimensions before comparing.
     if ! GST_DEBUG=2 timeout 120s gst-launch-1.0 \
         filesrc "location=$file" ! qtdemux ! "$parser" ! "$decoder" ! \
-        videoconvert ! 'video/x-raw,format=I420' ! filesink "location=$hw_raw" sync=false >"$hw_log" 2>&1; then
+        videoconvert ! videoscale ! "video/x-raw,format=I420,width=$width,height=$height" ! \
+        filesink "location=$hw_raw" sync=false >"$hw_log" 2>&1; then
         cat "$hw_log" >&2
         die "$base hardware decode failed"
     fi
