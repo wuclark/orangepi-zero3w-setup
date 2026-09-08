@@ -5,6 +5,10 @@ separate computer before powering the board. The confirmed PVR path uses the
 official Armbian Debian 13 (Trixie), Minimal (CLI), arm64 image marked
 `vendor 6.6.98`; do not substitute a Current/mainline image.
 
+Use the [fresh-install input sources checklist](../reference/input-sources.md)
+first if the image, vendor source files, SDK, or generated archives are not
+already present.
+
 The current target image filename is:
 
 ```text

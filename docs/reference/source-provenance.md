@@ -6,6 +6,9 @@ source; it is not automatically a supported software combination. Hardware
 claims still require evidence from the exact Orange Pi board, kernel, module,
 firmware, and userspace being tested.
 
+For a practical missing-input checklist with expected filenames, hashes, and
+host paths, see [Fresh-install input sources](input-sources.md).
+
 ## Official silicon and graphics references
 
 These references define the hardware and track upstream PowerVR work. The

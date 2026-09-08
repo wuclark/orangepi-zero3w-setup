@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a centralized [fresh-install input sources checklist](docs/reference/input-sources.md)
+  linking the base image, vendor source images, SDK, archive workflow, checksums,
+  optional tooling, and missing-input recovery paths.
+
 ## 1.0.0 - 2026-09-08
 
 - Add `make board-summary` (`scripts/generate-board-summary.sh`): renders a

@@ -29,7 +29,7 @@ remain outside Git.
 │   ├── development/                      contributor workflow and this map
 │   ├── guide/                            step-by-step setup and recovery
 │   ├── optional/                         GPU, VPU, NPU, and RetroArch layers
-│   ├── reference/                        architecture, hardware, status, support
+│   ├── reference/                        architecture, hardware, status, support, input sources
 │   ├── remote/                           SSH/VNC/remote-display procedures
 │   └── legacy/                           historical paths retained for reference
 ├── docker/                               pinned extraction/build context

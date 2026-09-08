@@ -13,6 +13,10 @@ GPU, VPU, and NPU layers are installed separately.
 For a new SD card, follow [Prepare the SD card](docs/guide/00-prepare-sd-card.md),
 then [First boot and Wi-Fi](docs/guide/01-first-boot-wifi.md). After SSH works:
 
+Before downloading or building anything, use the [fresh-install input sources
+checklist](docs/reference/input-sources.md) to locate the base image, vendor
+source images, SDK, and generated archive inputs.
+
 ```bash
 sudo ./setup.sh base
 sudo ./setup.sh packages
