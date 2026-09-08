@@ -64,8 +64,8 @@ Cedar, `ffmpeg`, and GStreamer are present, otherwise SKIP with remediation.
 Correctness is proven bit-identical above; speed is a separate benchmark question.
 `scripts/test-vpu-decode-speed.sh` (board-only, headless) times the Cedar OMX
 pipeline against software `ffmpeg` on the same fixtures and reports per-file
-`hw_fps`, `sw_fps`, and the `speedup` ratio with governor and CPU count in the
-evidence for comparability:
+wall seconds, CPU seconds, `hw_fps`, `sw_fps`, and the `speedup` ratio with
+governor and CPU count in the evidence for comparability:
 
 ```bash
 sudo make board-vpu-decode-speed

@@ -8,7 +8,7 @@
 # Safety: Headless bounded decodes only; does not present video, install packages, reboot, or alter boot ordering.
 # Repeat: Reuses repository fixtures and writes a fresh optional evidence report per run; numbers vary with governor, cooling, and load.
 # Recovery: Remove only cached evidence/temp files; run on an otherwise idle board and record the governor for comparability.
-# Outputs: Per-file hw/sw seconds, fps, speedup ratio, and PASS status.
+# Outputs: Per-file hw/sw wall seconds, CPU seconds, fps, speedup ratio, and PASS status.
 # Verification: Both paths must complete with matching frame counts; figures are informational and PASS on completion, not on a fixed bar.
 # Documentation: docs/optional/vpu.md
 set -Eeuo pipefail
@@ -77,6 +77,12 @@ now() { date +%s.%N; }
 elapsed() { awk -v s="$1" -v e="$2" 'BEGIN { printf "%.2f", e - s }'; }
 fps() { awk -v n="$1" -v s="$2" 'BEGIN { printf "%.1f", (s + 0 > 0) ? n / s : 0 }'; }
 ratio() { awk -v a="$1" -v b="$2" 'BEGIN { printf "%.2f", (b + 0 > 0) ? a / b : 0 }'; }
+# Total reaped-children user+sys CPU seconds; diff two snapshots to isolate one
+# pipeline without any extra dependency. The probing awk itself is negligible.
+cpu_children() {
+    times | awk 'NR==2 { split($1, a, "m"); split($2, b, "m"); sub(/s$/, "", a[2]); sub(/s$/, "", b[2]); printf "%.2f", a[1]*60+a[2]+b[1]*60+b[2] }'
+}
+cpu_used() { awk -v a="$1" -v b="$2" 'BEGIN { printf "%.2f", b - a }'; }
 
 time_one() {
     local file=$1 base codec width height parser decoder
@@ -95,9 +101,11 @@ time_one() {
     esac
 
     local hw_raw="$WORK/$base-hw.yuv" sw_raw="$WORK/$base-sw.yuv" hw_log="$WORK/$base-hw.log"
-    local frames frame_size sw_size sw_start sw_end sw_sec sw_fps hw_start hw_end hw_sec hw_fps speed
+    local frames frame_size sw_size sw_start sw_end sw_sec sw_fps sw_cpu hw_start hw_end hw_sec hw_fps hw_cpu speed
+    local cpu_mark
     printf 'Timing %s (%s %sx%s)\n' "$base" "$codec" "$width" "$height"
 
+    cpu_mark=$(cpu_children)
     sw_start=$(now)
     if ! timeout 300s ffmpeg -nostdin -hide_banner -loglevel error -y -i "$file" \
         -pix_fmt yuv420p -f rawvideo "$sw_raw" 2>/dev/null; then
@@ -105,6 +113,7 @@ time_one() {
         die "$base software decode failed"
     fi
     sw_end=$(now)
+    sw_cpu=$(cpu_used "$cpu_mark" "$(cpu_children)")
     frame_size=$((width * height * 3 / 2))
     sw_size=$(stat -c %s "$sw_raw")
     ((sw_size > 0 && sw_size % frame_size == 0)) || { preserve_work; die "$base software dump has unexpected size $sw_size"; }
@@ -112,6 +121,7 @@ time_one() {
     sw_sec=$(elapsed "$sw_start" "$sw_end")
     sw_fps=$(fps "$frames" "$sw_sec")
 
+    cpu_mark=$(cpu_children)
     hw_start=$(now)
     if ! GST_DEBUG=2 timeout 300s gst-launch-1.0 \
         filesrc "location=$file" ! qtdemux ! "$parser" ! "$decoder" ! \
@@ -121,20 +131,21 @@ time_one() {
         die "$base hardware decode failed"
     fi
     hw_end=$(now)
+    hw_cpu=$(cpu_used "$cpu_mark" "$(cpu_children)")
     grep -q 'open /dev/cedar_dev' "$hw_log" || { preserve_work; die "$base decode did not open Cedar"; }
     grep -q 'Got EOS' "$hw_log" || { preserve_work; die "$base decode did not reach EOS"; }
     hw_sec=$(elapsed "$hw_start" "$hw_end")
     hw_fps=$(fps "$frames" "$hw_sec")
     speed=$(ratio "$hw_fps" "$sw_fps")
-    printf 'PASS: %s frames=%d hw=%.2fs (%s fps) sw=%.2fs (%s fps) speedup=%sx\n' \
-        "$base" "$frames" "$hw_sec" "$hw_fps" "$sw_sec" "$sw_fps" "$speed"
+    printf 'PASS: %s frames=%d hw=%.2fs (cpu %ss, %s fps) sw=%.2fs (cpu %ss, %s fps) speedup=%sx\n' \
+        "$base" "$frames" "$hw_sec" "$hw_cpu" "$hw_fps" "$sw_sec" "$sw_cpu" "$sw_fps" "$speed"
     rm -f -- "$hw_raw" "$sw_raw"
 
     if [[ -n $OUTPUT ]]; then
         {
             echo "file=$base.mp4"
             echo "codec=$codec width=$width height=$height frames=$frames"
-            echo "hw_sec=$hw_sec hw_fps=$hw_fps sw_sec=$sw_sec sw_fps=$sw_fps speedup=$speed result=PASS"
+            echo "hw_sec=$hw_sec hw_cpu=$hw_cpu hw_fps=$hw_fps sw_sec=$sw_sec sw_cpu=$sw_cpu sw_fps=$sw_fps speedup=$speed result=PASS"
         } >> "$OUTPUT.tmp"
     fi
 }
