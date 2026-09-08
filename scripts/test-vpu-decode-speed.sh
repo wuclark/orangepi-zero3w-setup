@@ -3,8 +3,9 @@
 # Platform: Orange Pi Zero 3W target board with VPU userspace and GStreamer installed.
 # Inputs: Optional --output FILE, --media-dir DIR, --all for the full fixture set, --only BASENAME.
 # Dependencies: Bash, root, GStreamer OMX decoders, ffmpeg/ffprobe, /etc/cedarc.conf.
-# Writes: Raw yuv420p dumps in a private temp dir under /var/tmp (cleaned per file)
-#          and optional timestamped speed evidence at OUTPUT.
+# Writes: Small GStreamer logs in a private temp dir under /var/tmp and optional
+#          timestamped speed evidence at OUTPUT. Both paths decode to null, so
+#          no multi-GB raw dumps touch any filesystem.
 # Safety: Headless bounded decodes only; does not present video, install packages, reboot, or alter boot ordering.
 # Repeat: Reuses repository fixtures and writes a fresh optional evidence report per run; numbers vary with governor, cooling, and load.
 # Recovery: Remove only cached evidence/temp files; run on an otherwise idle board and record the governor for comparability.
@@ -101,24 +102,26 @@ time_one() {
         *) die "$base: unsupported codec '$codec'" ;;
     esac
 
-    local hw_raw="$WORK/$base-hw.yuv" sw_raw="$WORK/$base-sw.yuv" hw_log="$WORK/$base-hw.log"
+    local hw_log="$WORK/$base-hw.log"
     local hw_time="$WORK/$base-hw.time" sw_time="$WORK/$base-sw.time" nproc_threads
     nproc_threads=$(nproc)
-    local frames frame_size sw_size sw_start sw_end sw_sec sw_fps sw_cpu hw_start hw_end hw_sec hw_fps hw_cpu speed
+    local frames sw_start sw_end sw_sec sw_fps sw_cpu hw_start hw_end hw_sec hw_fps hw_cpu speed
     printf 'Timing %s (%s %sx%s)\n' "$base" "$codec" "$width" "$height"
 
+    # Decode to null on both paths: measures decoder throughput with no
+    # multi-GB disk I/O to distort it.
+    frames=$(ffprobe -v error -select_streams v:0 -count_frames \
+        -show_entries stream=nb_read_frames -of default=noprint_wrappers=1:nokey=1 "$file")
+    [[ $frames =~ ^[0-9]+$ && $frames -gt 0 ]] || { preserve_work; die "$base: cannot count frames"; }
+
     sw_start=$(now)
-    if ! { time timeout 300s ffmpeg -nostdin -hide_banner -loglevel error -y -i "$file" \
-        -pix_fmt yuv420p -f rawvideo "$sw_raw" 2>/dev/null; } 2>"$sw_time"; then
+    if ! { time timeout 300s ffmpeg -nostdin -hide_banner -loglevel error -i "$file" \
+        -pix_fmt yuv420p -f null - 2>/dev/null; } 2>"$sw_time"; then
         preserve_work
         die "$base software decode failed"
     fi
     sw_end=$(now)
     sw_cpu=$(cpu_total "$sw_time")
-    frame_size=$((width * height * 3 / 2))
-    sw_size=$(stat -c %s "$sw_raw")
-    ((sw_size > 0 && sw_size % frame_size == 0)) || { preserve_work; die "$base software dump has unexpected size $sw_size"; }
-    frames=$((sw_size / frame_size))
     sw_sec=$(elapsed "$sw_start" "$sw_end")
     sw_fps=$(fps "$frames" "$sw_sec")
 
@@ -128,7 +131,7 @@ time_one() {
     if ! { time GST_DEBUG=2 timeout 300s gst-launch-1.0 \
         filesrc "location=$file" ! qtdemux ! "$parser" ! "$decoder" ! \
         videoconvert "n-threads=$nproc_threads" ! 'video/x-raw,format=I420' ! \
-        filesink "location=$hw_raw" sync=false >"$hw_log" 2>&1; } 2>"$hw_time"; then
+        fakesink sync=false >"$hw_log" 2>&1; } 2>"$hw_time"; then
         cat "$hw_log" >&2
         preserve_work
         die "$base hardware decode failed"
@@ -142,7 +145,6 @@ time_one() {
     speed=$(ratio "$hw_fps" "$sw_fps")
     printf 'PASS: %s frames=%d hw=%.2fs (cpu %ss, %s fps) sw=%.2fs (cpu %ss, %s fps) speedup=%sx\n' \
         "$base" "$frames" "$hw_sec" "$hw_cpu" "$hw_fps" "$sw_sec" "$sw_cpu" "$sw_fps" "$speed"
-    rm -f -- "$hw_raw" "$sw_raw"
 
     if [[ -n $OUTPUT ]]; then
         {

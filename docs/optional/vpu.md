@@ -65,7 +65,8 @@ Correctness is proven bit-identical above; speed is a separate benchmark questio
 `scripts/test-vpu-decode-speed.sh` (board-only, headless) times the Cedar OMX
 pipeline against software `ffmpeg` on the same fixtures and reports per-file
 wall seconds, CPU seconds, `hw_fps`, `sw_fps`, and the `speedup` ratio with
-governor and CPU count in the evidence for comparability:
+governor and CPU count in the evidence for comparability. Both paths decode
+to null, so the figures reflect decoder throughput rather than disk speed:
 
 ```bash
 sudo make board-vpu-decode-speed
