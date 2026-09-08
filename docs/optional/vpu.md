@@ -78,6 +78,13 @@ them); PASS means both paths completed with matching frame counts. Run on an
 otherwise idle board. `board-thermal-monitor` can wrap the headless benchmark
 for temperature context.
 
+Reference 2026-09-08 (kernel `6.6.98-vendor-sun60iw2`, decode to null, all 17
+fixtures): every path exceeds realtime on every fixture. Cedar wall time is
+near-constant per resolution while software scales with content complexity —
+Cedar wins wall time on hard content (`life` 1080p60 HEVC at 2.18x) and uses
+2-8x less CPU everywhere; on trivial synthetic content the GStreamer/OMX
+per-buffer overhead dominates and software wins wall time.
+
 ### VPU validation TODO
 
 Remaining before any stronger claim:
