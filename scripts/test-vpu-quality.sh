@@ -69,6 +69,10 @@ done
 
 WORK=$(mktemp -d -t zero3w-vpu-quality.XXXXXXXX)
 trap 'rm -rf -- "$WORK"' EXIT
+preserve_work() {
+    printf 'Failure debug files preserved in %s\n' "$WORK" >&2
+    trap - EXIT
+}
 
 probe() {
     ffprobe -v error -select_streams v:0 \
@@ -104,10 +108,14 @@ compare_one() {
     grep -q 'open /dev/cedar_dev' "$hw_log" || die "$base decode did not open Cedar"
     grep -q 'Got EOS' "$hw_log" || die "$base decode did not reach EOS"
 
-    if ! timeout 120s ffmpeg -hide_banner -loglevel error -y -i "$file" \
-        -pix_fmt yuv420p -f rawvideo "$sw_raw" >"$sw_log" 2>&1; then
+    local sw_rc=0
+    timeout 120s ffmpeg -nostdin -hide_banner -loglevel error -y -i "$file" \
+        -pix_fmt yuv420p -f rawvideo "$sw_raw" >"$sw_log" 2>&1 || sw_rc=$?
+    if ((sw_rc != 0)); then
+        printf 'ffmpeg software-decode exit=%d log:\n' "$sw_rc" >&2
         cat "$sw_log" >&2
-        die "$base software decode failed"
+        preserve_work
+        die "$base software decode failed (ffmpeg exit=$sw_rc)"
     fi
 
     local frame_size hw_size sw_size hw_frames sw_frames
@@ -121,17 +129,21 @@ compare_one() {
     sw_frames=$((sw_size / frame_size))
     ((hw_frames == sw_frames)) || die "$base frame count mismatch: hw=$hw_frames sw=$sw_frames"
 
-    local psnr ssim
-    if ! timeout 120s ffmpeg -hide_banner -f rawvideo -s "${width}x${height}" -pix_fmt yuv420p -i "$hw_raw" \
+    local cmp_rc=0 psnr ssim
+    timeout 120s ffmpeg -nostdin -hide_banner -f rawvideo -s "${width}x${height}" -pix_fmt yuv420p -i "$hw_raw" \
         -f rawvideo -s "${width}x${height}" -pix_fmt yuv420p -i "$sw_raw" \
-        -lavfi "ssim;psnr" -f null - >"$cmp_log" 2>&1; then
+        -lavfi "ssim;psnr" -f null - >"$cmp_log" 2>&1 || cmp_rc=$?
+    if ((cmp_rc != 0)); then
+        printf 'ffmpeg compare exit=%d log:\n' "$cmp_rc" >&2
         cat "$cmp_log" >&2
-        die "$base PSNR/SSIM comparison failed"
+        preserve_work
+        die "$base PSNR/SSIM comparison failed (ffmpeg exit=$cmp_rc)"
     fi
     psnr=$(grep -o 'average:[0-9.]*' "$cmp_log" | tail -n 1 | cut -d: -f2)
     ssim=$(grep -o 'All:[0-9.]*' "$cmp_log" | tail -n 1 | cut -d: -f2)
-    [[ -n $psnr && -n $ssim ]] || die "$base could not parse PSNR/SSIM from comparison output"
+    [[ -n $psnr && -n $ssim ]] || { preserve_work; die "$base could not parse PSNR/SSIM from comparison output"; }
     printf 'PASS: %s frames=%d psnr_avg=%s ssim_all=%s\n' "$base" "$hw_frames" "$psnr" "$ssim"
+    rm -f -- "$hw_raw" "$sw_raw"
 
     if [[ -n $OUTPUT ]]; then
         {
