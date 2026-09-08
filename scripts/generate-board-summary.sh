@@ -35,11 +35,17 @@ done
 [[ -f $REPORT/validation.txt ]] || die "$REPORT/validation.txt is missing; rerun board-report"
 OUTPUT=${OUTPUT:-$REPORT/SUMMARY.md}
 
-pick() { grep -h -o "$2" "$1" 2>/dev/null | head -n 1 || true; }
+pick() { grep -hoE "$2" "$1" 2>/dev/null | head -n 1 || true; }
 first_match_file() {
     local pattern=$1; shift
-    grep -h "$pattern" "$@" 2>/dev/null | head -n 20 || true
+    grep -hE "$pattern" "$@" 2>/dev/null | head -n 20 || true
 }
+
+# Version identifiers are evidence, not secrets: capture them before the IP
+# redaction pass and restore them through placeholders afterwards.
+FWVER=$(pick "$REPORT/diagnostics.txt" 'rgx\.fw\.[0-9.]*')
+NPUVER=$(pick "$REPORT/headless-benchmark.txt" 'VIPLite driver software version [^ ]*')
+VKDRV=$(grep -hoE '[0-9]+\.[0-9]+@[0-9]+' "$REPORT/diagnostics.txt" 2>/dev/null | head -n 1 || true)
 
 {
     printf '# Board performance summary\n\n'
@@ -50,9 +56,9 @@ first_match_file() {
     printf '| Component | Value |\n| --- | --- |\n'
     printf '| OS | %s |\n' "$(pick "$REPORT/diagnostics.txt" 'PRETTY_NAME=.*' | cut -d= -f2- | tr -d '"')"
     printf '| Kernel | %s |\n' "$(grep -h '^Linux ' "$REPORT/validation.txt" | head -n 1 | awk '{print $3}')"
-    printf '| Vulkan driver | %s |\n' "$(pick "$REPORT/diagnostics.txt" 'PowerVR B-Series Vulkan Driver [0-9.]*@[0-9]*')"
-    printf '| Firmware | %s |\n' "$(pick "$REPORT/diagnostics.txt" 'rgx\.fw\.[0-9.]*')"
-    printf '| NPU runtime | %s |\n' "$(pick "$REPORT/headless-benchmark.txt" 'VIPLite driver software version [^ ]*')"
+    printf '| Vulkan driver | %s |\n' "${VKDRV:-not recorded}"
+    printf '| Firmware | %s |\n' "__FWVER__"
+    printf '| NPU runtime | %s |\n' "__NPUVER__"
     printf '\n## Checks\n\n| Check | Result |\n| --- | --- |\n'
     grep -h -E '^[A-Za-z0-9_-]+=(PASS|FAIL|SKIP)$' "$REPORT/results.env" | sed -E 's/=/ | /; s/^/| /; s/$/ |/'
 
@@ -68,7 +74,7 @@ first_match_file() {
     fi
     printf '```\n\n### VPU decode quality (Cedar vs software)\n\n```text\n'
     if [[ -s $LOGDIR/vpu-quality-validation.txt ]]; then
-        first_match_file '^PASS:' "$LOGDIR/vpu-quality-validation.txt"
+        first_match_file '^(file|codec|padded|hw_frames|psnr_avg|ssim_all)=' "$LOGDIR/vpu-quality-validation.txt"
     else
         printf 'not recorded; run: sudo make board-vpu-quality-test\n'
     fi
@@ -76,7 +82,7 @@ first_match_file() {
     if grep -q '^PASS: .* speedup=' "$REPORT/headless-benchmark.txt" 2>/dev/null; then
         grep -h '^PASS: .* speedup=' "$REPORT/headless-benchmark.txt"
     elif [[ -s $LOGDIR/vpu-decode-speed.txt ]]; then
-        first_match_file '^PASS:' "$LOGDIR/vpu-decode-speed.txt"
+        first_match_file '^(file|codec|hw_sec)=' "$LOGDIR/vpu-decode-speed.txt"
     else
         printf 'not recorded; run: sudo make board-vpu-decode-speed\n'
     fi
@@ -98,5 +104,6 @@ fi
 rm -f -- /tmp/zero3w-summary-secrets.txt
 sed -E -e 's/127\.0\.0\.1/LOOPBACK/g' -e 's/\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b/x.x.x.x/g' -e 's/LOOPBACK/127.0.0.1/g' "$OUTPUT.raw" > "$OUTPUT"
 rm -f -- "$OUTPUT.raw"
+sed -i "s|__FWVER__|${FWVER:-not recorded}|; s|__NPUVER__|${NPUVER:-not recorded}|" "$OUTPUT"
 printf '\nSanitized: LAN IPv4 addresses redacted; generation aborts on secret-like patterns. Attach the cited evidence files to the issue.\n' >> "$OUTPUT"
 printf 'Summary saved to %s\n' "$OUTPUT"
