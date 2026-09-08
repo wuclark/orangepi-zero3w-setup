@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Assign the embedded repository to UID/GID 1000 during firstboot image
+  assembly, so board-side dev works without a manual chown (Armbian creates
+  the preset user as UID 1000). Credential-bearing preset files stay
+  root-owned; verified inside a test image.
+
 - Promote the ACUITY default to `ubuntu-npu:v2.0.10.2`: all three generated
   goldens passed board top-5 comparison on 2026-09-08 (kernel
   `6.6.98-vendor-sun60iw2`, VIPLite `2.0.3.2-AW-2024-08-30`). The older

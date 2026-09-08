@@ -56,6 +56,16 @@ install -o root -g root -m 600 "$PRESET" "$WORK/root/root/.not_logged_in_yet"
     printf 'ln -sfn /opt/orangepi-zero3w-setup /home/%q/orangepi-zero3w-setup\n' "$user_name"
 } > "$WORK/provisioning.sh"
 install -o root -g root -m 700 "$WORK/provisioning.sh" "$WORK/root/root/provisioning.sh"
+# Hand the embedded repository to the first-boot user for board-side dev, so
+# git pull/status work without sudo and no manual chown is needed. Armbian
+# creates the preset user as UID/GID 1000, so numeric ownership applies
+# cleanly before that account exists. Note the tradeoff: root-executed make
+# targets run repo scripts, so this trusts the login user with code that sudo
+# later executes — appropriate for a single-user dev board.
+setup_root="$WORK/root/opt/orangepi-zero3w-setup"
+[[ -d $setup_root ]] || { echo 'ERROR: embedded repository missing from image' >&2; exit 1; }
+progress 'Assigning embedded repository to the first-boot user (UID/GID 1000)'
+chown -R 1000:1000 "$setup_root"
 progress 'Unmounting output image and computing checksum'
 sync; umount "$WORK/root"; losetup -D 2>/dev/null || true
 (cd "$(dirname "$OUTPUT_IMAGE")" && sha256sum "$(basename "$OUTPUT_IMAGE")" > "$(basename "$OUTPUT_IMAGE").sha256")
