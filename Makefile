@@ -549,7 +549,7 @@ board-headless-benchmark:
 board-system-benchmark-deps:
 	sudo ./scripts/install-system-benchmark-deps.sh
 
-board-system-benchmark:
+board-system-benchmark: board-system-benchmark-deps
 	sudo ./scripts/board-system-benchmark.sh
 
 board-thermal-monitor:

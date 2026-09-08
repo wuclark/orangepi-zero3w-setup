@@ -38,12 +38,25 @@ run_report() {
         printf '%s=FAIL\n' "$name" >>"$RESULTS"
     fi
 }
+skip_report() {
+    local name=$1; shift
+    printf '===== %s =====\n' "$name" | tee -a "$SUMMARY"
+    printf 'SKIP %s (%s)\n' "$name" "$*" | tee -a "$SUMMARY"
+    printf '%s=SKIP\n' "$name" >>"$RESULTS"
+}
 
 run_report board-status ./scripts/board-status.sh
 run_report gpu-abi ./scripts/board-gpu-abi-check.sh
 run_report validation ./scripts/board-validation.sh
 run_report headless-benchmark ./scripts/board-headless-benchmark.sh
-run_report system-benchmark ./scripts/board-system-benchmark.sh
+# The benchmark installer is idempotent; a board without it gets a SKIP with
+# remediation instead of a FAIL (compare-board-reports keys on the aggregate
+# result and prints per-check values opaquely, so SKIP flows through safely).
+if command -v sysbench >/dev/null; then
+    run_report system-benchmark ./scripts/board-system-benchmark.sh
+else
+    skip_report system-benchmark 'benchmark tools unavailable; run: sudo make board-system-benchmark-deps'
+fi
 run_report storage-health ./scripts/board-storage-health.sh
 run_report thermal-monitor ./scripts/board-thermal-monitor.sh -- ./scripts/board-headless-benchmark.sh
 run_report diagnostics ./scripts/collect-diagnostics.sh "$OUTPUT/diagnostics.txt"

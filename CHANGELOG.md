@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Make `board-system-benchmark` depend on `board-system-benchmark-deps` and
+  let `board-report` record SKIP (keeping an overall PASS) when `sysbench`
+  is absent, instead of failing the report on a missing benchmark toolchain.
+
 - Check mounted-image free space against the payload estimate before
   copying the repo in: a shortfall now aborts up front naming
   `PRELOAD_GROW_MB` instead of dying mid-tar with ENOSPC. Estimates err
