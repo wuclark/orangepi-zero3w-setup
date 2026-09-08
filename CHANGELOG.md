@@ -19,9 +19,10 @@
 
 - Add board-side VPU quality comparison: `scripts/test-vpu-quality.sh` decodes
   each fixture through Cedar and software `ffmpeg` to `yuv420p`, requires
-  matching frame counts, and records PSNR/SSIM (report-only thresholds pending
-  board evidence). Wired as `make board-vpu-quality-test` and an optional
-  `board-validation` check with SKIP remediation.
+  matching frame counts, and records PSNR/SSIM. The 2026-09-08 reference-board
+  run was bit-identical across all 17 fixtures; the check remains report-only.
+  Wired as `make board-vpu-quality-test` and an optional `board-validation`
+  check with SKIP remediation.
 
 - Retire the undocumented `operator/v3/network_binary.nb` fixture:
   `stage-npu-test-assets.sh` now takes the executed NBG set from the
@@ -115,8 +116,8 @@
   with ONNX Model Zoo `resnet50-v1-12` (inputs=data, 3,224,224,
   outputs=resnetv17_dense0_fwd, now the built-in defaults): 40.5 MB int16
   NBG with a 1000-class host output. The converter needs a real image, so
-  the generator calibrates on an SDK-bundled COCO sample; board validation
-  is still pending.
+  the generator calibrates on an SDK-bundled COCO sample; the generated golden
+  subsequently passed reference-board validation on 2026-09-08.
 
 - Add the `npu-generate-goldens` aggregate target, which generates every NPU
   golden archive in order (candidate, lenet, yolov5, resnet50) after checking
@@ -130,10 +131,10 @@
   the driver checkout's non-executable converter via `bash`, and restore host
   ownership of the container-written model and package trees. Host-side
   YOLOv5 generation on `ubuntu-npu:v2.0.10.2` produces a 12.6 MB int16 NBG
-  with three host output tensors; board validation is still pending. The
-  driver's `work/ai-sdk/ZIFENG278-ai-sdk/` checkout may be cloned from the
-  maintained `wuclark/ai-sdk` mirror (content-identical; cloned at
-  `aae9287`).
+  with three host output tensors; the generated golden subsequently passed
+  reference-board validation on 2026-09-08. The driver's
+  `work/ai-sdk/ZIFENG278-ai-sdk/` checkout may be cloned from the maintained
+  `wuclark/ai-sdk` mirror (content-identical; cloned at `aae9287`).
 
 - Fix the LeNet NPU golden recipe, which called the SDK `env.sh` shell function
   `pegasus_one` as if it were a toolkit binary: it now runs the SDK's explicit
@@ -141,8 +142,7 @@
   pegasus.py`, so both ACUITY images work) and reproduces the SDK `models/` +
   `../scripts/` layout in the container. Host-side generation on
   `ubuntu-npu:v2.0.10.2` reproduces the board-validated 845,256-byte int16 NBG
-  size; the default stays pinned to `v2.0.10.1` pending a board run of
-  `v2.0.10.2`-generated output.
+  size; the default is pinned to the board-validated `v2.0.10.2` image.
 - Document the Imagination open-source driver developer page alongside the
   Vulkan 1.2 blog, with an explicit GPU table showing A733 BXM-4-64 as
   unsupported, and clarify that only a Wayland-enabled build of the same

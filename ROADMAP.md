@@ -36,8 +36,8 @@ specified in `AGENTS.md`.
   `resnet50` (`scripts/generate-npu-golden.sh`, `scripts/board-npu-model-test.sh`,
   `scripts/compare-npu-output.py`) reusing `wuclark/a733_npu_driver`'s
   board-proven ACUITY Docker toolchain, wired into `make` and automatic
-  SD-card staging. Written 2026-09-03; not yet run against Docker or real
-  board hardware — see "Next implementation steps".
+  SD-card staging. Generated and board-validated on 2026-09-08; see the
+  evidence recorded below.
 - [x] Validate VPU H.264 and H.265 runtime decoding on the Orange Pi.
 - [ ] Investigate desktop GLX acceleration; resolve the `pvr`/Zink geometry
   shader limitation or document the exact unsupported boundary.
@@ -138,27 +138,15 @@ specified in `AGENTS.md`.
 
 ## Next implementation steps
 
-1. Place the exact, checksum-verified Radxa and Orange Pi images in
-   `work/images/` and run `scripts/extract-vendor-userspace-docker.sh`.
-2. Inspect each generated archive and tighten the GPU/VPU/NPU allowlists to
-   the verified package manifests and runtime paths.
-3. Record the verified source-image identities and hashes in the generated
-   manifests.
-4. Continue extending archive validation as real image layouts are confirmed.
-5. Confirm the opt-in board-side NPU installer on the target ABI with private
-   staging, timestamped backups, recovery support, and no `vipcore.ko` from
-   the userspace archive.
-6. Run NPU diagnostics and the pinned VIPLite inference smoke test. Require
-   `/dev/vipcore`, driver/runtime versions, successful output, and an
-   independently generated correctness golden before expanding the claim.
-7. Validate GPU, VPU, and NPU on a recoverable Orange Pi with UART access,
-   including repeated reboot tests and presentation/media/inference tests.
-8. Update README, CLI help, guides, tutorial, changelog, manifests, and
-   support claims only after the corresponding evidence exists.
-9. Implement the interactive `board-config` front end as a thin wrapper around
-   the existing Make targets. Keep it display-independent, use high-contrast
-   PASS/WARN/FAIL status colors with a plain-text fallback, and never duplicate
-   setup logic or silently install/reboot.
+1. Investigate desktop GLX acceleration and either resolve the `pvr`/Zink
+   geometry-shader limitation or document the exact unsupported boundary.
+2. Obtain or build a licensed ARM/A733 PowerVR userspace with a working
+   Wayland EGL client platform, then validate native client presentation
+   without mixing kernel-module ABIs.
+3. Implement the deferred v1.1 `board-config` front end as a thin wrapper
+   around the existing Make targets. Keep it display-independent, provide a
+   plain-text fallback, and require confirmation for installs, desktop
+   changes, restores, and reboots.
 
 ## Evidence gate for support claims
 
