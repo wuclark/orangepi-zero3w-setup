@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Check mounted-image free space against the payload estimate before
+  copying the repo in: a shortfall now aborts up front naming
+  `PRELOAD_GROW_MB` instead of dying mid-tar with ENOSPC. Estimates err
+  upward, so a pass is trustworthy.
+- Document legacy-board git bootstrap (init/fetch/reset in place) for cards
+  baked before `.git` shipped in the image.
+
 - Assign the embedded repository to UID/GID 1000 during firstboot image
   assembly, so board-side dev works without a manual chown (Armbian creates
   the preset user as UID 1000). Credential-bearing preset files stay

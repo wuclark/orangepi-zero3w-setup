@@ -81,3 +81,24 @@ DISPLAY=:0 xrandr --output HDMI-1 --mode 1920x1080 --rate 60
 ```
 
 The reference 7-inch MPI7010 display correctly prefers 1024x600.
+
+## Board tree is not a git repository (older card)
+
+Cards baked before `.git` shipped in the image have no history, so `git pull`
+fails with `fatal: not a git repository`. Convert the tree in place (run on
+the board inside the checkout; untracked local files such as `npu-test/` are
+preserved):
+
+```bash
+cd ~/orangepi-zero3w-setup
+git init -b main
+git remote add origin https://github.com/wuclark/orangepi-zero3w-setup.git
+git fetch origin main
+git reset --hard FETCH_HEAD
+git config --global --add safe.directory /opt/orangepi-zero3w-setup
+sudo chown -R "$(id -un):$(id -gn)" /opt/orangepi-zero3w-setup
+git status --short
+```
+
+The reset rewrites tracked files to the fetched `main`; review `git status`
+beforehand if the board holds local modifications worth keeping.

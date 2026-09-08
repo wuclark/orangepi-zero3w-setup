@@ -60,6 +60,21 @@ if ((GROW_MB > 0)); then
     resize2fs "$loop"
     progress "Root filesystem free space: $(df -h --output=avail "$WORK/root" | tail -1)"
 fi
+# Fail fast with an actionable message instead of ENOSPC mid-copy. The
+# estimate errs upward on purpose (testdata videos are counted but excluded
+# from the tar stream), so a pass is trustworthy; only a genuine shortfall
+# aborts. Sizes in bytes; 10% covers filesystem overhead.
+payload_bytes=$(du -sb --exclude=work --exclude=backup --exclude=vendor-files /repo 2>/dev/null | awk '{print $1}')
+vendor_bytes=$(du -sb /repo/work/vendor-output 2>/dev/null | awk '{print $1}')
+free_bytes=$(df -B1 --output=avail "$WORK/root" 2>/dev/null | tail -1)
+[[ $payload_bytes =~ ^[0-9]+$ && $vendor_bytes =~ ^[0-9]+$ && $free_bytes =~ ^[0-9]+$ ]] || \
+    { echo 'ERROR: could not measure payload or image free space' >&2; exit 1; }
+required_bytes=$(( (payload_bytes + vendor_bytes) * 11 / 10 ))
+progress "Image space check: need ~$((required_bytes / 1048576)) MiB, have $((free_bytes / 1048576)) MiB free"
+if ((free_bytes < required_bytes)); then
+    echo 'ERROR: image free space is short; raise PRELOAD_GROW_MB and rebuild.' >&2
+    exit 1
+fi
 TARGET="$WORK/root/opt/orangepi-zero3w-setup"
 install -d -m 755 "$TARGET/vendor-files"
 chmod 755 "$(dirname "$TARGET")"
