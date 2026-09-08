@@ -50,7 +50,10 @@ ffmpeg -hide_banner -h filter=psnr >/dev/null 2>&1 || die "ffmpeg psnr filter is
 ffmpeg -hide_banner -h filter=ssim >/dev/null 2>&1 || die "ffmpeg ssim filter is unavailable; reinstall ffmpeg"
 
 if [[ -n $ONLY ]]; then
-    mapfile -t FILES < <(printf '%s\n' "$MEDIA_DIR/$ONLY.mp4" "$MEDIA_DIR/$ONLY")
+    case "$ONLY" in
+        *.mp4) FILES=("$MEDIA_DIR/$ONLY") ;;
+        *) FILES=("$MEDIA_DIR/$ONLY.mp4") ;;
+    esac
 else
     case "$MODE" in
         pair)

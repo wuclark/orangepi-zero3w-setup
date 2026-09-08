@@ -47,7 +47,10 @@ gst-inspect-1.0 omxh264dec >/dev/null || die "OMX H.264 decoder is not registere
 gst-inspect-1.0 omxhevcvideodec >/dev/null || die "OMX H.265 decoder is not registered"
 
 if [[ -n $ONLY ]]; then
-    mapfile -t FILES < <(printf '%s\n' "$MEDIA_DIR/$ONLY.mp4" "$MEDIA_DIR/$ONLY")
+    case "$ONLY" in
+        *.mp4) FILES=("$MEDIA_DIR/$ONLY") ;;
+        *) FILES=("$MEDIA_DIR/$ONLY.mp4") ;;
+    esac
 else
     case "$MODE" in
         pair)
