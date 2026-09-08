@@ -86,7 +86,7 @@ first_match_file() {
     else
         printf 'not recorded; run: sudo make board-npu-install (then verify)\n'
     fi
-    printf '```\n\nSanitized: LAN IPv4 addresses redacted; generation aborts on secret-like patterns. Attach the cited evidence files to the issue.\n'
+    printf '```\n'
 } > "$OUTPUT.raw"
 
 if grep -rEin 'password|passwd|wireless|ssid|\bpsk\b|secret|token|api[_-]?key|BEGIN .*PRIVATE KEY' "$OUTPUT.raw" >/tmp/zero3w-summary-secrets.txt 2>/dev/null; then
@@ -98,4 +98,5 @@ fi
 rm -f -- /tmp/zero3w-summary-secrets.txt
 sed -E -e 's/127\.0\.0\.1/LOOPBACK/g' -e 's/\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b/x.x.x.x/g' -e 's/LOOPBACK/127.0.0.1/g' "$OUTPUT.raw" > "$OUTPUT"
 rm -f -- "$OUTPUT.raw"
+printf '\nSanitized: LAN IPv4 addresses redacted; generation aborts on secret-like patterns. Attach the cited evidence files to the issue.\n' >> "$OUTPUT"
 printf 'Summary saved to %s\n' "$OUTPUT"
