@@ -53,6 +53,11 @@ fi
 run_check 'VPU device/runtime checks' "$REPO_ROOT/tests/board/test-postboot-acceleration.sh" --vpu
 if [[ -e /etc/cedarc.conf ]]; then
     run_check 'VPU H.264/H.265 decode' "$REPO_ROOT/scripts/test-vpu-decode.sh" --output /var/log/orangepi-zero3w-setup/vpu-validation.txt
+    if command -v ffmpeg >/dev/null && command -v gst-launch-1.0 >/dev/null; then
+        run_check 'VPU Cedar vs software quality (PSNR/SSIM)' "$REPO_ROOT/scripts/test-vpu-quality.sh" --output /var/log/orangepi-zero3w-setup/vpu-quality-validation.txt
+    else
+        skip_check 'VPU Cedar vs software quality (ffmpeg or GStreamer is unavailable; run: sudo make board-vpu-install)'
+    fi
 else
     skip_check 'VPU H.264/H.265 decode (Cedar is not installed; run: sudo make board-vpu-install)'
 fi

@@ -69,7 +69,7 @@ GIT_DEPTH ?= 1
 	board-vpu-fetch-videos release-vpu-test-videos \
 	board-gpu-precheck board-gpu-install board-gpu-verify board-gpu-abi-check board-headless-benchmark board-system-benchmark board-system-benchmark-deps board-thermal-monitor board-storage-health \
 	board-vpu-precheck board-vpu-install board-vpu-verify \
-	board-vpu-decode-test \
+	board-vpu-decode-test board-vpu-quality-test \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test board-npu-golden-test npu-test-assets npu-golden-candidate \
 	npu-driver-source npu-public-onnx npu-acuity-image-load npu-acuity-image-check npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 npu-generate-goldens \
 	board-npu-golden-test-lenet board-npu-golden-test-yolov5 board-npu-golden-test-resnet50 \
@@ -160,6 +160,7 @@ help:
 		'make board-vpu-precheck/install/verify  Run VPU phases on the board' \
 		'make board-vpu-test                     Run VPU checks and decode tests' \
 		'make board-vpu-decode-test              Run downloaded H.264/H.265 VPU tests' \
+		'make board-vpu-quality-test             Compare Cedar vs software decode with PSNR/SSIM' \
 		'make board-vpu-generate-videos           Generate local synthetic VPU test videos' \
 		'make board-vpu-generate-decode-videos    Generate only the two decode-test videos' \
 		'make board-vpu-fetch-videos              Fetch pinned individual VPU release assets' \
@@ -629,6 +630,9 @@ board-vpu-test: board-vpu-verify
 
 board-vpu-decode-test:
 	sudo ./scripts/test-vpu-decode.sh --output /var/log/orangepi-zero3w-setup/vpu-decode-test.txt
+
+board-vpu-quality-test:
+	sudo ./scripts/test-vpu-quality.sh --output /var/log/orangepi-zero3w-setup/vpu-quality-test.txt
 
 board-vpu-generate-videos:
 	sudo ./scripts/gen_test_videos.sh

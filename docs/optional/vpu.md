@@ -36,10 +36,29 @@ make board-vpu-generate-decode-videos
 The existing `board-vpu-generate-videos` target intentionally generates the
 full fixture set for broader VPU coverage.
 
+### VPU quality check (PSNR/SSIM, report-only thresholds)
+
+The EOS test above proves Cedar opens the stream; it does not prove frame
+correctness. `scripts/test-vpu-quality.sh` (board-only, headless) closes that
+gap without claiming new support:
+
+```bash
+sudo make board-vpu-quality-test
+sudo ./scripts/test-vpu-quality.sh --all --output /var/log/orangepi-zero3w-setup/vpu-quality.txt
+```
+
+For each fixture it decodes once through Cedar (`omxh264dec` /
+`omxhevcvideodec` to `I420` rawvideo, requiring `cedar_dev` open plus EOS)
+and once through software `ffmpeg` to `yuv420p`, requires matching frame
+counts, then compares with the `ssim`/`psnr` filters and records per-file
+`psnr_avg`, `ssim_all`, hashes, codec parameters, and logs. Thresholds stay
+report-only until the reference board produces data to set them; a size or
+frame-count mismatch fails. `board-validation` runs this automatically when
+Cedar, `ffmpeg`, and GStreamer are present, otherwise SKIP with remediation.
+
 ### VPU validation TODO
 
-The current test validates that Cedar opens the stream and reaches EOS. The
-planned stronger validation is:
+Remaining before any stronger claim:
 
 1. Generate reproducible local H.264 and H.265 MP4 samples with FFmpeg,
    covering 720p and 1080p, 30 and 60 fps, suitable H.264 profiles, H.265

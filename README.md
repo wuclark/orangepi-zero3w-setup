@@ -119,6 +119,7 @@ Use these diagnostic commands after installation:
 - `sudo make board-diagnostics` captures broader evidence. These targets never
   install or reboot.
 - `sudo make board-validation` runs available GPU, Vulkan compute, VPU decode,
+  VPU Cedar-vs-software quality (PSNR/SSIM, report-only),
   NPU, optional SDK golden-candidate, optional ACUITY goldens
   (lenet/yolov5/resnet50), X11, and x11vnc checks and prints a
   PASS/FAIL/SKIP summary. Each optional check names its missing prerequisite
@@ -425,6 +426,8 @@ plugins. `board-vpu-generate-videos` creates local synthetic 720p/1080p H.264
 and H.265 samples, and `board-vpu-verify` uses the generated 720p samples for
 headless hardware decode tests, falling back to cached downloads if they are
 absent. Re-run only those media tests with `make board-vpu-decode-test`.
+Compare Cedar output against software decode with
+`make board-vpu-quality-test` (PSNR/SSIM, report-only thresholds).
 The individual generated fixtures can be fetched from a pinned GitHub Release
 with `make board-vpu-fetch-videos VPU_TESTDATA_TAG=vpu-testdata-v1`.
 

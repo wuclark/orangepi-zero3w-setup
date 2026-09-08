@@ -10,7 +10,7 @@ new public target or changing a target's boundary.
 | `preset`, `summary`, `validate` | `scripts/create-headless-preset.sh`, `show-build-summary.sh`, `validate-image-before-write.sh` | Host | Create local credential-bearing inputs, summarize, and validate images. |
 | `board-base`, `board-packages`, `board-core`, `board-sources` | `setup.sh` and `scripts/setup-*` | Board | Install the foundation and optional A733 source checkout. |
 | `board-gpu-*` | `scripts/board-acceleration-workflow.sh` | Board | Precheck, install, ABI-check, benchmark, and verify PowerVR. |
-| `board-vpu-*` | `scripts/board-acceleration-workflow.sh`, `test-vpu-decode.sh` | Board | Install and validate Cedar/libcedarc and H.264/H.265 decode. |
+| `board-vpu-*` | `scripts/board-acceleration-workflow.sh`, `test-vpu-decode.sh`, `test-vpu-quality.sh` | Board | Install and validate Cedar/libcedarc, H.264/H.265 decode, and Cedar-vs-software PSNR/SSIM quality. |
 | `board-npu-*` | `scripts/board-acceleration-workflow.sh`, `test-npu.sh` | Board | Install and validate VIPLite userspace and the smoke test. |
 | `npu-golden-candidate` | `scripts/stage-npu-golden-candidate.sh` | Host | Stage the SDK custom-LUT NBG/input/golden bundle under ignored `work/`. |
 | `npu-driver-source` | Make target using `git clone` | Host | Clone or reuse the public `a733_npu_driver` checkout under `NPU_DRIVER_REPO`; never overwrites an existing path. |

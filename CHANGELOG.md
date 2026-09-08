@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add board-side VPU quality comparison: `scripts/test-vpu-quality.sh` decodes
+  each fixture through Cedar and software `ffmpeg` to `yuv420p`, requires
+  matching frame counts, and records PSNR/SSIM (report-only thresholds pending
+  board evidence). Wired as `make board-vpu-quality-test` and an optional
+  `board-validation` check with SKIP remediation.
+
 - Retire the undocumented `operator/v3/network_binary.nb` fixture:
   `stage-npu-test-assets.sh` now takes the executed NBG set from the
   generated LeNet golden (`--golden`, required) while runner sources,
