@@ -114,7 +114,7 @@ fi
 rm -f -- /tmp/zero3w-summary-secrets.txt
 # Shield version identifiers (evidence, not secrets) before the IP pass, then
 # restore them from the captured values afterwards.
-sed -E -e 's/rgx\.fw\.[0-9.]+/__FWVER__/g' -e 's/(VIPLite driver software version )[0-9.]+/\1__NPUVER__/g' "$OUTPUT.raw" > "$OUTPUT.tmp"
+sed -E -e 's/rgx\.fw\.[0-9.]+/__FWVER__/g' -e 's/(VIPLite driver software version )[^ ]+/\1__NPUVER__/g' "$OUTPUT.raw" > "$OUTPUT.tmp"
 rm -f -- "$OUTPUT.raw"
 sed -E -e 's/127\.0\.0\.1/LOOPBACK/g' -e 's/\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b/x.x.x.x/g' -e 's/LOOPBACK/127.0.0.1/g' "$OUTPUT.tmp" > "$OUTPUT"
 rm -f -- "$OUTPUT.tmp"
