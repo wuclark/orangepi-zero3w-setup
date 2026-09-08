@@ -226,10 +226,12 @@ back to `python3 pegasus.py` when `$ACUITY_PATH/pegasus` is absent, so the flow
 works on both images, with `VSIMULATOR_CONFIG` carried in from
 `NPU_ACUITY_TARGET`. Host-side generation on `v2.0.10.2` produces a
 `network_binary.nb` of 845,256 bytes, matching the board-validated int16 NBG
-size in `reports/g2-acuity-lenet.md`. Generation still defaults to
-`ubuntu-npu:v2.0.10.1` until a `v2.0.10.2`-generated golden passes
-`board-npu-golden-test-lenet` on real hardware. To use the image
-currently supplied in `work/images`, override it explicitly:
+size in `reports/g2-acuity-lenet.md`. Generation defaults to
+`ubuntu-npu:v2.0.10.2`: on 2026-09-08 all three `v2.0.10.2`-generated goldens
+(lenet, yolov5, resnet50) passed `board-validation` top-5 comparison on the
+reference board (kernel `6.6.98-vendor-sun60iw2`, VIPLite
+`2.0.3.2-AW-2024-08-30`, `cid=0x1000003b`), so no override is needed for the
+image currently supplied in `work/images`:
 
 The image import can take several minutes because the archive contains a large
 Docker tar. If `pv` is installed, `npu-acuity-image-load` displays a progress
@@ -252,16 +254,20 @@ Use `make npu-acuity-image-load` only when the image must be imported from the
 nested vendor archive.
 
 ```bash
-NPU_ACUITY_IMAGE=ubuntu-npu:v2.0.10.2 make npu-golden-lenet
+make npu-golden-lenet
 ```
+
+An older `ubuntu-npu:v2.0.10.1` toolchain remains usable via override
+(`NPU_ACUITY_IMAGE=ubuntu-npu:v2.0.10.1 ...`), but it is no longer the
+validated default.
 
 The [Radxa ACUITY setup guide](https://docs.radxa.com/en/cubie/a7z/app-dev/npu-dev/cubie-acuity-env)
 is the related vendor documentation. It describes downloading and loading a
 prebuilt image; it does not provide Docker build instructions or a Dockerfile.
 The cloned `a733_npu_driver` repository likewise contains conversion scripts,
 not the proprietary ACUITY/Pegasus image contents. The current Radxa page may
-refer to A733 image `v2.0.10.2`; do not substitute that tag for this project's
-`v2.0.10.1` without repeating the golden and board validation.
+refer to A733 image `v2.0.10.2`, which is now also this project's validated
+default after the 2026-09-08 board validation described above.
 
 As a non-vendor fallback, the driver documentation also names the community
 Docker Hub mirror `khalida5/ubuntu-npu:v2.0.10`. Treat it as unverified for

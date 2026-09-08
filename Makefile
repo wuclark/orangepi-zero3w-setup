@@ -32,9 +32,9 @@ NPU_PUBLIC_ONNX ?= $(NPU_PUBLIC_ONNX_DEFAULT)
 # Pinned by URL and SHA-256; override NPU_PUBLIC_ONNX to use another file.
 NPU_PUBLIC_ONNX_URL ?= https://github.com/onnx/models/raw/main/validated/vision/classification/resnet/model/resnet50-v1-12.onnx
 NPU_PUBLIC_ONNX_SHA256 ?= 3f03fdef724b22947eed826f1eef1dc5c34151bb4c37d634f1db89dfa2dd1526
-# Keep generation pinned to v2.0.10.1 until a newer toolchain is revalidated.
-# The currently staged official archive supplies v2.0.10.2 for explicit use.
-NPU_ACUITY_IMAGE ?= ubuntu-npu:v2.0.10.1
+# Generation defaults to v2.0.10.2: its lenet/yolov5/resnet50 goldens all
+# passed board validation (top-5 match) on 2026-09-08; see docs/optional/npu.md.
+NPU_ACUITY_IMAGE ?= ubuntu-npu:v2.0.10.2
 NPU_ACUITY_LOADED_IMAGE ?= ubuntu-npu:v2.0.10.2
 NPU_ACUITY_ARCHIVE ?= work/images/docker_images_v2.0.x.zip
 NPU_ACUITY_MEMBER ?= docker_images_v2.0.x/ubuntu-npu_v2.0.10.2.tar.zip
@@ -539,7 +539,7 @@ board-gpu-test: board-gpu-verify board-gpu-runtime-test
 board-gpu-compute-deps:
 	sudo ./scripts/install-vulkan-compute-deps.sh
 
-board-gpu-compute-test:
+board-gpu-compute-test: board-gpu-compute-deps
 	sudo ./scripts/run-vulkan-compute-benchmark.sh \
 		--output /var/log/orangepi-zero3w-setup/vulkan-compute-benchmark.txt
 

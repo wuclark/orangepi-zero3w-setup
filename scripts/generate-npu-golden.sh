@@ -31,7 +31,7 @@ source "$SCRIPT_DIR/lib.sh"
 
 MODEL=""; SDK_TARBALL=""; DRIVER_REPO=""; OUTPUT=""; PUBLIC_ONNX=""
 ONNX_INPUTS=""; ONNX_INPUT_SIZE_LIST=""; ONNX_OUTPUTS=""
-IMAGE=${NPU_ACUITY_IMAGE:-ubuntu-npu:v2.0.10.1}
+IMAGE=${NPU_ACUITY_IMAGE:-ubuntu-npu:v2.0.10.2}
 TARGET=${NPU_ACUITY_TARGET:-VIP9000NANODI_PLUS_PID0X1000003B}
 
 usage() {
@@ -69,7 +69,7 @@ Usage: scripts/generate-npu-golden.sh --model {lenet,yolov5,resnet50} \
                         and pass corrected values here if they differ.
 
 Environment:
-  NPU_ACUITY_IMAGE     Docker image tag (default: ubuntu-npu:v2.0.10.1)
+  NPU_ACUITY_IMAGE     Docker image tag (default: ubuntu-npu:v2.0.10.2)
   NPU_ACUITY_TARGET     ACUITY optimize target (default:
                          VIP9000NANODI_PLUS_PID0X1000003B, matches the A733
                          VIP9000 core on this board)

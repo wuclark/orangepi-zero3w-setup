@@ -44,7 +44,8 @@ echo "Orange Pi Zero 3W validation: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 uname -a
 run_check 'GPU device/runtime checks' "$REPO_ROOT/tests/board/test-postboot-acceleration.sh" --gpu
 run_check 'GPU Vulkan/EGL verification' "$REPO_ROOT/scripts/verify.sh"
-if command -v g++ >/dev/null && command -v vulkaninfo >/dev/null; then
+if command -v g++ >/dev/null && command -v vulkaninfo >/dev/null && \
+    { command -v glslc >/dev/null 2>&1 || command -v glslangValidator >/dev/null 2>&1; }; then
     run_check 'GPU Vulkan compute benchmark' "$REPO_ROOT/scripts/run-vulkan-compute-benchmark.sh" --output /var/log/orangepi-zero3w-setup/vulkan-compute-validation.txt
 else
     skip_check 'GPU Vulkan compute benchmark (build tools unavailable; run: sudo make board-gpu-compute-deps)'

@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Promote the ACUITY default to `ubuntu-npu:v2.0.10.2`: all three generated
+  goldens passed board top-5 comparison on 2026-09-08 (kernel
+  `6.6.98-vendor-sun60iw2`, VIPLite `2.0.3.2-AW-2024-08-30`). The older
+  `v2.0.10.1` remains usable via `NPU_ACUITY_IMAGE` override.
+
+- Make `board-gpu-compute-test` depend on `board-gpu-compute-deps` so the
+  benchmark toolchain (g++, libvulkan-dev, glslc) is ensured before the run
+  instead of failing on a missing shader compiler. The installer is
+  idempotent; validation itself stays read-only and skips with remediation
+  when the tools are absent.
+
+- Gate the board-validation Vulkan compute benchmark on a shader compiler
+  (`glslc` or `glslangValidator`) as well as `g++`/`vulkaninfo`, so a board
+  without the compute toolchain reports SKIP with remediation instead of a
+  misleading FAIL.
+
 - Ship `.git` (2 MB) inside the preloaded image so the board tree at
   `/opt/orangepi-zero3w-setup` is a real checkout supporting `git pull`;
   commit on the host before baking to avoid inheriting a dirty tree.
