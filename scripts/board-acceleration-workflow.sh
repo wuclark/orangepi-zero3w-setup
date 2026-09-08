@@ -123,7 +123,7 @@ case "$LAYER" in
         archive="$VENDOR_FILES_ROOT/npu-userspace.tar.gz"
         test_archive="$VENDOR_FILES_ROOT/npu-test-assets.tar.gz"
         [[ -f $archive && -f $test_archive ]] || {
-            record failed 'vendor-files requires npu-userspace.tar.gz and npu-test-assets.tar.gz'; exit 1;
+            record failed 'vendor-files requires npu-userspace.tar.gz and npu-test-assets.tar.gz (stage the latter host-side: make npu-test-assets after make npu-golden-lenet)'; exit 1;
         }
         stage=$(mktemp -d -t zero3w-npu-work.XXXXXXXX)
         trap 'rm -rf -- "$stage"' EXIT

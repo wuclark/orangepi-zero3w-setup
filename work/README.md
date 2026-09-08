@@ -15,8 +15,8 @@ work/
 └── vendor-output/          # generated archives and manifests
 
 The optional `work/images/ai-sdk.tar.gz` is also used by `make extract` to
-create a small, selected `npu-test-assets.tar.gz`; the full SDK is never put
-in an image or committed.
+create a small, selected `npu-test-assets.tar.gz` once the LeNet golden
+exists; the full SDK is never put in an image or committed.
 ```
 
 Generate archives from Docker in WSL2 or Linux with:

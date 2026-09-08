@@ -202,9 +202,12 @@ extract: docker-toolchain
 	else \
 		./scripts/extract-vendor-userspace-docker.sh; \
 	fi
-	@if [[ -f work/images/ai-sdk.tar.gz && ! -f $(VENDOR_OUTPUT)/npu-test-assets.tar.gz ]]; then \
+	@if [[ -f work/images/ai-sdk.tar.gz && -f $(VENDOR_OUTPUT)/npu-golden-lenet.tar.gz && ! -f $(VENDOR_OUTPUT)/npu-test-assets.tar.gz ]]; then \
 		./scripts/stage-npu-test-assets.sh --sdk-tarball work/images/ai-sdk.tar.gz \
+			--golden $(VENDOR_OUTPUT)/npu-golden-lenet.tar.gz \
 			--output $(VENDOR_OUTPUT)/npu-test-assets.tar.gz; \
+	elif [[ -f work/images/ai-sdk.tar.gz && ! -f $(VENDOR_OUTPUT)/npu-test-assets.tar.gz ]]; then \
+		echo 'INFO: skipping npu-test-assets staging (no LeNet golden yet; run make npu-golden-lenet first).'; \
 	fi
 
 kernel-source:
@@ -676,6 +679,7 @@ board-a733-sources:
 npu-test-assets:
 	@test -f work/images/ai-sdk.tar.gz || { echo 'ERROR: work/images/ai-sdk.tar.gz not found.' >&2; exit 1; }
 	@./scripts/stage-npu-test-assets.sh --sdk-tarball work/images/ai-sdk.tar.gz \
+		--golden $(VENDOR_OUTPUT)/npu-golden-lenet.tar.gz \
 		--output $(VENDOR_OUTPUT)/npu-test-assets.tar.gz
 
 npu-golden-candidate:

@@ -396,5 +396,5 @@ The full terminal-oriented procedure is in
 failure signatures and recovery.
 The image build also recognizes a local `work/images/ai-sdk.tar.gz`. During
 `make newsd` it selects the AArch64 VIPLite test headers, `vpm_run` source,
-sample NBG/input data, and YOLOv5 test assets into a small
+the LeNet golden NBG/input data, and YOLOv5 test assets into a small
 `vendor-files/npu-test-assets.tar.gz`; it does not copy the full SDK.

@@ -395,23 +395,21 @@ committed, regardless of its own licensing.
 
 ### Roadmap: retiring the pinned operator sample
 
-`operator/v3/network_binary.nb` stays as the execution-only smoke test for
-now (`make board-npu-test`), but is slated for removal once the
-lenet/yolov5/resnet50 goldens above are board-validated. Reasons:
+Retired 2026-09-08. `operator/v3/network_binary.nb` was an undocumented,
+unnamed vendor test fixture: no README, no source model, no metadata
+identifying what it computes. No golden exists for it anywhere that was
+checked (local disk, `wuclark/ai-sdk`, upstream `ZIFENG278/ai-sdk`,
+`petayyyy/a733_npu_driver`), and none could be independently generated,
+because there is no source model to run through ACUITY. It could only ever
+prove "the driver ran something without crashing," never "the NPU computed
+the right answer".
 
-- It is an undocumented, unnamed vendor test fixture: no README, no source
-  model, no metadata identifying what it computes.
-- No golden exists for it anywhere that was checked (local disk,
-  `wuclark/ai-sdk`, upstream `ZIFENG278/ai-sdk`, `petayyyy/a733_npu_driver`),
-  and none can be independently generated, because there is no source model
-  to run through ACUITY.
-- It can therefore only ever prove "the driver ran something without
-  crashing," never "the NPU computed the right answer" — the exact
-  limitation the lenet/yolov5/resnet50 goldens above are built to close,
-  with named, documented, independently verifiable models instead.
-
-Until the replacement goldens have real board evidence, `network_binary.nb`
-remains in place; do not remove it or `test-npu.sh`'s use of it first.
+The board smoke test (`make board-npu-test`) now executes the LeNet golden
+instead: `stage-npu-test-assets.sh` takes `network_binary.nb`,
+`input_0.dat`, and `sample.txt` from `npu-golden-lenet.tar.gz` (runner
+sources, headers, and YOLOv5 files still come from the SDK archive), so the
+same execution-only check runs a named, documented, board-validated model.
+The operator sample is staged, installed, and referenced nowhere.
 
 ## Cross-platform userspace extraction
 

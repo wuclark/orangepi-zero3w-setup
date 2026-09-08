@@ -405,8 +405,9 @@ The equivalent Make targets are `board-gpu-*`, `board-vpu-*`, and
 A733 NPU test bundle in the image; the full SDK remains outside the image.
 To stage the SDK's separate custom-LUT golden candidate, run
 `make npu-golden-candidate` on the host, copy the resulting private archive to
-the board, and run `make board-npu-golden-test`. This candidate does not
-validate the pinned `operator/v3/network_binary.nb` sample.
+the board, and run `make board-npu-golden-test`. The board smoke test
+executes the LeNet golden; the retired `operator/v3/network_binary.nb`
+sample is staged and referenced nowhere.
 
 The real ACUITY golden targets automatically clone the public
 `a733_npu_driver` source into `work/sources/a733_npu_driver` when it is absent:

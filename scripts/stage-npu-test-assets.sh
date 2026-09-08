@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-# Purpose: Safely extract selected NPU SDK files into a deterministic test-assets archive.
+# Purpose: Safely extract selected NPU SDK files plus the LeNet golden NBG set
+#          into a deterministic test-assets archive.
 # Platform: Host-side preparation for the experimental Orange Pi NPU test flow.
-# Inputs: Required --sdk-tarball and absent --output archive path.
+# Inputs: Required --sdk-tarball (runner sources, headers, yolov5 files),
+#          required --golden (a generated npu-golden-lenet.tar.gz supplying
+#          the board-executed network_binary.nb, input_0.dat, sample.txt),
+#          and absent --output archive path.
 # Dependencies: Bash, Python tarfile validation, tar, and scripts/lib.sh.
 # Writes: A generated NPU test archive at the requested output; temporary extraction is removed on exit.
-# Safety: Rejects traversal/absolute archive members and copies only an allowlisted SDK file set.
+# Safety: Rejects traversal/absolute archive members and copies only an allowlisted SDK file set
+#          plus the golden NBG set. The retired operator/v3 sample is never used.
 # Repeat: Refuses an existing output; use a new path after reviewing prior artifacts.
 # Recovery: Remove only the generated output archive and temporary staging is automatically cleaned.
 # Outputs: Deterministic npu-test archive containing the selected runner, model, inputs, and headers.
@@ -14,20 +19,21 @@ set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$SCRIPT_DIR/lib.sh"
-SDK_TARBALL=""; OUTPUT=""
+SDK_TARBALL=""; GOLDEN=""; OUTPUT=""
 while (($#)); do
     case "$1" in
         --sdk-tarball) SDK_TARBALL=${2:?}; shift 2;;
+        --golden) GOLDEN=${2:?}; shift 2;;
         --output) OUTPUT=${2:?}; shift 2;;
-        -h|--help) echo "Usage: $0 --sdk-tarball FILE --output FILE"; exit 0;;
+        -h|--help) echo "Usage: $0 --sdk-tarball FILE --golden FILE --output FILE"; exit 0;;
         *) die "Unknown argument: $1";;
     esac
 done
 [[ -f $SDK_TARBALL ]] || die "AI SDK archive not found: $SDK_TARBALL"
+[[ -f $GOLDEN ]] || die "LeNet golden archive not found: $GOLDEN (generate it first: make npu-golden-lenet)"
 [[ -n $OUTPUT && ! -e $OUTPUT ]] || die "Output is missing or already exists: $OUTPUT"
-work=$(mktemp -d -t zero3w-npu-assets.XXXXXXXX)
-trap 'rm -rf -- "$work"' EXIT
-python3 - "$SDK_TARBALL" <<'PY'
+validate_tarball() {
+    python3 - "$1" <<'PY'
 import pathlib, sys, tarfile
 with tarfile.open(sys.argv[1], "r:gz") as tf:
     for member in tf.getmembers():
@@ -35,9 +41,20 @@ with tarfile.open(sys.argv[1], "r:gz") as tf:
         if name.is_absolute() or ".." in name.parts:
             raise SystemExit(f"unsafe archive member: {member.name}")
 PY
+}
+validate_tarball "$SDK_TARBALL"
+validate_tarball "$GOLDEN"
+work=$(mktemp -d -t zero3w-npu-assets.XXXXXXXX)
+trap 'rm -rf -- "$work"' EXIT
 tar -xzf "$SDK_TARBALL" -C "$work"
 sdk="$work/ai-sdk"; stage="$work/stage"
 [[ -d $sdk ]] || die "AI SDK archive must contain ai-sdk/"
+golden_dir="$work/golden"
+install -d -m 755 "$golden_dir"
+tar -xzf "$GOLDEN" -C "$golden_dir"
+for member in network_binary.nb input_0.dat sample.txt host_output_0.txt; do
+    [[ -f $golden_dir/$member ]] || die "LeNet golden is missing: $member (not a generated npu-golden-lenet archive?)"
+done
 copy_required() {
     local source=$1 destination=$2
     [[ -f "$sdk/$source" ]] || die "AI SDK is missing: $source"
@@ -48,9 +65,8 @@ copy_required examples/vpm_run/vpm_run.c npu-test/vpm_run/vpm_run.c
 copy_required examples/vpm_run/Makefile npu-test/vpm_run/Makefile
 copy_required examples/vpm_run/makefile.linux npu-test/vpm_run/makefile.linux
 copy_required examples/vpm_run/makefile.linux.def npu-test/vpm_run/makefile.linux.def
-copy_required examples/vpm_run/operator/sample.txt npu-test/vpm_run/sample.txt
-copy_required examples/vpm_run/operator/input_0.dat npu-test/vpm_run/input_0.dat
-copy_required examples/vpm_run/operator/v3/network_binary.nb npu-test/vpm_run/network_binary.nb
+install -d -m 755 "$stage/npu-test/vpm_run"
+cp -a "$golden_dir/network_binary.nb" "$golden_dir/input_0.dat" "$golden_dir/sample.txt" "$stage/npu-test/vpm_run/"
 copy_required examples/yolov5/model/v3/yolov5.nb npu-test/yolov5/yolov5.nb
 copy_required examples/yolov5/input_data/dog_640_640.jpg npu-test/yolov5/dog_640_640.jpg
 copy_required viplite-tina/lib/aarch64-none-linux-gnu/v2.0/inc/vip_lite.h npu-test/viplite/include/vip_lite.h

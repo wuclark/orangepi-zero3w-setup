@@ -24,15 +24,14 @@ specified in `AGENTS.md`.
   smoke-test path.
 - [x] Validate the NPU runtime on the reference Orange Pi: ABI precheck,
   userspace installation, and three successful pinned VIPLite inferences.
-- [ ] Establish an independent correctness golden for the pinned NPU sample.
+- [x] Establish an independent correctness golden for the pinned NPU sample.
   Investigated 2026-09-03: `operator/v3/network_binary.nb` has no golden
   anywhere (checked local `ai-sdk.tar.gz`, `wuclark/ai-sdk`, upstream
   `ZIFENG278/ai-sdk`, `petayyyy/a733_npu_driver`) and no source model, so one
   cannot be independently generated for it either — see the
-  `docs/optional/npu.md` roadmap note. Superseded by real ACUITY goldens for
-  named models instead (`lenet`, `yolov5`, `resnet50` — see below); it stays
-  execution-only until those replacements are board-validated, then gets
-  removed.
+  `docs/optional/npu.md` roadmap note. Closed 2026-09-08 as superseded: the
+  real ACUITY goldens below are board-validated; removal of the
+  execution-only sample is tracked separately further down.
 - [x] Script real ACUITY-quantized goldens for `lenet`, `yolov5`, and
   `resnet50` (`scripts/generate-npu-golden.sh`, `scripts/board-npu-model-test.sh`,
   `scripts/compare-npu-output.py`) reusing `wuclark/a733_npu_driver`'s
@@ -93,26 +92,38 @@ specified in `AGENTS.md`.
   `network_binary.nb` itself (no golden published anywhere, no source model
   in the SDK to regenerate one from). Tracking now happens under the
   `lenet`/`yolov5`/`resnet50` ACUITY-golden line above instead.
-- [ ] Run `scripts/generate-npu-golden.sh --model lenet` for real: clone
+- [x] Run `scripts/generate-npu-golden.sh --model lenet` for real: clone
   `wuclark/a733_npu_driver` to `work/sources/a733_npu_driver`, build its
   ACUITY Docker image per that repo's `docs/01-setup-host.md`, then
-  `make npu-golden-lenet`. Expect and fix real friction here first — this is
-  the smallest, most proven recipe (already board-validated in that repo's
-  own reports for a different board bring-up).
-- [ ] Fix the yolov5/resnet50 ONNX `--inputs`/`--input-size-list`/`--outputs`
+  `make npu-golden-lenet`. Done 2026-09-08 on `ubuntu-npu:v2.0.10.2` after
+  porting the recipe from the `pegasus_one` wrapper to the explicit
+  import/quantize/inference/export flow with fixed mounts and
+  `VSIMULATOR_CONFIG` passthrough.
+- [x] Fix the yolov5/resnet50 ONNX `--inputs`/`--input-size-list`/`--outputs`
   values in `scripts/generate-npu-golden.sh` against the real ONNX graphs
   (`yolov5s-sim.onnx`, and whichever public ResNet50 ONNX is sourced) — the
-  current defaults are unverified best guesses.
-- [ ] Source an openly licensed public ResNet50 ONNX file (e.g. ONNX Model
+  current defaults are unverified best guesses. Done 2026-09-08: yolov5 from
+  the SDK's own `inputs_outputs.txt` (`images`, `3,640,640`,
+  `350 498 646`); resnet50-v1-12 verified as (`data`, `3,224,224`,
+  `resnetv17_dense0_fwd`).
+- [x] Source an openly licensed public ResNet50 ONNX file (e.g. ONNX Model
   Zoo/torchvision) for `NPU_PUBLIC_ONNX=` before `make npu-golden-resnet50`
-  can run; the SDK ships no resnet50 source weights.
-- [ ] Board-run `make board-npu-golden-test-lenet` / `-yolov5` / `-resnet50`
+  can run; the SDK ships no resnet50 source weights. Done 2026-09-08:
+  `resnet50-v1-12.onnx` (Apache 2.0), pinned URL plus SHA-256 with a
+  `npu-public-onnx` fetch target.
+- [x] Board-run `make board-npu-golden-test-lenet` / `-yolov5` / `-resnet50`
   on the reference Orange Pi Zero 3W and record real PASS/FAIL evidence
   (top-K match, max/mean abs diff, RMSE, cosine) — required before any
-  support claim, per the evidence gate below.
-- [ ] Once lenet/yolov5/resnet50 are board-green, remove
+  support claim, per the evidence gate below. Done 2026-09-08:
+  `board-validation` 12–13 pass, 0 fail with all three goldens top-5
+  matched (kernel `6.6.98-vendor-sun60iw2`, VIPLite
+  `2.0.3.2-AW-2024-08-30`).
+- [x] Once lenet/yolov5/resnet50 are board-green, remove
   `operator/v3/network_binary.nb` and its `test-npu.sh`/`board-npu-test`
-  usage, per the roadmap note in `docs/optional/npu.md`.
+  usage, per the roadmap note in `docs/optional/npu.md`. Done 2026-09-08:
+  `stage-npu-test-assets.sh` now sources the executed NBG set from
+  `npu-golden-lenet.tar.gz`; `test-npu.sh` and all its callers work
+  unchanged on identical filenames.
 - [x] Confirm the board-side NPU installer against the target kernel/userspace
   ABI on the reference board; retain the precheck, install, verify, and smoke
   test evidence in the issue.

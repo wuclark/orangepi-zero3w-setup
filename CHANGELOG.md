@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Retire the undocumented `operator/v3/network_binary.nb` fixture:
+  `stage-npu-test-assets.sh` now takes the executed NBG set from the
+  generated LeNet golden (`--golden`, required) while runner sources,
+  headers, and YOLOv5 files still come from the SDK. `test-npu.sh` and all
+  callers work unchanged; staging without a golden fails with a pointer to
+  `make npu-golden-lenet`, and `extract` skips the bundle with INFO instead
+  of breaking `newsd` for non-toolchain setups.
+
 - Make `board-system-benchmark` depend on `board-system-benchmark-deps` and
   let `board-report` record SKIP (keeping an overall PASS) when `sysbench`
   is absent, instead of failing the report on a missing benchmark toolchain.

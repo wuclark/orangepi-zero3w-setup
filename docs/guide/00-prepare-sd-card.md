@@ -252,7 +252,7 @@ into the Armbian root filesystem:
 ├── pvr-userspace.tar.gz
 ├── vpu-userspace.tar.gz       # optional VPU userspace
 ├── npu-userspace.tar.gz       # optional experimental NPU userspace
-└── npu-test-assets.tar.gz     # generated automatically when AI SDK is present
+└── npu-test-assets.tar.gz     # generated automatically when AI SDK and LeNet golden are present
 ```
 
 On Linux, with the Armbian root partition mounted at `/mnt/armbian-root` and
@@ -301,10 +301,12 @@ Generate all three archives before this step with
 `scripts/extract-vendor-userspace-docker.sh`; the NPU archive remains
 experimental and is installed only by the explicit board NPU target.
 
-If `work/images/ai-sdk.tar.gz` is present, `make newsd` also generates and
-copies `npu-test-assets.tar.gz`. This is a small board-test bundle, not the
-full SDK; it contains selected AArch64 VIPLite headers, `vpm_run` source, test
-NBG/input data, and a YOLOv5 test graph/sample.
+If `work/images/ai-sdk.tar.gz` and the LeNet golden are present, `make newsd`
+also generates and copies `npu-test-assets.tar.gz`. This is a small
+board-test bundle, not the full SDK; it contains selected AArch64 VIPLite
+headers, `vpm_run` source, the LeNet golden NBG/input data, and a YOLOv5 test
+graph/sample. Without the golden it is skipped with a pointer to
+`make npu-golden-lenet`.
 
 ## What the preset scripts do
 
