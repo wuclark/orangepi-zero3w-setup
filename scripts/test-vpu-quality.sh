@@ -3,7 +3,9 @@
 # Platform: Orange Pi Zero 3W target board with VPU userspace and GStreamer installed.
 # Inputs: Optional --output FILE, --media-dir DIR, --all for the full fixture set, --only BASENAME.
 # Dependencies: Bash, root, GStreamer OMX decoders, ffmpeg/ffprobe with psnr and ssim filters, /etc/cedarc.conf.
-# Writes: Raw yuv420p dumps in a private temp dir and optional timestamped quality evidence at OUTPUT.
+# Writes: Raw yuv420p dumps in a private temp dir under /var/tmp (1080p60
+#          intermediates exceed 5 GB and do not fit the board's tmpfs /tmp)
+#          and optional timestamped quality evidence at OUTPUT.
 # Safety: Headless decode and offline comparison only; does not present video, install packages, reboot, or alter boot ordering.
 # Repeat: Reuses repository fixtures and writes a fresh optional evidence report per run.
 # Recovery: Remove only cached evidence/temp files; restore VPU configuration through the recovery guide if needed.
@@ -67,7 +69,7 @@ for file in "${FILES[@]}"; do
     [[ -s $file ]] || die "Missing fixture: $file; run 'sudo make board-vpu-generate-decode-videos' (pair) or 'sudo make board-vpu-generate-videos' (full set)"
 done
 
-WORK=$(mktemp -d -t zero3w-vpu-quality.XXXXXXXX)
+WORK=$(mktemp -d /var/tmp/zero3w-vpu-quality.XXXXXXXX)
 trap 'rm -rf -- "$WORK"' EXIT
 preserve_work() {
     printf 'Failure debug files preserved in %s\n' "$WORK" >&2
