@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.0.0 - 2026-09-08
+
 - Add `make board-summary` (`scripts/generate-board-summary.sh`): renders a
   sanitized Markdown performance summary from a board-report directory with
   stack, validation, and benchmark tables, aborting on secret-like patterns.

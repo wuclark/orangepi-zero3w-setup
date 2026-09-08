@@ -10,6 +10,7 @@
 | Isolate PVR libraries in scoped launchers | Global library precedence caused `libOpenCL.so.1` conflicts and crashes. |
 | Treat Vulkan/EGL as the GPU success boundary | They work reliably while X11 GLX remains llvmpipe. |
 | Use direct ALSA for RetroArch | The board has a known HDMI device and does not require PulseAudio/PipeWire. |
+| Defer `board-config` menu to v1.1 | Ship v1.0 on the proven X11 reference stack; the menu is UX convenience, not a correctness gate. |
 | Prefer Snes9x/BSNES Mercury Performance | Accuracy mode is heavier on this board. |
 | Use official AArch64 cores with cache/hash reuse | Debian may lack advanced cores; official artifacts are safer than random binaries. |
 | Make stability testing headless and continuous by default | Endurance testing should not require a display and zero interval exercises sustained load. |

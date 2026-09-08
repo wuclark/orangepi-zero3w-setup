@@ -55,6 +55,8 @@ specified in `AGENTS.md`.
   validation, acceleration, desktop/remote, benchmark, health, backup/restore,
   and reboot actions while showing the equivalent command and requiring
   confirmation for installs, desktop changes, restores, and reboots.
+  Deferred to v1.1 (decision log, 2026-09-08): UX convenience, not a
+  correctness gate for the proven X11 reference stack.
 - [x] Add a lightweight documentation-contract checker to `tests/static-checks.sh`.
   Require a standard explanatory header or a linked guide/exception for each
   maintained script and non-obvious configuration/Make entrypoint, without
@@ -87,13 +89,12 @@ specified in `AGENTS.md`.
   2026-09-08: all 17 fixtures bit-identical (psnr inf, ssim 1.0) on the
   reference board (kernel `6.6.98-vendor-sun60iw2`); see `docs/optional/vpu.md`.
 - [x] Add a pinned VIPLite `vpm_run` NPU execution smoke-test sample.
-- [ ] Add an independently generated `golden_0.dat` for the exact NPU sample:
-  obtain it from the SDK/vendor reference test, or generate it through the
-  SDK's CPU/Pegasus path using the matching model, quantization, and
-  preprocessing metadata. Investigated 2026-09-03: neither is possible for
-  `network_binary.nb` itself (no golden published anywhere, no source model
-  in the SDK to regenerate one from). Tracking now happens under the
-  `lenet`/`yolov5`/`resnet50` ACUITY-golden line above instead.
+- [x] Add an independently generated `golden_0.dat` for the exact NPU sample:
+  superseded (closed 2026-09-08): investigated 2026-09-03, neither source is
+  possible for `network_binary.nb` itself (no golden published anywhere, no
+  source model in the SDK to regenerate one from). Tracking happened under the
+  `lenet`/`yolov5`/`resnet50` ACUITY-golden line above instead, now
+  board-validated; the execution-only sample is retired.
 - [x] Run `scripts/generate-npu-golden.sh --model lenet` for real: clone
   `wuclark/a733_npu_driver` to `work/sources/a733_npu_driver`, build its
   ACUITY Docker image per that repo's `docs/01-setup-host.md`, then
