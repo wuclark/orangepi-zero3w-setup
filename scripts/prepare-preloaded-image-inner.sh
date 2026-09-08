@@ -2,11 +2,14 @@
 # Purpose: Copy the repository and staged vendor archives into an image root.
 # Platform: privileged Linux container with loop, partition, and mount utilities.
 # Inputs: base image/format, output image, and growth in MB; repository is supplied at /repo.
-# Writes: output image root filesystem, excluding Git and generated video fixtures.
+# Writes: output image root filesystem, excluding generated video fixtures.
 # Safety: uses temporary mounts and cleanup traps; never extracts an archive over /.
 # Repeat behavior: creates a separate derived image and refuses no explicit overwrite.
 # Recovery: cleanup releases temporary mounts/loops; discard a failed partial output.
 # Verification: validate the image and confirm archive hashes before SD deployment.
+# Board dev: .git ships inside the image, so the board tree is a real checkout
+# (git pull works). Commit before baking, otherwise the board inherits the
+# host's uncommitted diff as local modifications.
 set -Eeuo pipefail
 BASE_IMAGE=""; BASE_FORMAT=""; OUTPUT_IMAGE=""; GROW_MB=512
 progress() { printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2; }
@@ -66,7 +69,7 @@ progress 'Copying repository into the image'
 # test downloads or generates them on demand after installation. The local
 # backup/ tree (multi-GB, host-only) must never enter the image either.
 tar -C /repo \
-    --exclude=.git --exclude=work --exclude=vendor-files --exclude=backup \
+    --exclude=work --exclude=vendor-files --exclude=backup \
     --exclude='testdata/videos/*.mp4' \
     --exclude='testdata/videos/*.md5' \
     --exclude='testdata/videos/SHA256SUMS' \

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Ship `.git` (2 MB) inside the preloaded image so the board tree at
+  `/opt/orangepi-zero3w-setup` is a real checkout supporting `git pull`;
+  commit on the host before baking to avoid inheriting a dirty tree.
+
 - Show installed state in the packages menu (`[installed]` per package group
   backed by `dpkg-query`, GPU-layer readiness for the RetroArch options) so
   re-runs show what is already done without hiding any option.
