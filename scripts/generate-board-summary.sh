@@ -44,7 +44,7 @@ first_match_file() {
 # Version identifiers are evidence, not secrets: capture them before the IP
 # redaction pass and restore them through placeholders afterwards.
 FWVER=$(pick "$REPORT/diagnostics.txt" 'rgx\.fw\.[0-9.]*')
-NPUVER=$(pick "$REPORT/headless-benchmark.txt" 'VIPLite driver software version [^ ]*')
+NPUVER=$(pick "$REPORT/headless-benchmark.txt" 'VIPLite driver software version [^ ]*' | awk '{ print $NF }')
 VKDRV=$(grep -hoE '[0-9]+\.[0-9]+@[0-9]+' "$REPORT/diagnostics.txt" 2>/dev/null | head -n 1 || true)
 
 {
@@ -66,33 +66,43 @@ VKDRV=$(grep -hoE '[0-9]+\.[0-9]+@[0-9]+' "$REPORT/diagnostics.txt" 2>/dev/null 
     grep -h -E '^RESULT: (PASS|FAIL|SKIP) - ' "$REPORT/validation.txt" | sed -E 's/^RESULT: (PASS|FAIL|SKIP) - (.*)/| \2 | \1 |/'
 
     printf '\n## Performance\n\n'
-    printf '### GPU Vulkan compute\n\n```text\n'
+    printf '### GPU Vulkan compute\n\n'
     if [[ -s $LOGDIR/vulkan-compute-validation.txt ]]; then
-        first_match_file 'gpu_ms_per_dispatch|result_errors|device=PowerVR' "$LOGDIR/vulkan-compute-validation.txt"
+        printf '| Kernel | ms/dispatch | Errors |\n| --- | --- | --- |\n'
+        grep -hE 'gpu_ms_per_dispatch' "$LOGDIR/vulkan-compute-validation.txt" 2>/dev/null | awk '{ ms=""; err=""; for (i=1;i<=NF;i++) { if ($i ~ /^gpu_ms_per_dispatch=/) { split($i,a,"="); ms=a[2] } if ($i ~ /^result_errors=/) { split($i,b,"="); err=b[2] } } printf "| %s | %s | %s |\n", $1, ms, err }' || true
+        dev=$(first_match_file '^device=' "$LOGDIR/vulkan-compute-validation.txt")
+        [[ -n $dev ]] && printf '\n_Device: %s_\n' "$dev"
     else
-        printf 'not recorded; run: sudo make board-gpu-compute-test\n'
+        printf 'not recorded; run: sudo make board-gpu-compute-deps\n'
     fi
-    printf '```\n\n### VPU decode quality (Cedar vs software)\n\n```text\n'
+    printf '\n### VPU decode quality (Cedar vs software)\n\n'
     if [[ -s $LOGDIR/vpu-quality-validation.txt ]]; then
-        first_match_file '^(file|codec|padded|hw_frames|psnr_avg|ssim_all)=' "$LOGDIR/vpu-quality-validation.txt"
+        first_match_file '^(file|codec|padded|hw_frames|psnr_avg|ssim_all)=' "$LOGDIR/vpu-quality-validation.txt" | awk 'BEGIN{ print "| File | Codec | Resolution | Frames | PSNR | SSIM |"; print "| --- | --- | --- | --- | --- | --- |" } /^file=/{ f=$1; sub(/^file=/,"",f) } /^codec=/{ split($1,c,"="); split($2,w,"="); split($3,h,"="); codec=c[2]; res=w[2]"x"h[2] } /^hw_frames=/{ split($1,n,"="); frames=n[2] } /^psnr_avg=/{ split($1,p,"="); split($2,s,"="); printf "| %s | %s | %s | %s | %s | %s |\n", f, codec, res, frames, p[2], s[2] }' || true
     else
         printf 'not recorded; run: sudo make board-vpu-quality-test\n'
     fi
-    printf '```\n\n### VPU decode speed (Cedar vs software fps)\n\n```text\n'
-    if grep -q '^PASS: .* speedup=' "$REPORT/headless-benchmark.txt" 2>/dev/null; then
-        grep -h '^PASS: .* speedup=' "$REPORT/headless-benchmark.txt"
+    printf '\n### VPU decode speed (Cedar vs software fps)\n\n'
+    if grep -q '^PASS: .* (cpu .* speedup=' "$REPORT/headless-benchmark.txt" 2>/dev/null; then
+        speed_src="$REPORT/headless-benchmark.txt"
     elif [[ -s $LOGDIR/vpu-decode-speed.txt ]]; then
-        first_match_file '^(file|codec|hw_sec)=' "$LOGDIR/vpu-decode-speed.txt"
+        speed_src="$LOGDIR/vpu-decode-speed.txt"
+    else
+        speed_src=""
+    fi
+    if [[ -n $speed_src ]]; then
+        printf '| File | Frames | HW fps | SW fps | Speedup | HW CPU s | SW CPU s |\n| --- | --- | --- | --- | --- | --- | --- |\n'
+        grep -h '^PASS: .* (cpu .* speedup=' "$speed_src" 2>/dev/null | awk '{ name=$2; frames=$3; hw=$7; sw=$12; spd=$14; hcpu=$6; scpu=$11; sub(/^frames=/,"",frames); sub(/,$/,"",hcpu); sub(/,$/,"",scpu); sub(/^speedup=/,"",spd); printf "| %s | %s | %s | %s | %s | %s | %s |\n", name, frames, hw, sw, spd, hcpu, scpu }' || true
     else
         printf 'not recorded; run: sudo make board-vpu-decode-speed\n'
     fi
-    printf '```\n\n### NPU inference\n\n```text\n'
+    printf '\n### NPU inference\n\n'
     if [[ -s $LOGDIR/npu-validation.txt ]]; then
-        first_match_file 'profile avg inference|vpm run ret|VIPLite driver software version' "$LOGDIR/npu-validation.txt"
+        printf '| Metric | Value |\n| --- | --- |\n'
+        grep -hE 'VIPLite driver software version|profile avg inference time=|vpm run ret=' "$LOGDIR/npu-validation.txt" 2>/dev/null | awk '/VIPLite driver software version/{ sub(/^ */,""); printf "| Runtime | %s |\n", $0 } /profile avg inference time=/{ t=$0; sub(/.*profile avg inference time=/,"",t); printf "| Avg inference | %s |\n", t } /vpm run ret=/{ r=$0; sub(/.*vpm run ret=/,"",r); printf "| Smoke test return | %s |\n", r }' || true
     else
         printf 'not recorded; run: sudo make board-npu-install (then verify)\n'
     fi
-    printf '```\n'
+    printf '\n'
 } > "$OUTPUT.raw"
 
 if grep -rEin 'password|passwd|wireless|ssid|\bpsk\b|secret|token|api[_-]?key|BEGIN .*PRIVATE KEY' "$OUTPUT.raw" >/tmp/zero3w-summary-secrets.txt 2>/dev/null; then
@@ -102,8 +112,12 @@ if grep -rEin 'password|passwd|wireless|ssid|\bpsk\b|secret|token|api[_-]?key|BE
     exit 1
 fi
 rm -f -- /tmp/zero3w-summary-secrets.txt
-sed -E -e 's/127\.0\.0\.1/LOOPBACK/g' -e 's/\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b/x.x.x.x/g' -e 's/LOOPBACK/127.0.0.1/g' "$OUTPUT.raw" > "$OUTPUT"
+# Shield version identifiers (evidence, not secrets) before the IP pass, then
+# restore them from the captured values afterwards.
+sed -E -e 's/rgx\.fw\.[0-9.]+/__FWVER__/g' -e 's/(VIPLite driver software version )[0-9.]+/\1__NPUVER__/g' "$OUTPUT.raw" > "$OUTPUT.tmp"
 rm -f -- "$OUTPUT.raw"
+sed -E -e 's/127\.0\.0\.1/LOOPBACK/g' -e 's/\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b/x.x.x.x/g' -e 's/LOOPBACK/127.0.0.1/g' "$OUTPUT.tmp" > "$OUTPUT"
+rm -f -- "$OUTPUT.tmp"
 sed -i "s|__FWVER__|${FWVER:-not recorded}|; s|__NPUVER__|${NPUVER:-not recorded}|" "$OUTPUT"
 printf '\nSanitized: LAN IPv4 addresses redacted; generation aborts on secret-like patterns. Attach the cited evidence files to the issue.\n' >> "$OUTPUT"
 printf 'Summary saved to %s\n' "$OUTPUT"
