@@ -73,5 +73,6 @@ sudo make board-summary
 `board-report` output plus the validation evidence logs. Generation aborts on
 secret-like patterns and redacts LAN IPv4 addresses. Review the file, copy it
 plus the cited evidence logs off the board (never commit them), and attach
-everything to a GitHub issue. Durable headline numbers may graduate into the
+everything to a GitHub issue. Worked example: issue #2 (2026-09-08 full
+bring-up, 14/14 green). Durable headline numbers may graduate into the
 guide docs afterwards, as the VPU quality reference did in `docs/optional/vpu.md`.
