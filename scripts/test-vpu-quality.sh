@@ -97,7 +97,7 @@ compare_one() {
     esac
 
     local hw_raw="$WORK/$base-hw.yuv" sw_raw="$WORK/$base-sw.yuv"
-    local hw_log="$WORK/$base-hw.log" sw_log="$WORK/$base-sw.log" cmp_log="$WORK/$base-cmp.log"
+    local hw_log="$WORK/$base-hw.log" sw_log="$WORK/$base-sw.log"
     printf 'Testing %s (%s %sx%s)\n' "$base" "$label" "$width" "$height"
 
     # Cedar pads decoded height to its alignment (e.g. 720 -> 736), so scale
@@ -134,18 +134,22 @@ compare_one() {
     ((hw_frames == sw_frames)) || die "$base frame count mismatch: hw=$hw_frames sw=$sw_frames"
 
     local cmp_rc=0 psnr ssim
+    local psnr_log="$WORK/$base-psnr.log" ssim_log="$WORK/$base-ssim.log"
     timeout 120s ffmpeg -nostdin -hide_banner -f rawvideo -s "${width}x${height}" -pix_fmt yuv420p -i "$hw_raw" \
         -f rawvideo -s "${width}x${height}" -pix_fmt yuv420p -i "$sw_raw" \
-        -lavfi "ssim;psnr" -f null - >"$cmp_log" 2>&1 || cmp_rc=$?
+        -lavfi psnr -f null - >"$psnr_log" 2>&1 || cmp_rc=$?
+    timeout 120s ffmpeg -nostdin -hide_banner -f rawvideo -s "${width}x${height}" -pix_fmt yuv420p -i "$hw_raw" \
+        -f rawvideo -s "${width}x${height}" -pix_fmt yuv420p -i "$sw_raw" \
+        -lavfi ssim -f null - >"$ssim_log" 2>&1 || cmp_rc=$?
     if ((cmp_rc != 0)); then
-        printf 'ffmpeg compare exit=%d log:\n' "$cmp_rc" >&2
-        cat "$cmp_log" >&2
+        printf 'ffmpeg compare exit=%d logs:\n' "$cmp_rc" >&2
+        cat "$psnr_log" "$ssim_log" >&2
         preserve_work
         die "$base PSNR/SSIM comparison failed (ffmpeg exit=$cmp_rc)"
     fi
-    psnr=$(grep -o 'average:[0-9.]*' "$cmp_log" | tail -n 1 | cut -d: -f2)
-    ssim=$(grep -o 'All:[0-9.]*' "$cmp_log" | tail -n 1 | cut -d: -f2)
-    [[ -n $psnr && -n $ssim ]] || { preserve_work; die "$base could not parse PSNR/SSIM from comparison output"; }
+    psnr=$(grep -o 'average:[0-9.]*' "$psnr_log" | tail -n 1 | cut -d: -f2)
+    ssim=$(grep -o 'All:[0-9.]*' "$ssim_log" | tail -n 1 | cut -d: -f2)
+    [[ -n $psnr && -n $ssim ]] || { cat "$psnr_log" "$ssim_log" >&2; preserve_work; die "$base could not parse PSNR/SSIM from comparison output"; }
     printf 'PASS: %s frames=%d psnr_avg=%s ssim_all=%s\n' "$base" "$hw_frames" "$psnr" "$ssim"
     rm -f -- "$hw_raw" "$sw_raw"
 
