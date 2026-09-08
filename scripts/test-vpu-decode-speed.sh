@@ -80,12 +80,10 @@ now() { date +%s.%N; }
 elapsed() { awk -v s="$1" -v e="$2" 'BEGIN { printf "%.2f", e - s }'; }
 fps() { awk -v n="$1" -v s="$2" 'BEGIN { printf "%.1f", (s + 0 > 0) ? n / s : 0 }'; }
 ratio() { awk -v a="$1" -v b="$2" 'BEGIN { printf "%.2f", (b + 0 > 0) ? a / b : 0 }'; }
-# Total reaped-children user+sys CPU seconds; diff two snapshots to isolate one
-# pipeline without any extra dependency. The probing awk itself is negligible.
-cpu_children() {
-    times | awk 'NR==2 { split($1, a, "m"); split($2, b, "m"); sub(/s$/, "", a[2]); sub(/s$/, "", b[2]); printf "%.2f", a[1]*60+a[2]+b[1]*60+b[2] }'
-}
-cpu_used() { awk -v a="$1" -v b="$2" 'BEGIN { printf "%.2f", b - a }'; }
+# Per-pipeline CPU seconds via the time keyword (no extra dependency); the
+# snapshots land in a side file because the decoders own stderr.
+TIMEFORMAT='%U %S'
+cpu_total() { awk '{ printf "%.2f", $1 + $2 }' "$1"; }
 
 time_one() {
     local file=$1 base codec width height parser decoder
@@ -104,19 +102,19 @@ time_one() {
     esac
 
     local hw_raw="$WORK/$base-hw.yuv" sw_raw="$WORK/$base-sw.yuv" hw_log="$WORK/$base-hw.log"
+    local hw_time="$WORK/$base-hw.time" sw_time="$WORK/$base-sw.time" nproc_threads
+    nproc_threads=$(nproc)
     local frames frame_size sw_size sw_start sw_end sw_sec sw_fps sw_cpu hw_start hw_end hw_sec hw_fps hw_cpu speed
-    local cpu_mark
     printf 'Timing %s (%s %sx%s)\n' "$base" "$codec" "$width" "$height"
 
-    cpu_mark=$(cpu_children)
     sw_start=$(now)
-    if ! timeout 300s ffmpeg -nostdin -hide_banner -loglevel error -y -i "$file" \
-        -pix_fmt yuv420p -f rawvideo "$sw_raw" 2>/dev/null; then
+    if ! { time timeout 300s ffmpeg -nostdin -hide_banner -loglevel error -y -i "$file" \
+        -pix_fmt yuv420p -f rawvideo "$sw_raw" 2>/dev/null; } 2>"$sw_time"; then
         preserve_work
         die "$base software decode failed"
     fi
     sw_end=$(now)
-    sw_cpu=$(cpu_used "$cpu_mark" "$(cpu_children)")
+    sw_cpu=$(cpu_total "$sw_time")
     frame_size=$((width * height * 3 / 2))
     sw_size=$(stat -c %s "$sw_raw")
     ((sw_size > 0 && sw_size % frame_size == 0)) || { preserve_work; die "$base software dump has unexpected size $sw_size"; }
@@ -124,17 +122,19 @@ time_one() {
     sw_sec=$(elapsed "$sw_start" "$sw_end")
     sw_fps=$(fps "$frames" "$sw_sec")
 
-    cpu_mark=$(cpu_children)
+    # videoconvert runs multithreaded so the timed pipe reflects Cedar plus a
+    # parallel convert, not a single conversion thread.
     hw_start=$(now)
-    if ! GST_DEBUG=2 timeout 300s gst-launch-1.0 \
+    if ! { time GST_DEBUG=2 timeout 300s gst-launch-1.0 \
         filesrc "location=$file" ! qtdemux ! "$parser" ! "$decoder" ! \
-        videoconvert ! 'video/x-raw,format=I420' ! filesink "location=$hw_raw" sync=false >"$hw_log" 2>&1; then
+        videoconvert "n-threads=$nproc_threads" ! 'video/x-raw,format=I420' ! \
+        filesink "location=$hw_raw" sync=false >"$hw_log" 2>&1; } 2>"$hw_time"; then
         cat "$hw_log" >&2
         preserve_work
         die "$base hardware decode failed"
     fi
     hw_end=$(now)
-    hw_cpu=$(cpu_used "$cpu_mark" "$(cpu_children)")
+    hw_cpu=$(cpu_total "$hw_time")
     grep -q 'open /dev/cedar_dev' "$hw_log" || { preserve_work; die "$base decode did not open Cedar"; }
     grep -q 'Got EOS' "$hw_log" || { preserve_work; die "$base decode did not reach EOS"; }
     hw_sec=$(elapsed "$hw_start" "$hw_end")
