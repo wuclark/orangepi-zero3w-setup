@@ -162,8 +162,9 @@ compare_one() {
         preserve_work
         die "$base PSNR/SSIM comparison failed (ffmpeg exit=$cmp_rc)"
     fi
-    psnr=$(grep -o 'average:[0-9.]*' "$psnr_log" | tail -n 1 | cut -d: -f2)
-    ssim=$(grep -o 'All:[0-9.]*' "$ssim_log" | tail -n 1 | cut -d: -f2)
+    # Identical decodes report average:inf / All:1.0 — accept inf as a value.
+    psnr=$(grep -oE 'average:(inf|[0-9.]+)' "$psnr_log" | tail -n 1 | cut -d: -f2)
+    ssim=$(grep -oE 'All:(inf|[0-9.]+)' "$ssim_log" | tail -n 1 | cut -d: -f2)
     [[ -n $psnr && -n $ssim ]] || { cat "$psnr_log" "$ssim_log" >&2; preserve_work; die "$base could not parse PSNR/SSIM from comparison output"; }
     printf 'PASS: %s frames=%d psnr_avg=%s ssim_all=%s\n' "$base" "$hw_frames" "$psnr" "$ssim"
     rm -f -- "$hw_raw" "$sw_raw" "$hw_padded"
