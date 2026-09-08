@@ -6,7 +6,7 @@
 # Safety: workloads are bounded and do not change configuration or reboot.
 # Repeat behavior: safe to repeat; results vary with frequency, cooling, and load.
 # Recovery: inspect the component evidence and rerun that component independently.
-# Verification: all three sections must report PASS for a passing benchmark.
+# Verification: all sections must report PASS for a passing benchmark.
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
@@ -36,6 +36,7 @@ echo "Headless Orange Pi acceleration benchmark: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 uname -a
 run_benchmark 'GPU Vulkan compute' "$SCRIPT_DIR/run-vulkan-compute-benchmark.sh"
 run_benchmark 'VPU H.264/H.265 decode' "$SCRIPT_DIR/test-vpu-decode.sh"
+run_benchmark 'VPU decode speed (Cedar vs software)' "$SCRIPT_DIR/test-vpu-decode-speed.sh"
 run_benchmark 'NPU inference' "$SCRIPT_DIR/test-npu.sh"
 printf '\n===== SUMMARY =====\nPASS: %d  FAIL: %d\n' "$PASS" "$FAIL"
 printf 'Evidence saved to %s\n' "$OUTPUT"

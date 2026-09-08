@@ -59,6 +59,24 @@ all 17 fixtures bit-identical (`psnr_avg=inf`, `ssim_all=1.0`). Thresholds
 remain report-only; a size or frame-count mismatch fails. `board-validation` runs this automatically when
 Cedar, `ffmpeg`, and GStreamer are present, otherwise SKIP with remediation.
 
+### VPU decode speed (hardware vs software fps)
+
+Correctness is proven bit-identical above; speed is a separate benchmark question.
+`scripts/test-vpu-decode-speed.sh` (board-only, headless) times the Cedar OMX
+pipeline against software `ffmpeg` on the same fixtures and reports per-file
+`hw_fps`, `sw_fps`, and the `speedup` ratio with governor and CPU count in the
+evidence for comparability:
+
+```bash
+sudo make board-vpu-decode-speed
+sudo make board-headless-benchmark   # includes the speed section plus GPU/NPU
+```
+
+Figures are informational (thermal state, governor, and background load move
+them); PASS means both paths completed with matching frame counts. Run on an
+otherwise idle board. `board-thermal-monitor` can wrap the headless benchmark
+for temperature context.
+
 ### VPU validation TODO
 
 Remaining before any stronger claim:

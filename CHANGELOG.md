@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add board-side VPU decode-speed comparison: `scripts/test-vpu-decode-speed.sh`
+  times Cedar OMX against software `ffmpeg` per fixture and reports fps plus
+  speedup with governor/CPU evidence. Wired as `make board-vpu-decode-speed`
+  and as a section of `make board-headless-benchmark`; figures are
+  informational and PASS on completion.
+
 - Add board-side VPU quality comparison: `scripts/test-vpu-quality.sh` decodes
   each fixture through Cedar and software `ffmpeg` to `yuv420p`, requires
   matching frame counts, and records PSNR/SSIM (report-only thresholds pending
