@@ -54,9 +54,9 @@ counts, then compares with the `ssim`/`psnr` filters and records per-file
 `psnr_avg`, `ssim_all`, hashes, codec parameters, and logs. Cedar pads decoded
 dimensions to its alignment (720p decodes as 1280x736), so the script crops the
 padding from the top-left rather than rescaling, keeping the comparison
-pixel-exact. Thresholds stay
-report-only until the reference board produces data to set them; a size or
-frame-count mismatch fails. `board-validation` runs this automatically when
+pixel-exact. Reference result 2026-09-08 (kernel `6.6.98-vendor-sun60iw2`):
+all 17 fixtures bit-identical (`psnr_avg=inf`, `ssim_all=1.0`). Thresholds
+remain report-only; a size or frame-count mismatch fails. `board-validation` runs this automatically when
 Cedar, `ffmpeg`, and GStreamer are present, otherwise SKIP with remediation.
 
 ### VPU validation TODO

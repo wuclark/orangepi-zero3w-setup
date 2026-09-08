@@ -80,10 +80,12 @@ specified in `AGENTS.md`.
 - [x] Add and run real GPU workload tests: `vulkaninfo`, GLES/EGL, compute,
   and visibly presented `vkcube`.
 - [x] Add real VPU GStreamer H.264/H.265 decode samples and board commands.
-- [ ] Strengthen VPU validation beyond EOS: generate reproducible local H.264
+- [x] Strengthen VPU validation beyond EOS: generate reproducible local H.264
   and H.265 MP4 samples covering 720p/1080p, 30/60 fps, suitable profiles,
   and controlled keyframes; run them through Cedar; decode them through a
-  software reference; and compare normalized frames with PSNR/SSIM.
+  software reference; and compare normalized frames with PSNR/SSIM. Done
+  2026-09-08: all 17 fixtures bit-identical (psnr inf, ssim 1.0) on the
+  reference board (kernel `6.6.98-vendor-sun60iw2`); see `docs/optional/vpu.md`.
 - [x] Add a pinned VIPLite `vpm_run` NPU execution smoke-test sample.
 - [ ] Add an independently generated `golden_0.dat` for the exact NPU sample:
   obtain it from the SDK/vendor reference test, or generate it through the

@@ -10,7 +10,7 @@
 # Repeat: Reuses repository fixtures and writes a fresh optional evidence report per run.
 # Recovery: Remove only cached evidence/temp files; restore VPU configuration through the recovery guide if needed.
 # Outputs: Per-file frame counts, PSNR/SSIM averages, and PASS/FAIL status.
-# Verification: Require every selected file to produce matching frame counts plus measurable PSNR/SSIM; thresholds stay report-only until board data sets them.
+# Verification: Require every selected file to produce matching frame counts plus measurable PSNR/SSIM; reference board 2026-09-08 gives 17/17 bit-identical (psnr inf, ssim 1.0) and thresholds remain report-only.
 # Documentation: docs/optional/vpu.md
 set -Eeuo pipefail
 

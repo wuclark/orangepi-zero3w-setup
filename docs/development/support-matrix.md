@@ -12,7 +12,7 @@ promise that every feature works on every A733 board or kernel.
 | EGL/GLES | DDK 24.2 | Verified | Headless/surfaceless EGL and board validation. |
 | X11 DRI2/DRI3/Present | Xorg/LightDM | Verified with session access | Wrong user or missing X11 authorization can make checks fail. |
 | X11 GLX | Mesa GLX | Known limitation | Uses llvmpipe; Vulkan/EGL PowerVR remain functional. |
-| VPU | Cedar/libcedarc | Verified decode, quality script available | H.264 and H.265 hardware GStreamer decode tests pass on the reference board; `board-vpu-quality-test` records PSNR/SSIM vs software decode with report-only thresholds pending board evidence. |
+| VPU | Cedar/libcedarc | Verified decode + frame-exact quality | H.264/H.265 GStreamer decode plus a 17-fixture Cedar-vs-ffmpeg comparison, all bit-identical (psnr inf, ssim 1.0) on the reference board 2026-09-08. |
 | NPU | VIPLite 2.0.3.2, ACUITY `ubuntu-npu:v2.0.10.2` | Verified smoke, candidate golden, and lenet/yolov5/resnet50 ACUITY goldens | Pinned `network_binary.nb` executes; custom-LUT candidate matches; all three generated goldens match top-5 on the reference board (2026-09-08 validation). A golden for the pinned sample remains unavailable. |
 | USB-C DisplayPort | Board connector/driver path | Runtime-dependent | Use `board-display-status` and record whether `DP-1` is connected. |
 | HDMI audio | `allwinnerhdmi`, ALSA device 0 | Playback path verified | Actual sound requires a connected HDMI sink. |
