@@ -51,7 +51,10 @@ For each fixture it decodes once through Cedar (`omxh264dec` /
 `omxhevcvideodec` to `I420` rawvideo, requiring `cedar_dev` open plus EOS)
 and once through software `ffmpeg` to `yuv420p`, requires matching frame
 counts, then compares with the `ssim`/`psnr` filters and records per-file
-`psnr_avg`, `ssim_all`, hashes, codec parameters, and logs. Thresholds stay
+`psnr_avg`, `ssim_all`, hashes, codec parameters, and logs. Cedar pads decoded
+dimensions to its alignment (720p decodes as 1280x736), so the script crops the
+padding from the top-left rather than rescaling, keeping the comparison
+pixel-exact. Thresholds stay
 report-only until the reference board produces data to set them; a size or
 frame-count mismatch fails. `board-validation` runs this automatically when
 Cedar, `ffmpeg`, and GStreamer are present, otherwise SKIP with remediation.
