@@ -321,6 +321,7 @@ Viewer instructions.
 - [Desktop sessions](docs/guide/03-desktop-sessions.md)
 - [Remote access](docs/guide/04-remote-access.md)
 - [Recovery and reset](docs/guide/05-recovery.md)
+- [Fresh-image full bring-up](docs/guide/06-fresh-install-showcase.md)
 - [Optional GPU](docs/optional/gpu/gpu.md)
 - [Optional VPU](docs/optional/vpu.md)
 - [Optional NPU](docs/optional/npu.md)

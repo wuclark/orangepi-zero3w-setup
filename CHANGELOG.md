@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add `make board-summary` (`scripts/generate-board-summary.sh`): renders a
+  sanitized Markdown performance summary from a board-report directory with
+  stack, validation, and benchmark tables, aborting on secret-like patterns.
+  Add the phased fresh-image bring-up runbook in
+  `docs/guide/06-fresh-install-showcase.md` (foundation, acceleration,
+  X11/VNC, benchmarks, summary) with extension slots for Wayland and extras.
+
 - Add board-side VPU decode-speed comparison: `scripts/test-vpu-decode-speed.sh`
   times Cedar OMX against software `ffmpeg` per fixture and reports wall/CPU
   seconds, fps, and speedup with governor/CPU evidence. Wired as `make board-vpu-decode-speed`
