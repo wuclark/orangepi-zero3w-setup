@@ -63,6 +63,17 @@ specified in `AGENTS.md`.
   trying to judge prose quality.
 - [x] Add project-maintenance references for Make targets, data lifecycle,
   safety boundaries, support claims, design decisions, and evidence format.
+- [ ] Add a provenance-escrow check for vendor inputs: assert every
+  `docs/reference/input-sources.md` acceleration-stack row has a pinned
+  SHA-256 in `manifests/reference-stack.env` (or a recorded UNPINNABLE
+  reason), anchored on the env file rather than table layout, and audit the
+  extractor's hash-refusal path with fixtures before deciding warn-vs-require.
+  No live URL checks, no proprietary bytes in CI.
+- [ ] Re-validate the reference stack on a schedule: run `board-validation`
+  against the newest Armbian image, file the sanitized evidence in an issue,
+  and update the pinned inputs when drift breaks a step.
+- [ ] Prune on a cadence: remove dead Make targets and superseded guide text
+  so the maintained surface stays reviewable.
 
 ## Immediate validation TODO
 
