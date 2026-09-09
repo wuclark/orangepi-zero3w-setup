@@ -10,6 +10,7 @@ remain outside Git.
 ├── setup.sh, install.sh, Makefile       public host/board entrypoints
 ├── README.md, ROADMAP.md, CHANGELOG.md  project usage and status
 ├── AGENTS.md, CONTRIBUTING.md           maintenance and review policy
+├── .github/workflows/                  CI: static checks and archive tests on push/PR
 ├── config/                              files staged into board images; commentless machine-valid files have `.md` sidecars
 ├── manifests/                           reference versions and support inputs
 ├── scripts/

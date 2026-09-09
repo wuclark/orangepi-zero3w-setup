@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add CI (`.github/workflows/ci.yml`): run `tests/static-checks.sh` and
+  `tests/test-archives.sh` on push and pull requests. Board validation stays
+  explicit on real hardware.
 - Add an image-drift gate to `sudo ./setup.sh base`: the running kernel and
   OS codename must match the validated reference stack
   (`6.6.98-vendor-sun60iw2` on Debian `trixie`) unless
