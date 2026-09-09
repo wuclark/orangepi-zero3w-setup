@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Purpose: Initialize and validate the CLI-only Orange Pi setup foundation.
 # Platform: Orange Pi Zero 3W AArch64 board; rejects unrelated architectures/compatible strings.
-# Inputs: Optional hostname, timezone, and target user arguments.
+# Inputs: Optional hostname, timezone, target user, and --allow-untested-image arguments.
 # Dependencies: Bash, root, board device-tree, system utilities, and scripts/lib.sh.
 # Writes: /etc/orangepi-zero3w-setup/config and state; optional hostname/timezone system settings.
 # Safety: Does not run apt update, install packages, change the GUI, or reboot.
@@ -21,23 +21,28 @@ STATE_DIR=$CONFIG_DIR/state
 
 usage() {
     cat <<'EOF'
-Usage: sudo ./setup.sh base [--hostname NAME] [--timezone ZONE] [--user USER]
+Usage: sudo ./setup.sh base [--hostname NAME] [--timezone ZONE] [--user USER] [--allow-untested-image]
 
 Creates setup state/configuration and validates the running board. This command
 deliberately does not run apt update, install packages, change the GUI, or
 reboot. Use the first-boot preset before booting a new SD card, then run this
 command over Wi-Fi/SSH after the first login.
+
+The running kernel and OS codename must match the validated reference stack
+unless --allow-untested-image (or ALLOW_UNTESTED_IMAGE=1) is given.
 EOF
 }
 
 HOSTNAME_VALUE=
 TIMEZONE_VALUE=
 TARGET_USER=
+ALLOW_UNTESTED_IMAGE=${ALLOW_UNTESTED_IMAGE:-0}
 while (($#)); do
     case "$1" in
         --hostname) HOSTNAME_VALUE=${2:?missing hostname}; shift 2 ;;
         --timezone) TIMEZONE_VALUE=${2:?missing timezone}; shift 2 ;;
         --user) TARGET_USER=${2:?missing user}; shift 2 ;;
+        --allow-untested-image) ALLOW_UNTESTED_IMAGE=1; shift ;;
         -h|--help) usage; exit 0 ;;
         *) die "Unknown argument: $1" ;;
     esac
@@ -49,6 +54,7 @@ ARCH=$(uname -m)
 COMPAT=$(tr '\0' '\n' </proc/device-tree/compatible 2>/dev/null || true)
 grep -Eqi 'a733|sun60iw2|zero3w' <<<"$COMPAT" || die \
     "This does not look like an Orange Pi Zero 3W/A733 board."
+check_image_drift
 
 TARGET_USER=$(resolve_real_user "$TARGET_USER")
 id "$TARGET_USER" >/dev/null 2>&1 || die "User does not exist: $TARGET_USER"

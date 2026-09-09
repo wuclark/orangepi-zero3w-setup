@@ -15,6 +15,7 @@ set -Eeuo pipefail
 PROJECT_NAME="orangepi-zero3w-setup"
 PVR_ROOT="/opt/pvr-ddk-24.2"
 REFERENCE_KERNEL="6.6.98-vendor-sun60iw2"
+REFERENCE_CODENAME="trixie"
 REFERENCE_BVNC="36.56.104.183"
 
 log() { printf '[%s] %s\n' "$PROJECT_NAME" "$*"; }
@@ -59,4 +60,34 @@ resolve_real_user() {
     else
         printf 'orangepi\n'
     fi
+}
+
+check_image_drift() {
+    # Compare the running kernel and OS codename against the validated
+    # reference stack and abort on drift unless explicitly overridden with
+    # ALLOW_UNTESTED_IMAGE=1 (or --allow-untested-image on supported
+    # entrypoints). Read-only: runs uname and reads /etc/os-release, writes
+    # nothing. The CLI-only base stays usable on newer images via the
+    # override; kernel-module layers keep their own vermagic gates.
+    local allow=${ALLOW_UNTESTED_IMAGE:-0}
+    local kernel codename
+    local -a mismatches=()
+    kernel=$(uname -r)
+    [[ $kernel == "$REFERENCE_KERNEL" ]] ||
+        mismatches+=("kernel: running '$kernel', reference '$REFERENCE_KERNEL'")
+    codename=$(. /etc/os-release; printf '%s' "${VERSION_CODENAME:-unknown}")
+    [[ $codename == "$REFERENCE_CODENAME" ]] ||
+        mismatches+=("OS codename: running '$codename', reference '$REFERENCE_CODENAME'")
+    if ((${#mismatches[@]} == 0)); then
+        log "Image drift check passed: kernel $kernel on $codename."
+        return 0
+    fi
+    if [[ $allow == 1 || $allow == yes ]]; then
+        local mismatch
+        for mismatch in "${mismatches[@]}"; do
+            warn "Untested image ($mismatch); proceeding by explicit override."
+        done
+        return 0
+    fi
+    die "Untested image: ${mismatches[*]}. This board image differs from the validated reference stack; rerun with --allow-untested-image (or ALLOW_UNTESTED_IMAGE=1) to proceed explicitly."
 }

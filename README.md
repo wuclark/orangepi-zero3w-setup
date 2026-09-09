@@ -364,7 +364,8 @@ OS: Armbian Debian 13 (Trixie), arm64
 ```
 
 Do not force installation on another kernel unless you understand the risks. An
-incompatible out-of-tree GPU module can crash the kernel.
+incompatible out-of-tree GPU module can crash the kernel. `sudo ./setup.sh base`
+aborts on kernel/OS drift from this target unless `--allow-untested-image` is passed.
 
 ### Install the reference GPU stack
 

@@ -11,6 +11,19 @@ It validates the A733 board, records the selected user, and creates project
 state under `/etc/orangepi-zero3w-setup/`. It does not run `apt update`, run a
 full upgrade, install a GUI, enable VNC, or reboot.
 
+The base command also checks the running kernel and OS codename against the
+validated reference stack (`6.6.98-vendor-sun60iw2` on Debian `trixie`) and
+aborts on drift, so a newer Armbian image with different preinstalled packages
+or a new kernel fails loudly instead of breaking later steps. Override
+explicitly when the difference is understood:
+
+```bash
+sudo ./setup.sh base --allow-untested-image
+sudo make board-base ALLOW_UNTESTED_IMAGE=1
+```
+
+Kernel-module layers keep their own `vermagic` gates regardless of this flag.
+
 Optional packages are installed only when requested:
 
 ```bash

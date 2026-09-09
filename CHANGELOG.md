@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add an image-drift gate to `sudo ./setup.sh base`: the running kernel and
+  OS codename must match the validated reference stack
+  (`6.6.98-vendor-sun60iw2` on Debian `trixie`) unless
+  `--allow-untested-image` (or `ALLOW_UNTESTED_IMAGE=1`, also wired through
+  `make board-base`) is given, so newer Armbian images fail loudly instead of
+  breaking later steps.
 - Harden `scripts/install-docker.sh`: fail fast with the exact
   `DOCKER_APT_UPDATE=1` rerun when no cached `docker-ce` candidate exists
   (instead of apt's cryptic `no installation candidate`), and remove

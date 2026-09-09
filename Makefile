@@ -383,7 +383,7 @@ board-stability-test:
 	if [ "$$(id -u)" -eq 0 ]; then STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' STABILITY_INTERVAL_SECONDS='$(STABILITY_INTERVAL_SECONDS)' ./scripts/board-stability-test.sh; else sudo STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' STABILITY_INTERVAL_SECONDS='$(STABILITY_INTERVAL_SECONDS)' ./scripts/board-stability-test.sh; fi
 
 board-base:
-	sudo ./setup.sh base
+	sudo env ALLOW_UNTESTED_IMAGE='$(ALLOW_UNTESTED_IMAGE)' ./setup.sh base
 
 board-packages:
 	sudo ./setup.sh packages
