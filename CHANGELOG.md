@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- Add CI (`.github/workflows/ci.yml`): run `tests/static-checks.sh` and
-  `tests/test-archives.sh` on push and pull requests. Board validation stays
+- Consolidate CI on `.github/workflows/static.yml` (static checks, archive
+  tests, `git diff --check`, Windows PowerShell syntax) and use
+  `actions/checkout@v5` for the Node 24 runtime. Board validation stays
   explicit on real hardware.
 - Add an image-drift gate to `sudo ./setup.sh base`: the running kernel and
   OS codename must match the validated reference stack
