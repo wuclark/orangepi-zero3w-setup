@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Harden `scripts/install-docker.sh`: fail fast with the exact
+  `DOCKER_APT_UPDATE=1` rerun when no cached `docker-ce` candidate exists
+  (instead of apt's cryptic `no installation candidate`), and remove
+  installed conflicting Debian Docker packages (`docker.io`,
+  `docker-compose`, and related names) before installing the official
+  Engine/Compose packages.
 - Add a centralized [fresh-install input sources checklist](docs/reference/input-sources.md)
   linking the base image, vendor source images, SDK, archive workflow, checksums,
   optional tooling, and missing-input recovery paths.

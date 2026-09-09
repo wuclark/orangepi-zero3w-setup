@@ -79,6 +79,12 @@ The verifier checks the client and daemon, architecture, Compose, Buildx, and
 an actual `hello-world` container. The installer enables Docker and adds the
 selected login user to the `docker` group. If package metadata was refreshed
 separately, omit `DOCKER_APT_UPDATE=1`; the default is not to run `apt update`.
+Without `DOCKER_APT_UPDATE=1` and no cached `docker-ce` candidate, the
+installer aborts with the exact rerun instead of apt's cryptic
+`no installation candidate` error. The installer also removes conflicting
+Debian-provided Docker packages (`docker.io`, `docker-compose`, and related
+names) when installed, since `docker-compose` owns the same plugin path as
+`docker-compose-plugin` and otherwise aborts `dpkg` unpack.
 
 For the older Debian package-menu path, choose option `4` from:
 
