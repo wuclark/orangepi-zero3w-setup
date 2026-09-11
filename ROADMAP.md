@@ -63,6 +63,20 @@ specified in `AGENTS.md`.
   trying to judge prose quality.
 - [x] Add project-maintenance references for Make targets, data lifecycle,
   safety boundaries, support claims, design decisions, and evidence format.
+- [x] Bring up a Raspberry Pi 5–style PCIe HAT on the Orange Pi Zero 3W:
+  Gen2 overlay (`overlays/sun60iw2-pcie-gen2.dts`, PD22 PERST# + PD23 power),
+  installer/status scripts, and `docs/optional/pcie.md`. Link-up and
+  ASM1182e + VL805/806 enumeration confirmed on kernel
+  `6.6.98-vendor-sun60iw2` via `make board-pcie-status`.
+- [ ] Verify the PCIe overlay boots cleanly with no HAT attached (cold boot,
+  root-bridge-only `lspci`); required before any default-setup discussion.
+- [ ] Test NVMe on the PCIe HAT (cold boot, `/dev/nvme0n1` detection) and test
+  at least one non-switch PCIe card individually.
+- [ ] File sanitized `board-pcie-status` / `board-report` evidence in an issue;
+  promote the support-matrix PCIe row only after that evidence lands.
+- [ ] Add the PCIe layer as a documented opt-in step in the fresh-install flow
+  once the no-HAT boot test passes; keep it out of `board-initial-setup`
+  until then.
 - [ ] Add a provenance-escrow check for vendor inputs: assert every
   `docs/reference/input-sources.md` acceleration-stack row has a pinned
   SHA-256 in `manifests/reference-stack.env` (or a recorded UNPINNABLE
