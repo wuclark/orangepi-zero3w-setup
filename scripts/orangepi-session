@@ -24,7 +24,7 @@ current(){ [[ -f $STATE/desktop-profile ]] && cat "$STATE/desktop-profile" || ec
 
 set_profile() {
     local profile=$1 reboot=${2:-no}
-    [[ -n ${TYPE[$profile]+yes} ]] || die "Unknown profile: $profile"
+    [[ -n ${TYPE[$profile]+yes} ]] || die "Unknown profile: $profile (choose openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11, or enlightenment-wayland)"
     command -v "${CMD[$profile]}" >/dev/null 2>&1 ||
         die "The $profile session is not installed."
     install -d -m 755 "$(dirname "$CONF")" "$STATE"
