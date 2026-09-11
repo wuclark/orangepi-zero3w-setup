@@ -12,6 +12,7 @@ remain outside Git.
 ├── AGENTS.md, CONTRIBUTING.md           maintenance and review policy
 ├── .github/workflows/                  CI: static checks and archive tests on push/PR
 ├── config/                              files staged into board images; commentless machine-valid files have `.md` sidecars
+├── overlays/                            Device Tree overlay sources compiled on the board (e.g. PCIe HAT fix)
 ├── manifests/                           reference versions and support inputs
 ├── scripts/
 │   ├── extract-*, prepare-*, build-*    host image/archive production

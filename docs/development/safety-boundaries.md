@@ -5,6 +5,7 @@
 | Host image building | Mount source images read-only, use the pinned Docker toolchain, stage private output under `work/`, and never extract untrusted content over `/`. |
 | Image deployment | Treat first-boot images as credential-bearing; validate checksum and partition layout, identify the SD device independently, and warn that writing overwrites it. |
 | Board installation | Use one acceleration layer at a time, preserve timestamped backups, keep PowerVR module loading delayed, and require ABI/reboot checks before GPU workloads. |
+| Boot overlays (PCIe) | Back up `armbianEnv.txt` with a timestamp, preserve existing `user_overlays` entries, never reboot from the installer, apply with a cold boot, and never hot-plug PCIe. |
 | Evidence and access | Keep diagnostics read-only where possible, bind remote services to localhost/SSH tunnels, and sanitize credentials, IPs, VNC hashes, and host keys. |
 
 High-risk operations are package installation, writes below `/opt`, `/usr`,

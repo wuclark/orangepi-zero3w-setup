@@ -1,0 +1,66 @@
+// Purpose: Device Tree overlay source that enables Raspberry Pi 5-style PCIe
+// HATs on the Orange Pi Zero 3W (Allwinner A733 / sun60iw2).
+// Platform: Orange Pi Zero 3W running the 6.6.98-vendor-sun60iw2 Armbian-style
+// kernel with /boot/armbianEnv.txt user_overlays support.
+// Inputs: none at compile time; the bootloader resolves &pio against the base
+// Device Tree when the overlay is applied.
+// Writes: none by itself; scripts/install-pcie-overlay.sh compiles this file
+// to /boot/overlay-user/sun60iw2-pcie-gen2.dtbo and references it from
+// /boot/armbianEnv.txt.
+// Safety: limits the root port to Gen2 (the tested HAT uses an ASM1182e Gen2
+// switch) and adds the external endpoint power/reset GPIOs the vendor PCIe
+// driver expects. Requires a cold boot; PCIe is not hot-pluggable here.
+// Repeat behavior: compiling is idempotent; reinstalling keeps a single
+// user_overlays entry and a timestamped armbianEnv.txt backup.
+// Recovery: remove the overlay name from user_overlays (or restore the backup)
+// and cold boot; see docs/optional/pcie.md.
+// Verification: after a cold boot, the live node shows max-link-speed <2> plus
+// reset/power GPIOs, dmesg reports "pcie link up success" / "PCIe speed of
+// Gen2", and lspci enumerates the switch and endpoint.
+// Documentation: docs/optional/pcie.md
+//
+// GPIO mapping (from the OPI Zero 3W V1.2 schematic, cross-checked against the
+// stock wake-gpios = <bank D pin 21> already present in the live tree):
+//   PD21 = PCIE-WAKEn    (stock, untouched by this overlay)
+//   PD22 = PCIE-PERSTn   (active low  -> flag 1 = GPIO_ACTIVE_LOW)
+//   PD23 = PCIE_PWREN_H  (active high -> flag 0 = GPIO_ACTIVE_HIGH)
+//
+// Numeric flags are used deliberately: plain `dtc` does not run the C
+// preprocessor, so `#include <dt-bindings/gpio/gpio.h>` with GPIO_ACTIVE_LOW/
+// GPIO_ACTIVE_HIGH fails with a parse error unless the file is preprocessed
+// first. 1 = GPIO_ACTIVE_LOW, 0 = GPIO_ACTIVE_HIGH.
+//
+// Do NOT confuse `resets`/`reset-names` (internal PCIe controller reset lines,
+// already in the base tree) with `reset-gpios` (external endpoint PERST#,
+// added here). The driver warns "Failed to get reset-gpios/power-gpios" when
+// the latter are missing.
+//
+// Supported/tested boundary: Orange Pi Zero 3W, A733, Armbian Debian 13,
+// kernel 6.6.98-vendor-sun60iw2, Waveshare PCIe-to-M.2/USB HAT+ (ASM1182e Gen2
+// switch + VIA VL805/806 USB 3 controller). Other cards need individual
+// testing; this overlay is experimental, not part of the PowerVR reference
+// stack. Safe extension point: a Gen1-only or power-sensitive card can use a
+// copy of this overlay with max-link-speed = <1> after its own link test.
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "allwinner,sun60iw2";
+
+	fragment@0 {
+		target-path = "/soc@3000000/pcie@6000000";
+
+		__overlay__ {
+			// Tested HAT uses an ASM1182e Gen2 switch: target Gen2.
+			max-link-speed = <2>;
+
+			// PD22 PERST#, active low.
+			reset-gpios = <&pio 3 22 1>;
+			// PD23 power enable, active high.
+			power-gpios = <&pio 3 23 0>;
+
+			status = "okay";
+		};
+	};
+};

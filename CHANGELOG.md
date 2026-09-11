@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Add experimental PCIe HAT support (`docs/optional/pcie.md`): a Gen2 overlay
+  source (`overlays/sun60iw2-pcie-gen2.dts`) adding the PD22 PERST# / PD23
+  power GPIOs the vendor PCIe driver expects, an installer
+  (`scripts/install-pcie-overlay.sh`, wired as `sudo ./setup.sh pcie` and
+  `make board-pcie-install/uninstall`) that preserves existing `user_overlays`
+  entries and never reboots, and a read-only diagnostic
+  (`scripts/board-pcie-status.sh`, `make board-pcie-status`). Community-tested
+  on kernel `6.6.98-vendor-sun60iw2` with the Waveshare ASM1182e + VL805/806
+  HAT; other cards need individual testing.
 - Consolidate CI on `.github/workflows/static.yml` (static checks, archive
   tests, `git diff --check`, Windows PowerShell syntax) and use
   `actions/checkout@v5` for the Node 24 runtime. Board validation stays

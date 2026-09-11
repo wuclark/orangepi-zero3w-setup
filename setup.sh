@@ -15,6 +15,7 @@ Usage:
   sudo ./setup.sh gpu [existing GPU installer options]
   sudo ./setup.sh vpu [--status|--install|--verify]
   sudo ./setup.sh npu --status
+  sudo ./setup.sh pcie [--install|--status|--uninstall] [--update]
   sudo ./setup.sh core [--update|--status]
   sudo ./setup.sh sources
   sudo ./setup.sh status
@@ -40,6 +41,7 @@ case "$command_name" in
     gpu) exec "$REPO_ROOT/install.sh" "$@" ;;
     vpu) exec "$REPO_ROOT/scripts/setup-vpu.sh" "$@" ;;
     npu) exec "$REPO_ROOT/scripts/setup-npu.sh" "$@" ;;
+    pcie) exec "$REPO_ROOT/scripts/install-pcie-overlay.sh" "$@" ;;
     status) exec "$REPO_ROOT/scripts/setup-status.sh" "$@" ;;
     board-status) exec "$REPO_ROOT/scripts/board-status.sh" "$@" ;;
     retroarch)

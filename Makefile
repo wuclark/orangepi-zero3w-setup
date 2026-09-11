@@ -71,6 +71,7 @@ GIT_DEPTH ?= 1
 	board-vpu-precheck board-vpu-install board-vpu-verify \
 	board-vpu-decode-test board-vpu-quality-test board-vpu-decode-speed \
 	board-npu-precheck board-npu-install board-npu-verify board-npu-test board-npu-golden-test npu-test-assets npu-golden-candidate \
+	board-pcie-install board-pcie-uninstall board-pcie-status \
 	npu-driver-source npu-public-onnx npu-acuity-image-load npu-acuity-image-check npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 npu-generate-goldens \
 	board-npu-golden-test-lenet board-npu-golden-test-yolov5 board-npu-golden-test-resnet50 \
 	board-core-install board-core-status board-a733-sources board-status board-report board-summary collect-boards compare-board-reports \
@@ -178,6 +179,8 @@ help:
 		'make npu-golden-lenet/yolov5/resnet50   Generate a real ACUITY NPU golden (see docs/optional/npu.md)' \
 		'make npu-generate-goldens               Generate all NPU golden archives (fetches pinned ResNet50 ONNX if absent)' \
 		'make board-npu-golden-test-lenet/yolov5/resnet50  Run one of those goldens on the board' \
+		'make board-pcie-install/uninstall          Install or remove the experimental PCIe HAT overlay (cold boot after)' \
+		'make board-pcie-status                     Show read-only PCIe/USB/storage diagnostics' \
 		'make board-test BOARD_LAYER=gpu|vpu|npu|all  Run diagnostic board checks' \
 		'make board-tests BOARD_LAYER=...        Alias for board-test' \
 		'make desktop DESKTOP_PROFILE=openbox    Install a desktop profile' \
@@ -423,7 +426,7 @@ desktop:
 	sudo ./setup.sh desktop --profile '$(DESKTOP_PROFILE)'
 
 desktop-switch:
-	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=<installed-profile>.' >&2; exit 2; }
+	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
 	@if [[ '$(DESKTOP_REBOOT)' == 1 || '$(DESKTOP_REBOOT)' == yes ]]; then \
 		sudo ./scripts/orangepi-session set '$(DESKTOP_PROFILE)' --reboot; \
 	else \
@@ -678,6 +681,15 @@ board-npu-golden-test-yolov5:
 
 board-npu-golden-test-resnet50:
 	sudo ./scripts/board-npu-model-test.sh --model resnet50
+
+board-pcie-install:
+	sudo ./scripts/install-pcie-overlay.sh --install
+
+board-pcie-uninstall:
+	sudo ./scripts/install-pcie-overlay.sh --uninstall
+
+board-pcie-status:
+	if [ "$$(id -u)" -eq 0 ]; then ./scripts/board-pcie-status.sh; else sudo ./scripts/board-pcie-status.sh; fi
 
 board-core-install:
 	sudo ./setup.sh core

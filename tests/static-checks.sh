@@ -113,6 +113,10 @@ grep -q 'STABILITY_INTERVAL_SECONDS' "$REPO_ROOT/scripts/board-stability-test.sh
 grep -q 'interval=0' "$REPO_ROOT/scripts/board-stability-test.sh"
 grep -q 'USB-C DP interpretation' "$REPO_ROOT/scripts/board-display-status.sh"
 grep -q 'allwinnerhdmi' "$REPO_ROOT/scripts/board-audio-status.sh"
+grep -q 'board-pcie-status' "$REPO_ROOT/Makefile"
+grep -q 'board-pcie-install' "$REPO_ROOT/Makefile"
+grep -q 'user_overlays' "$REPO_ROOT/scripts/install-pcie-overlay.sh"
+grep -q 'sun60iw2-pcie-gen2' "$REPO_ROOT/docs/optional/pcie.md"
 
 if grep -qs 'PRESET_HOSTNAME' "$REPO_ROOT/scripts/create-headless-preset.sh" \
     "$REPO_ROOT/windows/Prepare-HeadlessPreset.ps1"; then

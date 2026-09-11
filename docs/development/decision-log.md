@@ -15,3 +15,5 @@
 | Use official AArch64 cores with cache/hash reuse | Debian may lack advanced cores; official artifacts are safer than random binaries. |
 | Make stability testing headless and continuous by default | Endurance testing should not require a display and zero interval exercises sustained load. |
 | Keep storage testing opt-in | SD writes can wear or stress a device and require deliberate consent. |
+| Enable PCIe HATs with a Gen2 + PD22/PD23 overlay via `user_overlays` | The root port was already enabled; the driver missed external power/reset GPIOs and Gen3 retraining failed, so the overlay adds both and cold boot applies them. |
+| Use numeric GPIO flags in the PCIe overlay | Plain `dtc` skips the C preprocessor, so the `dt-bindings` include form fails to parse. |

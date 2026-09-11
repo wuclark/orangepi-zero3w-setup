@@ -329,6 +329,7 @@ Viewer instructions.
 - [Optional GPU](docs/optional/gpu/gpu.md)
 - [Optional VPU](docs/optional/vpu.md)
 - [Optional NPU](docs/optional/npu.md)
+- [Optional PCIe HAT (experimental)](docs/optional/pcie.md)
 - [A733 source and provenance map](docs/reference/source-provenance.md)
 - [Acceleration status and Wayland roadmap](docs/reference/acceleration-status.md)
 

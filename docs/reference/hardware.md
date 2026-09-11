@@ -9,6 +9,10 @@ They confirm the Allwinner A733 platform, PowerVR-class GPU integration, HDMI
 2.0 display path, PCIe/USB high-speed interface, 5 V/3 A board power target,
 and a documented 12 GB memory configuration. The schematic identifies distinct
 GPU power rails and the PCIe clock, reset, wake, and power-enable signals.
+For the FFC PCIe path the relevant nets are `PCIE-WAKEn` on PD21,
+`PCIE-PERSTn` on PD22, and `PCIE_PWREN_H` on PD23; the experimental PCIe HAT
+overlay in `docs/optional/pcie.md` drives PD22/PD23 while leaving the stock
+PD21 wake definition untouched.
 
 These hardware facts do not prove userspace or kernel ABI compatibility. The
 software support claim in this repository remains limited to the reference
