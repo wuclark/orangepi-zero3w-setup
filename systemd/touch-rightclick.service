@@ -1,0 +1,10 @@
+[Unit]
+Description=Orange Pi long-press touchscreen right-click daemon
+After=multi-user.target
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/orangepi-touch-rightclick --device-name WS170120 --gesture hold --hold-ms 700 --move-units 12
+Restart=always
+RestartSec=2
+[Install]
+WantedBy=multi-user.target

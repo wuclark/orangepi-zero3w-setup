@@ -11,7 +11,8 @@ Usage:
   sudo ./setup.sh base [options]
   sudo ./setup.sh packages [options]
   sudo ./setup.sh desktop --profile PROFILE [options]
-  sudo ./setup.sh remote --backend BACKEND [options]
+   sudo ./setup.sh remote --backend BACKEND [options]
+   sudo ./setup.sh touch-rightclick [--device-name NAME] [--gesture hold|tap-hold] [--hold-ms MS] [--move-units N] [--update|--no-start|--uninstall]
   sudo ./setup.sh gpu [existing GPU installer options]
   sudo ./setup.sh vpu [--status|--install|--verify]
   sudo ./setup.sh npu --status
@@ -38,6 +39,7 @@ case "$command_name" in
     packages) exec "$REPO_ROOT/scripts/armbian-provision.sh" "$@" ;;
     desktop) exec "$REPO_ROOT/scripts/setup-desktop.sh" "$@" ;;
     remote) exec "$REPO_ROOT/scripts/setup-remote.sh" "$@" ;;
+    touch-rightclick) exec "$REPO_ROOT/scripts/install-touch-rightclick.sh" "$@" ;;
     gpu) exec "$REPO_ROOT/install.sh" "$@" ;;
     vpu) exec "$REPO_ROOT/scripts/setup-vpu.sh" "$@" ;;
     npu) exec "$REPO_ROOT/scripts/setup-npu.sh" "$@" ;;

@@ -228,6 +228,16 @@ aarch64 PS/N64/PSP/Dreamcast cores.
 See [Retro Gaming / RetroArch](docs/optional/retroarch.md) for the launcher,
 ALSA audio test, repository cores, X11/SSH behavior, repair, and uninstall.
 
+For single-touch Waveshare panels (no multi-touch slots, so no two-finger
+gestures), the long-press right-click daemon works on both X11 and Wayland:
+
+```bash
+sudo make board-touch-rightclick-install
+```
+
+See [Touchscreen long-press right-click](docs/optional/touch-rightclick.md)
+for the `hold` vs `tap-hold` gestures, tuning, verification, and removal.
+
 For health and endurance checks:
 
 - `sudo make board-retroarch-core-check` inspects advanced ARM64 cores.

@@ -1,0 +1,338 @@
+#!/usr/bin/env python3
+# Purpose: Emit a right-click when a single-touch panel is pressed and held still.
+# Platform: Board-side Linux with python3-evdev; input layer only, so it works
+#   under both X11 and Wayland compositors (unlike X11-only helpers).
+# Inputs: --device-name (substring match on the input device, default WS170120),
+#   --gesture (hold: press-and-hold fires; tap-hold: quick tap followed by a
+#   held press fires, leaving a plain long-press free for drag/select),
+#   --hold-ms (hold deadline, default 700), --tap-window-ms (max gap between
+#   the tap and the held press in tap-hold mode, default 400), --move-units
+#   (jitter allowance in device ABS units, default 12), --uinput-name,
+#   --self-test.
+# Writes: No files. Creates a transient uinput pointer device that only emits
+#   BTN_RIGHT press/release at the current cursor position; the watched touch
+#   device is opened read-only and never grabbed, so killing this daemon
+#   restores plain touch behavior immediately.
+# Safety: Runs as root under systemd to read /dev/input/event* and /dev/uinput.
+#   Never reboots, never touches boot ordering, never alters the GPU stack.
+# Repeat behavior: Safe to restart; re-scans for the touch device when the USB
+#   panel is unplugged (2 s retry).
+# Recovery: sudo systemctl disable --now touch-rightclick.service (or the
+#   board-touch-rightclick-uninstall Make target); touch input is unaffected.
+# Verification: scripts/orangepi-touch-rightclick --self-test (no hardware or
+#   root needed); on the board, hold a finger still and watch the context menu
+#   appear, and confirm short taps and drags are unchanged.
+# Documentation: docs/optional/touch-rightclick.md
+# Known limitation: the press itself still reaches the stack as a left-press
+#   (this daemon observes without grabbing, by design); the injected
+#   right-click wins for context menus, but a held press may also begin a
+#   drag/select in some apps. Single-touch eGalax-style panels report no
+#   multi-touch slots, so two-finger gestures are impossible on them.
+"""Long-press-to-right-click daemon for single-touch Waveshare panels."""
+import argparse
+import select
+import sys
+import time
+
+
+def _parse_args(argv):
+    parser = argparse.ArgumentParser(
+        description="Hold a finger still on the touchscreen to right-click."
+    )
+    parser.add_argument("--device-name", default="WS170120",
+                        help="Substring matched against the input device name.")
+    parser.add_argument("--gesture", choices=("hold", "tap-hold"), default="hold",
+                        help="hold: press-and-hold-still fires (default). "
+                             "tap-hold: a quick tap followed by a held press "
+                             "fires, leaving a plain long-press free for "
+                             "drag/select gestures.")
+    parser.add_argument("--hold-ms", type=int, default=700,
+                        help="Hold deadline in milliseconds before right-click.")
+    parser.add_argument("--tap-window-ms", type=int, default=400,
+                        help="In tap-hold mode, max gap in milliseconds between "
+                             "the tap lift and the held press.")
+    parser.add_argument("--move-units", type=int, default=12,
+                        help="Movement allowance in ABS device units; larger "
+                             "motion cancels the pending right-click.")
+    parser.add_argument("--uinput-name", default="orangepi-touch-rightclick",
+                        help="Name of the transient uinput injector device.")
+    parser.add_argument("--rescan-seconds", type=float, default=2.0,
+                        help="Delay before re-scanning after device loss.")
+    parser.add_argument("--self-test", action="store_true",
+                        help="Run the deterministic hold-detector checks and exit.")
+    return parser.parse_args(argv)
+
+
+class HoldDetector:
+    """Pure hold-to-right-click state machine (no I/O, unit-testable).
+
+    Feed timestamped touch observations; on_fire is called at most once per
+    press, when the deadline passes with the finger still down and inside
+    the movement allowance.
+    """
+
+    IDLE, PRESSING, FIRED, MOVED = ("idle", "pressing", "fired", "moved")
+
+    def __init__(self, hold_ms, move_units, on_fire,
+                 gesture="hold", tap_window_ms=400):
+        self.hold_ms = hold_ms
+        self.move_units = move_units
+        self.on_fire = on_fire
+        self.gesture = gesture
+        self.tap_window_ms = tap_window_ms
+        self.state = self.IDLE
+        self.anchor = (0, 0)
+        self.deadline = 0
+        self.last_lift_ms = None
+
+    def _moved(self, x, y):
+        return (abs(x - self.anchor[0]) > self.move_units
+                or abs(y - self.anchor[1]) > self.move_units)
+
+    def _armed(self, now_ms):
+        if self.gesture == "hold":
+            return True
+        return (self.last_lift_ms is not None
+                and now_ms - self.last_lift_ms <= self.tap_window_ms)
+
+    def touch_down(self, now_ms, x, y):
+        if self.state == self.IDLE and self._armed(now_ms):
+            self.state = self.PRESSING
+            self.anchor = (x, y)
+            self.deadline = now_ms + self.hold_ms
+
+    def touch_up(self, now_ms=None):
+        if self.state in (self.PRESSING, self.FIRED, self.MOVED):
+            self.state = self.IDLE
+        if now_ms is not None:
+            self.last_lift_ms = now_ms
+
+    def position(self, x, y):
+        if self.state == self.PRESSING and self._moved(x, y):
+            self.state = self.MOVED
+
+    def poll(self, now_ms):
+        """Call on every loop iteration; returns seconds until the deadline
+        (0.0 when already due) or None when no press is pending."""
+        if self.state != self.PRESSING:
+            return None
+        remaining_ms = self.deadline - now_ms
+        if remaining_ms <= 0:
+            self.state = self.FIRED
+            self.on_fire()
+            return None
+        return remaining_ms / 1000.0
+
+
+def run_self_test():
+    failures = []
+
+    def check(name, condition):
+        print(("PASS " if condition else "FAIL ") + name)
+        if not condition:
+            failures.append(name)
+
+    # 1. Short tap: no fire.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1))
+    det.touch_down(0, 100, 100)
+    det.poll(200)
+    det.touch_up()
+    det.poll(900)
+    check("short tap does not fire", fired == [])
+
+    # 2. Hold still past the deadline: exactly one fire; lift re-arms.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1))
+    det.touch_down(0, 100, 100)
+    det.position(103, 99)  # jitter inside the allowance
+    check("deadline pending before hold elapses", det.poll(500) is not None)
+    det.poll(700)
+    det.poll(5000)  # still held: must not repeat
+    det.touch_up()
+    check("hold fires exactly once", fired == [1])
+    det.touch_down(9000, 50, 50)
+    det.poll(9800)
+    check("second press re-arms and fires", fired == [1, 1])
+
+    # 3. Drag past the allowance cancels.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1))
+    det.touch_down(0, 100, 100)
+    det.position(200, 100)
+    det.poll(5000)
+    det.touch_up()
+    check("drag cancels the pending fire", fired == [])
+
+    # 4. Movement after firing changes nothing (already fired once).
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1))
+    det.touch_down(0, 100, 100)
+    det.poll(700)
+    det.position(500, 500)
+    det.poll(9000)
+    det.touch_up()
+    check("post-fire motion does not refire", fired == [1])
+
+    # 5. Stray lift with no press is harmless.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1))
+    det.touch_up(9999)
+    check("stray lift is harmless", det.poll(19999) is None and fired == [])
+
+    # 6. tap-hold mode: quick tap followed by a held press fires.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1),
+                       gesture="tap-hold", tap_window_ms=400)
+    det.touch_down(0, 100, 100)
+    det.touch_up(120)
+    det.touch_down(300, 102, 101)
+    det.poll(1100)
+    det.touch_up(1200)
+    check("tap-hold fires on the held press", fired == [1])
+
+    # 7. tap-hold mode: a plain long-press without the leading tap is ignored,
+    # leaving it free for drag/select gestures.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1),
+                       gesture="tap-hold", tap_window_ms=400)
+    det.touch_down(5000, 100, 100)
+    det.poll(9000)
+    det.touch_up(9100)
+    check("tap-hold ignores a plain long-press", fired == [])
+
+    # 8. tap-hold mode: a stale tap outside the window does not arm.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1),
+                       gesture="tap-hold", tap_window_ms=400)
+    det.touch_down(0, 100, 100)
+    det.touch_up(120)
+    det.touch_down(2000, 100, 100)
+    det.poll(4000)
+    det.touch_up(4100)
+    check("tap-hold ignores a stale leading tap", fired == [])
+
+    # 9. tap-hold mode: a quick double-tap (no hold) fires nothing.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1),
+                       gesture="tap-hold", tap_window_ms=400)
+    det.touch_down(0, 100, 100)
+    det.touch_up(100)
+    det.touch_down(200, 100, 100)
+    det.touch_up(300)
+    det.poll(2000)
+    check("tap-hold ignores a quick double-tap", fired == [])
+
+    if failures:
+        print("%d self-test failure(s)." % len(failures), file=sys.stderr)
+        return 1
+    print("All hold-detector self-tests passed.")
+    return 0
+
+
+def find_touch_device(evdev, name_substring):
+    from evdev import ecodes
+    for path in evdev.list_devices():
+        try:
+            device = evdev.InputDevice(path)
+        except OSError:
+            continue
+        if name_substring.lower() not in device.name.lower():
+            device.close()
+            continue
+        caps = device.capabilities()
+        abs_caps = caps.get(ecodes.EV_ABS, [])
+        axes = {code for code, _ in abs_caps}
+        if ecodes.ABS_X in axes and ecodes.ABS_Y in axes:
+            return device
+        device.close()
+    return None
+
+
+def run_daemon(args):
+    try:
+        import evdev
+        from evdev import ecodes, UInput
+    except ImportError:
+        print("ERROR: python3-evdev is required "
+              "(sudo apt install -y python3-evdev).", file=sys.stderr)
+        return 2
+
+    injector = UInput({ecodes.EV_KEY: [ecodes.BTN_RIGHT],
+                       ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y]},
+                      name=args.uinput_name)
+    print("uinput injector ready as '%s'." % args.uinput_name, flush=True)
+
+    def emit_right_click():
+        injector.write(ecodes.EV_KEY, ecodes.BTN_RIGHT, 1)
+        injector.syn()
+        time.sleep(0.03)
+        injector.write(ecodes.EV_KEY, ecodes.BTN_RIGHT, 0)
+        injector.syn()
+        print("right-click emitted.", flush=True)
+
+    detector = HoldDetector(args.hold_ms, args.move_units, emit_right_click,
+                           gesture=args.gesture,
+                           tap_window_ms=args.tap_window_ms)
+    device = None
+    x = y = 0
+    touching = False
+
+    while True:
+        if device is None:
+            device = find_touch_device(evdev, args.device_name)
+            if device is None:
+                time.sleep(args.rescan_seconds)
+                continue
+            print("watching '%s' (%s)." % (device.name, device.path), flush=True)
+            x = y = 0
+            touching = False
+        now_ms = int(time.monotonic() * 1000)
+        timeout = detector.poll(now_ms)
+        try:
+            ready, _, _ = select.select([device], [], [], timeout)
+        except (OSError, ValueError):
+            device = None
+            detector.touch_up()
+            continue
+        if not ready:
+            continue  # select timed out exactly at the deadline; loop re-polls.
+        try:
+            for event in device.read():
+                if event.type == ecodes.EV_ABS:
+                    if event.code == ecodes.ABS_X:
+                        x = event.value
+                    elif event.code == ecodes.ABS_Y:
+                        y = event.value
+                    if touching:
+                        detector.position(x, y)
+                elif event.type == ecodes.EV_KEY and event.code == ecodes.BTN_TOUCH:
+                    if event.value:
+                        touching = True
+                        detector.touch_down(int(time.monotonic() * 1000), x, y)
+                    else:
+                        touching = False
+                        detector.touch_up(int(time.monotonic() * 1000))
+        except OSError:
+            print("touch device lost; re-scanning.", flush=True)
+            try:
+                device.close()
+            except OSError:
+                pass
+            device = None
+            detector.touch_up()
+
+
+def main(argv=None):
+    args = _parse_args(sys.argv[1:] if argv is None else argv)
+    if args.self_test:
+        return run_self_test()
+    if args.hold_ms <= 0 or args.move_units < 0 or args.tap_window_ms <= 0:
+        print("ERROR: --hold-ms and --tap-window-ms must be positive and "
+              "--move-units non-negative.", file=sys.stderr)
+        return 2
+    return run_daemon(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

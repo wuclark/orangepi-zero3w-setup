@@ -77,7 +77,8 @@ GIT_DEPTH ?= 1
 	board-npu-golden-test-lenet board-npu-golden-test-yolov5 board-npu-golden-test-resnet50 \
 	board-core-install board-core-status board-a733-sources board-status board-report board-summary collect-boards compare-board-reports \
 	backup-required backup-cache backup-sensitive backup-all restore \
-	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-audio-auto board-retroarch-core-check board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced board-retroarch-download-advanced board-display-status board-audio-status board-stability-test
+	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-audio-auto board-retroarch-core-check board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced 	board-retroarch-download-advanced board-display-status board-audio-status board-stability-test \
+	board-touch-rightclick-install board-touch-rightclick-uninstall
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -132,6 +133,8 @@ help:
 		'make board-retroarch-advanced            Install available/manual advanced ARM64 cores' \
 		'make board-retroarch-download-advanced   Download official aarch64 PS/N64/PSP/Dreamcast cores' \
 		'make board-display-status                Report HDMI/USB-C DP connector and X11 outputs' \
+		'make board-touch-rightclick-install      Install the touchscreen long-press right-click service' \
+		'make board-touch-rightclick-uninstall    Remove the touchscreen right-click service' \
 		'make board-audio-status                  Report ALSA cards and playback devices' \
 		'make board-stability-test [STABILITY_MINUTES=30]  Repeat continuously; default is 30 minutes' \
 		'make board-gpu-wayland-setup             Install Sway and WayVNC as the default Wayland path' \
@@ -382,6 +385,12 @@ board-display-status:
 
 board-audio-status:
 	if [ "$$(id -u)" -eq 0 ]; then ./scripts/board-audio-status.sh; else sudo ./scripts/board-audio-status.sh; fi
+
+board-touch-rightclick-install:
+	if [ "$$(id -u)" -eq 0 ]; then ./scripts/install-touch-rightclick.sh; else sudo ./scripts/install-touch-rightclick.sh; fi
+
+board-touch-rightclick-uninstall:
+	if [ "$$(id -u)" -eq 0 ]; then ./scripts/install-touch-rightclick.sh --uninstall; else sudo ./scripts/install-touch-rightclick.sh --uninstall; fi
 
 board-stability-test:
 	if [ "$$(id -u)" -eq 0 ]; then STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' STABILITY_INTERVAL_SECONDS='$(STABILITY_INTERVAL_SECONDS)' ./scripts/board-stability-test.sh; else sudo STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' STABILITY_INTERVAL_SECONDS='$(STABILITY_INTERVAL_SECONDS)' ./scripts/board-stability-test.sh; fi

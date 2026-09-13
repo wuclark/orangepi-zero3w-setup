@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Add a touchscreen long-press right-click daemon for single-touch Waveshare
+  panels (`scripts/orangepi-touch-rightclick`, `scripts/install-touch-rightclick.sh`,
+  `systemd/touch-rightclick.service`, `sudo ./setup.sh touch-rightclick`, `sudo
+  make board-touch-rightclick-install/uninstall`, `docs/optional/touch-rightclick.md`):
+  press-and-hold-still (`hold`, default) or tap-then-hold (`tap-hold`, keeping
+  plain long-press free for drag/select) injects a right-click through uinput,
+  so it works on X11 and Wayland where X11-only helpers cannot run. The device
+  is watched read-only and never grabbed; two-finger gestures remain impossible
+  on slot-less eGalax controllers (hardware limit).
+
 - Add experimental `lxqt` (`lxqt-core`) X11 desktop profile: `sudo ./setup.sh
   desktop --profile lxqt`, `sudo make desktop-lxqt`, and `sudo make
   switch-lxqt`. It reuses the LightDM/X11 Sunxi `card0`/PowerVR presentation
