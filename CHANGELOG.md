@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add experimental `mate` (`mate-desktop-environment-core`) and `plasma`
+  (`plasma-desktop` with `konsole`) X11 desktop profiles: `sudo ./setup.sh
+  desktop --profile mate|plasma`, `sudo make desktop-mate|desktop-plasma`,
+  and `sudo make switch-mate|switch-plasma`. They reuse the LightDM/X11
+  Sunxi `card0`/PowerVR presentation path but stay package/configuration
+  support only until real-board presentation and reboot evidence is recorded;
+  also fix the missing `fluxbox` session mapping in `setup-desktop.sh`.
+
 - Add experimental PCIe HAT support (`docs/optional/pcie.md`): a Gen2 overlay
   source (`overlays/sun60iw2-pcie-gen2.dts`) adding the PD22 PERST# / PD23
   power GPIOs the vendor PCIe driver expects, an installer

@@ -71,6 +71,16 @@ case "$PROFILE" in
         import_later
         exec startfluxbox
         ;;
+    mate)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=MATE
+        import_later
+        exec mate-session
+        ;;
+    plasma)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=KDE
+        import_later
+        exec startplasma-x11
+        ;;
     sway)
         export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway
         start_wayvnc

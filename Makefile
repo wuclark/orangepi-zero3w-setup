@@ -61,8 +61,9 @@ GIT_DEPTH ?= 1
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
+	desktop-mate desktop-plasma \
 	desktop-sway desktop-labwc desktop-enlightenment-x11 desktop-enlightenment-wayland \
-	switch-openbox switch-xfce switch-i3 switch-icewm switch-fluxbox switch-sway switch-labwc \
+	switch-openbox switch-xfce switch-i3 switch-icewm switch-fluxbox switch-mate switch-plasma switch-sway switch-labwc \
 	switch-enlightenment-x11 switch-enlightenment-wayland \
 	remote remote-x11vnc remote-wayvnc remote-tigervnc remote-status \
 	board-vpu-generate-videos board-vpu-generate-decode-videos \
@@ -422,11 +423,11 @@ board-acceleration-install:
 	$(MAKE) board-npu-install
 
 desktop:
-	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
+	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, mate, plasma, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
 	sudo ./setup.sh desktop --profile '$(DESKTOP_PROFILE)'
 
 desktop-switch:
-	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
+	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, mate, plasma, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
 	@if [[ '$(DESKTOP_REBOOT)' == 1 || '$(DESKTOP_REBOOT)' == yes ]]; then \
 		sudo ./scripts/orangepi-session set '$(DESKTOP_PROFILE)' --reboot; \
 	else \
@@ -463,6 +464,10 @@ desktop-icewm: DESKTOP_PROFILE := icewm
 desktop-icewm: desktop
 desktop-fluxbox: DESKTOP_PROFILE := fluxbox
 desktop-fluxbox: desktop
+desktop-mate: DESKTOP_PROFILE := mate
+desktop-mate: desktop
+desktop-plasma: DESKTOP_PROFILE := plasma
+desktop-plasma: desktop
 desktop-sway: DESKTOP_PROFILE := sway
 desktop-sway: desktop
 desktop-labwc: DESKTOP_PROFILE := labwc
@@ -482,6 +487,10 @@ switch-icewm: DESKTOP_PROFILE := icewm
 switch-icewm: desktop-switch
 switch-fluxbox: DESKTOP_PROFILE := fluxbox
 switch-fluxbox: desktop-switch
+switch-mate: DESKTOP_PROFILE := mate
+switch-mate: desktop-switch
+switch-plasma: DESKTOP_PROFILE := plasma
+switch-plasma: desktop-switch
 switch-sway: DESKTOP_PROFILE := sway
 switch-sway: desktop-switch
 switch-labwc: DESKTOP_PROFILE := labwc

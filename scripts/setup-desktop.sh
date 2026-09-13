@@ -18,11 +18,17 @@ usage() {
     cat <<'EOF'
 Usage: sudo ./setup.sh desktop --profile PROFILE [--user USER]
 
-Profiles: openbox, xfce, i3, icewm, fluxbox, sway, labwc, enlightenment-x11,
-          enlightenment-wayland
+Profiles: openbox, xfce, i3, icewm, fluxbox, mate, plasma, sway, labwc,
+          enlightenment-x11, enlightenment-wayland
 
 Installs only the selected desktop and LightDM. Sway and labwc also install
-the `foot` terminal, `wofi` application launcher, and `mpv` video player. It
+the `foot` terminal, `wofi` application launcher, and `mpv` video player.
+The mate profile installs `mate-desktop-environment-core` and the plasma
+profile installs `plasma-desktop` with `konsole`; both are X11 sessions using
+the tested Sunxi card0/PowerVR presentation path, but remain experimental
+package/configuration support only until real-board presentation and reboot
+evidence is recorded. They are heavier than xfce: prefer xfce on 1-2 GB
+boards and keep serial-console recovery available. It
 does not run apt update.
 Run `sudo apt update` explicitly first when the package cache is not current.
 No remote-access service is installed here.
@@ -47,6 +53,8 @@ declare -A PACKAGES=(
     [i3]='lightdm lightdm-gtk-greeter i3 xterm dbus-x11'
     [icewm]='lightdm lightdm-gtk-greeter icewm xterm dbus-x11'
     [fluxbox]='lightdm lightdm-gtk-greeter fluxbox xterm dbus-x11'
+    [mate]='lightdm lightdm-gtk-greeter mate-desktop-environment-core xterm dbus-x11'
+    [plasma]='lightdm lightdm-gtk-greeter plasma-desktop konsole dbus-x11'
     [sway]='lightdm sway wayland-protocols xwayland foot wofi mpv'
     [labwc]='lightdm labwc wayland-protocols xwayland foot wofi mpv'
     [enlightenment-x11]='lightdm enlightenment xterm dbus-x11'
@@ -74,6 +82,9 @@ case "$PROFILE" in
     xfce) SESSION=xfce ;;
     i3) SESSION=i3 ;;
     icewm) SESSION=icewm ;;
+    fluxbox) SESSION=fluxbox ;;
+    mate) SESSION=mate ;;
+    plasma) SESSION=plasma ;;
     sway|labwc|enlightenment-x11|enlightenment-wayland) SESSION=$PROFILE ;;
 esac
 install -d -m 755 /usr/local/libexec/orangepi-zero3w-setup
@@ -104,7 +115,7 @@ DesktopNames=$profile
 EOF
 }
 case "$PROFILE" in
-    openbox|xfce|i3|icewm|fluxbox|enlightenment-x11) install_session_file "$PROFILE" x11 ;;
+    openbox|xfce|i3|icewm|fluxbox|mate|plasma|enlightenment-x11) install_session_file "$PROFILE" x11 ;;
     sway|labwc|enlightenment-wayland) install_session_file "$PROFILE" wayland ;;
 esac
 cat >"$CONF" <<EOF
