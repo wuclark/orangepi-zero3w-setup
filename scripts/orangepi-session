@@ -5,19 +5,19 @@ STATE=/etc/orangepi-zero3w-setup/state
 CONF=/etc/lightdm/lightdm.conf.d/50-orangepi-zero3w-setup.conf
 declare -A TYPE=(
     [openbox]=x11 [xfce]=x11 [i3]=x11 [icewm]=x11 [fluxbox]=x11
-    [mate]=x11 [plasma]=x11
+    [mate]=x11 [plasma]=x11 [lxqt]=x11
     [sway]=wayland [labwc]=wayland
     [enlightenment-x11]=x11 [enlightenment-wayland]=wayland
 )
 declare -A SESSION=(
     [openbox]=openbox [xfce]=xfce [i3]=i3 [icewm]=icewm [fluxbox]=fluxbox
-    [mate]=mate [plasma]=plasma
+    [mate]=mate [plasma]=plasma [lxqt]=lxqt
     [sway]=sway [labwc]=labwc
     [enlightenment-x11]=enlightenment-x11 [enlightenment-wayland]=enlightenment-wayland
 )
 declare -A CMD=(
     [openbox]=openbox [xfce]=startxfce4 [i3]=i3 [icewm]=icewm [fluxbox]=startfluxbox
-    [mate]=mate-session [plasma]=startplasma-x11
+    [mate]=mate-session [plasma]=startplasma-x11 [lxqt]=startlxqt
     [sway]=sway [labwc]=labwc
     [enlightenment-x11]=enlightenment_start [enlightenment-wayland]=enlightenment_start
 )
@@ -27,7 +27,7 @@ current(){ [[ -f $STATE/desktop-profile ]] && cat "$STATE/desktop-profile" || ec
 
 set_profile() {
     local profile=$1 reboot=${2:-no}
-    [[ -n ${TYPE[$profile]+yes} ]] || die "Unknown profile: $profile (choose openbox, xfce, i3, icewm, fluxbox, mate, plasma, sway, labwc, enlightenment-x11, or enlightenment-wayland)"
+    [[ -n ${TYPE[$profile]+yes} ]] || die "Unknown profile: $profile (choose openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, sway, labwc, enlightenment-x11, or enlightenment-wayland)"
     command -v "${CMD[$profile]}" >/dev/null 2>&1 ||
         die "The $profile session is not installed."
     install -d -m 755 "$(dirname "$CONF")" "$STATE"
@@ -52,7 +52,7 @@ EOF
 
 case "${1:-}" in
     list)
-        printf '%s\n' openbox xfce i3 icewm fluxbox mate plasma sway labwc enlightenment-x11 enlightenment-wayland
+        printf '%s\n' openbox xfce i3 icewm fluxbox mate plasma lxqt sway labwc enlightenment-x11 enlightenment-wayland
         ;;
     current)
         current

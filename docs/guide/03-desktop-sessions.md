@@ -6,7 +6,7 @@ access and does not install a VNC server.
 Available profiles are:
 
 ```text
-openbox, xfce, i3, icewm, fluxbox, mate, plasma, sway, labwc,
+openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, sway, labwc,
 enlightenment-x11, enlightenment-wayland
 ```
 
@@ -25,6 +25,7 @@ sudo make desktop-openbox
 sudo make desktop-xfce
 sudo make desktop-mate
 sudo make desktop-plasma
+sudo make desktop-lxqt
 sudo make desktop-labwc
 ```
 
@@ -71,6 +72,8 @@ The X11 profiles use the tested Sunxi `card0`/PowerVR presentation path. `mate`
 experimental package/configuration support only until real-board evidence
 confirms PowerVR rendering, HDMI presentation, and recovery after reboot;
 prefer `xfce` on 1-2 GB boards and keep serial-console recovery available.
+`lxqt` (`lxqt-core`) is a lightweight Qt-based X11 desktop on the same path
+and likewise remains experimental until the same board evidence is recorded.
 `sway`
 and `labwc` are direct Wayland profiles using the compositor's DRM backend;
 they are package/configuration support only until real-board evidence confirms

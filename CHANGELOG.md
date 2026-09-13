@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add experimental `lxqt` (`lxqt-core`) X11 desktop profile: `sudo ./setup.sh
+  desktop --profile lxqt`, `sudo make desktop-lxqt`, and `sudo make
+  switch-lxqt`. It reuses the LightDM/X11 Sunxi `card0`/PowerVR presentation
+  path but stays package/configuration support only until real-board
+  presentation and reboot evidence is recorded.
 - Add experimental `mate` (`mate-desktop-environment-core`) and `plasma`
   (`plasma-desktop` with `konsole`) X11 desktop profiles: `sudo ./setup.sh
   desktop --profile mate|plasma`, `sudo make desktop-mate|desktop-plasma`,

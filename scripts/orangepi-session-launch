@@ -81,6 +81,11 @@ case "$PROFILE" in
         import_later
         exec startplasma-x11
         ;;
+    lxqt)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=LXQt
+        import_later
+        exec startlxqt
+        ;;
     sway)
         export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway
         start_wayvnc

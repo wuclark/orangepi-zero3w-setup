@@ -18,3 +18,4 @@
 | Enable PCIe HATs with a Gen2 + PD22/PD23 overlay via `user_overlays` | The root port was already enabled; the driver missed external power/reset GPIOs and Gen3 retraining failed, so the overlay adds both and cold boot applies them. |
 | Use numeric GPIO flags in the PCIe overlay | Plain `dtc` skips the C preprocessor, so the `dt-bindings` include form fails to parse. |
 | Offer MATE and KDE Plasma as experimental X11 profiles only | They reuse the tested Sunxi `card0`/PowerVR X11 path and LightDM autologin, but their weight and compositor demands are unproven on this board; package/configuration support only until presentation and reboot evidence exists. |
+| Offer LXQt as an experimental lightweight X11 profile | `lxqt-core` with `startlxqt` on the same LightDM/X11 path; light footprint suits small boards but still needs presentation and reboot evidence before any support claim. |

@@ -9,7 +9,7 @@
 > Any later `vendor-root` instructions are the legacy/debug alternative.
 
 The desktop layer supports separate X11 profiles (`openbox`, `xfce`, `i3`,
-`icewm`, `fluxbox`, `mate`, and `plasma`) and experimental Wayland profiles (`sway` and `labwc`). Install a
+`icewm`, `fluxbox`, `mate`, `plasma`, and `lxqt`) and experimental Wayland profiles (`sway` and `labwc`). Install a
 profile with `setup.sh desktop`, then switch installed profiles with
 `sudo orangepi-session set PROFILE --reboot`. The proven GPU evidence in this
 guide applies to the X11/LightDM path only; a Wayland login requires separate
