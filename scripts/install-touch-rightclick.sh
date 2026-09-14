@@ -2,9 +2,9 @@
 # Purpose: Install or remove the touchscreen long-press right-click daemon and service.
 # Platform: systemd-based Armbian/Debian board image; requires root.
 # Inputs: optional --device-name, --gesture (hold|tap-hold), --hold-ms,
-#   --tap-window-ms, --move-units, --backend (uinput|xtest|auto), --update
-#   (refresh apt first), --no-start, --uninstall; apt metadata is never
-#   refreshed implicitly.
+#   --tap-window-ms, --tap-ms, --move-units, --backend (uinput|xtest|auto),
+#   --update (refresh apt first), --no-start, --uninstall; apt metadata is
+#   never refreshed implicitly.
 # Writes: python3-evdev (always), python3-xlib (xtest backend), xinput and
 #   evtest diagnostics, /usr/local/sbin/orangepi-touch-rightclick,
 #   /etc/systemd/system/touch-rightclick.service,
@@ -31,6 +31,7 @@ DEVICE_NAME=WS170120
 GESTURE=hold
 HOLD_MS=500
 TAP_WINDOW_MS=400
+TAP_MS=300
 MOVE_UNITS=12
 BACKEND=auto
 APT_UPDATE=no
@@ -53,6 +54,8 @@ Options:
   --hold-ms MS         Hold deadline before right-click (default 500)
   --tap-window-ms MS   In tap-hold mode, max gap between the tap lift and
                        the held press (default 400)
+  --tap-ms MS          Max two-finger chord for a two-finger tap (default
+                       300; needs multitouch slots, 0 disables)
   --move-units N       Movement allowance in ABS units; motion past it
                        cancels the pending click (default 12)
   --update             Run apt update before installing python3-evdev
@@ -73,6 +76,7 @@ while (($#)); do
         --gesture) GESTURE=${2:?missing mode}; shift 2 ;;
         --hold-ms) HOLD_MS=${2:?missing ms}; shift 2 ;;
         --tap-window-ms) TAP_WINDOW_MS=${2:?missing ms}; shift 2 ;;
+        --tap-ms) TAP_MS=${2:?missing ms}; shift 2 ;;
         --move-units) MOVE_UNITS=${2:?missing units}; shift 2 ;;
         --update) APT_UPDATE=yes; shift ;;
         --no-start) NO_START=yes; shift ;;
@@ -101,6 +105,7 @@ fi
 [[ $BACKEND == uinput || $BACKEND == xtest || $BACKEND == auto ]] || die "--backend must be uinput, xtest, or auto."
 [[ $HOLD_MS =~ ^[0-9]+$ && $HOLD_MS -gt 0 ]] || die "--hold-ms must be a positive integer."
 [[ $TAP_WINDOW_MS =~ ^[0-9]+$ && $TAP_WINDOW_MS -gt 0 ]] || die "--tap-window-ms must be a positive integer."
+[[ $TAP_MS =~ ^[0-9]+$ ]] || die "--tap-ms must be a non-negative integer (0 disables two-finger tap)."
 [[ $MOVE_UNITS =~ ^[0-9]+$ ]] || die "--move-units must be a non-negative integer."
 [[ -n $DEVICE_NAME ]] || die "--device-name must not be empty."
 
@@ -153,6 +158,7 @@ sed -e "s/--device-name [^ ]*/--device-name $DEVICE_NAME/" \
     -e "s/--backend [^ ]*/--backend $BACKEND/" \
     -e "s/--gesture [^ ]*/--gesture $GESTURE/" \
     -e "s/--hold-ms [^ ]*/--hold-ms $HOLD_MS/" \
+    -e "s/--tap-ms [^ ]*/--tap-ms $TAP_MS/" \
     -e "s/--move-units [^ ]*/--move-units $MOVE_UNITS/" \
     "$UNIT.tmp" >"$UNIT"
 rm -f "$UNIT.tmp"
@@ -163,7 +169,7 @@ if [[ $NO_START == yes ]]; then
     log "Installed touch-rightclick (not started). Start with: sudo systemctl start touch-rightclick.service"
 else
     systemctl restart touch-rightclick.service
-    manifest_record touch "sudo ./setup.sh touch-rightclick --device-name $DEVICE_NAME --backend $BACKEND --gesture $GESTURE --hold-ms $HOLD_MS --move-units $MOVE_UNITS"
+    manifest_record touch "sudo ./setup.sh touch-rightclick --device-name $DEVICE_NAME --backend $BACKEND --gesture $GESTURE --hold-ms $HOLD_MS --tap-ms $TAP_MS --move-units $MOVE_UNITS"
     log "Installed and started touch-rightclick (device '$DEVICE_NAME', backend $BACKEND, gesture $GESTURE, hold ${HOLD_MS} ms)."
 fi
     log "Hold a finger still on the panel, then lift, for the context menu; short taps and drags are unchanged."

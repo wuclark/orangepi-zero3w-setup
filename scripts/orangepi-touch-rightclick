@@ -8,10 +8,13 @@
 #   xtest: X11 XTEST injection, no kernel support needed, X11 sessions only),
 #   --display/--xauthority (xtest backend addressing, default :0 and the
 #   LightDM root authority when present),
-#   --gesture (hold: press-and-hold fires; tap-hold: quick tap followed by a
-#   held press fires, leaving a plain long-press free for drag/select),
-#   --hold-ms (hold deadline, default 700), --tap-window-ms (max gap between
-#   the tap and the held press in tap-hold mode, default 400), --move-units
+#   --gesture (hold: press-and-hold fires on lift; tap-hold: quick tap
+#   followed by a held press fires on lift, leaving a plain long-press free
+#   for drag/select),
+#   --hold-ms (hold deadline, default 500), --tap-window-ms (max gap between
+#   the tap and the held press in tap-hold mode, default 400),
+#   --tap-ms (max two-finger chord for a two-finger tap, default 300, needs
+#   ABS_MT_SLOT support, 0 disables), --move-units
 #   (jitter allowance in device ABS units, default 12), --uinput-name,
 #   --self-test.
 # Writes: No files. Creates a transient uinput pointer device that only emits
@@ -69,6 +72,10 @@ def _parse_args(argv):
     parser.add_argument("--tap-window-ms", type=int, default=400,
                         help="In tap-hold mode, max gap in milliseconds between "
                              "the tap lift and the held press.")
+    parser.add_argument("--tap-ms", type=int, default=300,
+                        help="Max two-finger chord length in milliseconds for a "
+                             "two-finger tap (needs ABS_MT_SLOT support; 0 "
+                             "disables the gesture).")
     parser.add_argument("--move-units", type=int, default=12,
                         help="Movement allowance in ABS device units; larger "
                              "motion cancels the pending right-click.")
@@ -153,6 +160,82 @@ class HoldDetector:
             self.state = self.ARMED
             return None
         return remaining_ms / 1000.0
+
+
+class TwoFingerTapDetector:
+    """Pure two-finger-tap state machine (no I/O, unit-testable).
+
+    Tracks multitouch slots: exactly two contacts that appear together, stay
+    within the movement allowance, and both lift within tap_ms fire one
+    right-click on the final lift. Anything else (single finger, three or
+    more contacts, dragging, lingering) never fires. A chord runs from the
+    first contact down to the last lift.
+    """
+
+    def __init__(self, tap_ms, move_units, on_fire):
+        self.tap_ms = tap_ms
+        self.move_units = move_units
+        self.on_fire = on_fire
+        self.active = {}  # slot -> [x0, y0, x, y, t0, positioned]
+        self.max_concurrent = 0
+        self.chord_start = 0
+        self.moved = False
+
+    def _check_move(self, slot):
+        contact = self.active[slot]
+        if (abs(contact[2] - contact[0]) > self.move_units
+                or abs(contact[3] - contact[1]) > self.move_units):
+            self.moved = True
+
+    def contact(self, slot, tracking_id, x, y, now_ms):
+        """Feed an ABS_MT_SLOT/TRACKING_ID observation for one slot. The
+        coordinates cached at ID time may predate the contact (position
+        events arrive separately), so the anchor is set by the first real
+        position event, not here."""
+        if tracking_id == -1:
+            if slot in self.active:
+                del self.active[slot]
+            if not self.active:
+                self._end_chord(now_ms)
+            return
+        if slot not in self.active:
+            if not self.active:
+                self.chord_start = now_ms
+                self.moved = False
+            self.active[slot] = [x, y, x, y, now_ms, False]
+            if len(self.active) > self.max_concurrent:
+                self.max_concurrent = len(self.active)
+        elif self.active[slot][5]:
+            self.active[slot][2] = x
+            self.active[slot][3] = y
+            self._check_move(slot)
+
+    def position(self, slot, x, y):
+        if slot in self.active:
+            contact = self.active[slot]
+            if not contact[5]:
+                contact[0] = x
+                contact[1] = y
+                contact[5] = True
+            contact[2] = x
+            contact[3] = y
+            self._check_move(slot)
+
+    def concurrent(self):
+        return len(self.active)
+
+    def _end_chord(self, now_ms):
+        fire = (self.max_concurrent == 2 and not self.moved
+                and 0 <= now_ms - self.chord_start <= self.tap_ms)
+        self.max_concurrent = 0
+        self.moved = False
+        if fire:
+            self.on_fire()
+
+    def reset(self):
+        self.active = {}
+        self.max_concurrent = 0
+        self.moved = False
 
 
 def run_self_test():
@@ -254,6 +337,69 @@ def run_self_test():
     det.reset()
     check("device loss resets without firing",
           det.touch_up(950) is False and fired == [])
+
+    # 11. Two-finger quick tap fires once on the final lift.
+    fired = []
+    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap.contact(0, 10, 0, 0, 0)
+    tap.position(0, 100, 100)
+    tap.contact(1, 11, 0, 0, 40)
+    tap.position(1, 200, 200)
+    tap.contact(0, -1, 100, 100, 120)
+    tap.contact(1, -1, 200, 200, 150)
+    check("two-finger tap fires once", fired == [1])
+
+    # 12. Single-finger tap never fires the two-finger detector.
+    fired = []
+    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap.contact(0, 10, 100, 100, 0)
+    tap.contact(0, -1, 100, 100, 120)
+    check("single tap does not fire two-finger tap", fired == [])
+
+    # 13. Lingering two-finger hold does not fire.
+    fired = []
+    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap.contact(0, 10, 100, 100, 0)
+    tap.contact(1, 11, 200, 200, 40)
+    tap.contact(0, -1, 100, 100, 900)
+    tap.contact(1, -1, 200, 200, 950)
+    check("two-finger hold does not fire", fired == [])
+
+    # 14. Two-finger drag does not fire.
+    fired = []
+    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap.contact(0, 10, 0, 0, 0)
+    tap.position(0, 100, 100)
+    tap.contact(1, 11, 0, 0, 20)
+    tap.position(1, 200, 200)
+    tap.position(0, 160, 100)
+    tap.contact(0, -1, 160, 100, 120)
+    tap.contact(1, -1, 200, 200, 140)
+    check("two-finger drag does not fire", fired == [])
+
+    # 15. Three fingers never fire.
+    fired = []
+    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap.contact(0, 10, 100, 100, 0)
+    tap.contact(1, 11, 200, 200, 20)
+    tap.contact(2, 12, 300, 300, 40)
+    tap.contact(0, -1, 100, 100, 120)
+    tap.contact(1, -1, 200, 200, 130)
+    tap.contact(2, -1, 300, 300, 140)
+    check("three fingers do not fire", fired == [])
+
+    # 16. A second two-finger tap after the first fires again.
+    fired = []
+    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap.contact(0, 10, 100, 100, 0)
+    tap.contact(1, 11, 200, 200, 20)
+    tap.contact(0, -1, 100, 100, 100)
+    tap.contact(1, -1, 200, 200, 120)
+    tap.contact(0, 20, 100, 100, 1000)
+    tap.contact(1, 21, 200, 200, 1020)
+    tap.contact(0, -1, 100, 100, 1100)
+    tap.contact(1, -1, 200, 200, 1120)
+    check("repeat two-finger taps fire each time", fired == [1, 1])
 
     if failures:
         print("%d self-test failure(s)." % len(failures), file=sys.stderr)
@@ -385,9 +531,15 @@ def run_daemon(args):
     detector = HoldDetector(args.hold_ms, args.move_units, emit_right_click,
                            gesture=args.gesture,
                            tap_window_ms=args.tap_window_ms)
+    tap_detector = TwoFingerTapDetector(args.tap_ms, args.move_units,
+                                       emit_right_click)
     device = None
+    multitouch = False
     x = y = 0
     touching = False
+    current_slot = 0
+    slot_pos = {}
+    multi_seen = False
 
     while True:
         if device is None:
@@ -396,8 +548,20 @@ def run_daemon(args):
                 time.sleep(args.rescan_seconds)
                 continue
             print("watching '%s' (%s)." % (device.name, device.path), flush=True)
+            abs_codes = {code for code, _ in
+                         device.capabilities().get(ecodes.EV_ABS, [])}
+            multitouch = (args.tap_ms > 0
+                          and ecodes.ABS_MT_SLOT in abs_codes
+                          and ecodes.ABS_MT_TRACKING_ID in abs_codes)
+            print("two-finger tap %s." % ("enabled" if multitouch else "disabled"),
+                  flush=True)
             x = y = 0
             touching = False
+            current_slot = 0
+            slot_pos = {}
+            multi_seen = False
+            detector.reset()
+            tap_detector.reset()
         now_ms = int(time.monotonic() * 1000)
         timeout = detector.poll(now_ms)
         try:
@@ -405,6 +569,7 @@ def run_daemon(args):
         except (OSError, ValueError):
             device = None
             detector.reset()
+            tap_detector.reset()
             continue
         if not ready:
             continue  # select timed out exactly at the deadline; loop re-polls.
@@ -415,6 +580,28 @@ def run_daemon(args):
                         x = event.value
                     elif event.code == ecodes.ABS_Y:
                         y = event.value
+                    elif multitouch and event.code == ecodes.ABS_MT_SLOT:
+                        current_slot = event.value
+                        slot_pos.setdefault(current_slot, [0, 0])
+                    elif multitouch and event.code == ecodes.ABS_MT_TRACKING_ID:
+                        pos = slot_pos.setdefault(current_slot, [0, 0])
+                        tap_detector.contact(current_slot, event.value,
+                                             pos[0], pos[1],
+                                             int(time.monotonic() * 1000))
+                        if tap_detector.concurrent() >= 2 and not multi_seen:
+                            # Two live contacts: this is not a single-finger
+                            # hold, so disarm it; the tap detector owns the chord.
+                            multi_seen = True
+                            detector.reset()
+                    elif multitouch and event.code == ecodes.ABS_MT_POSITION_X:
+                        slot_pos.setdefault(current_slot, [0, 0])[0] = event.value
+                        tap_detector.position(current_slot, event.value,
+                                              slot_pos[current_slot][1])
+                    elif multitouch and event.code == ecodes.ABS_MT_POSITION_Y:
+                        slot_pos.setdefault(current_slot, [0, 0])[1] = event.value
+                        tap_detector.position(current_slot,
+                                              slot_pos[current_slot][0],
+                                              event.value)
                     if touching:
                         detector.position(x, y)
                 elif event.type == ecodes.EV_KEY and event.code == ecodes.BTN_TOUCH:
@@ -423,6 +610,7 @@ def run_daemon(args):
                         detector.touch_down(int(time.monotonic() * 1000), x, y)
                     else:
                         touching = False
+                        multi_seen = False
                         detector.touch_up(int(time.monotonic() * 1000))
         except OSError:
             print("touch device lost; re-scanning.", flush=True)
@@ -432,6 +620,7 @@ def run_daemon(args):
                 pass
             device = None
             detector.reset()
+            tap_detector.reset()
 
 
 def main(argv=None):
@@ -441,6 +630,10 @@ def main(argv=None):
     if args.hold_ms <= 0 or args.move_units < 0 or args.tap_window_ms <= 0:
         print("ERROR: --hold-ms and --tap-window-ms must be positive and "
               "--move-units non-negative.", file=sys.stderr)
+        return 2
+    if args.tap_ms < 0:
+        print("ERROR: --tap-ms must be non-negative (0 disables two-finger tap).",
+              file=sys.stderr)
         return 2
     return run_daemon(args)
 

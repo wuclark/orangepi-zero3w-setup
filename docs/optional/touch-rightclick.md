@@ -89,21 +89,35 @@ Tuning (defaults suit the WS170120):
 ```bash
 sudo ./setup.sh touch-rightclick --hold-ms 400
 ```
+
 ```bash
 sudo ./setup.sh touch-rightclick --gesture tap-hold --hold-ms 800
 ```
 
-- `--gesture hold` (default): press-and-hold-still fires. Simple and
-  discoverable, but it claims the plain long-press: holding still and then
-  dragging will have fired a right-click first.
-- `--gesture tap-hold`: a quick tap followed by a held press fires, leaving a
-  plain long-press free for drag/select gestures. `--tap-window-ms`
-  (default 400) bounds the gap between the tap and the held press.
-- `--hold-ms` (default 700): how long the finger must stay still.
+- `--gesture hold` (default): press one finger, keep it still past `--hold-ms`,
+  lift. Simple and discoverable. The click fires on lift so the menu opens
+  with no buttons down; wandering past the allowance before lifting cancels,
+  so drags never misfire.
+- `--gesture tap-hold`: quick tap followed by a held press (also firing on
+  lift), for hands where even a plain hold should never summon a menu.
+  `--tap-window-ms` (default 400) bounds the gap between the tap and the
+  held press.
+- **Two-finger tap**: tap with two fingers and lift both within `--tap-ms`
+  (default 300). Needs `ABS_MT_SLOT` support — i.e. the multitouch module
+  above — and the daemon enables it automatically when the slots are present
+  (`--tap-ms 0` disables it). A second live contact disarms the single-finger
+  hold for that chord, so the two gestures never double-fire; holds, drags,
+  and three-finger touches never trigger it.
+- `--hold-ms` (default 500): how long the finger must stay still. Lower it
+  (e.g. 350) for a snappier click, raise it (e.g. 800) if menus fire while
+  you are starting a drag.
 - `--move-units` (default 12 ABS units): motion past this cancels the pending
   click, so drags and scrolls never right-click.
 - `--device-name` (default `WS170120`): substring matched against the input
   device name; find yours with `sudo evtest`.
+
+Re-run the installer with new values to apply them — reinstalling is
+idempotent and restarts the service.
 
 The click injector needs `/dev/uinput` in the uinput backend: the installer
 loads the `uinput` module and persists it via

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add native two-finger-tap right-click to the touch daemon: with `ABS_MT_SLOT`
+  support (the out-of-tree module), exactly two quick contacts fire one click
+  on the final lift, while a second live contact disarms the single-finger
+  hold so gestures never double-fire. Auto-enabled when slots are present
+  (`--tap-ms`, 0 disables). No new packages: touchegg is unavailable in
+  trixie, so the daemon covers it with 6 new self-tests.
 - Add an out-of-tree `hid-multitouch` builder for the tested vendor kernel
   (`scripts/install-touch-multitouch.sh`, `sudo ./setup.sh touch-multitouch`,
   `sudo make board-touch-multitouch-install/uninstall`): upstream v6.6.98

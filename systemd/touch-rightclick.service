@@ -5,7 +5,7 @@ StartLimitIntervalSec=120
 StartLimitBurst=5
 [Service]
 Type=simple
-ExecStart=/usr/local/sbin/orangepi-touch-rightclick --device-name WS170120 --backend uinput --gesture hold --hold-ms 500 --move-units 12
+ExecStart=/usr/local/sbin/orangepi-touch-rightclick --device-name WS170120 --backend uinput --gesture hold --hold-ms 500 --tap-ms 300 --move-units 12
 Restart=always
 RestartSec=2
 [Install]
