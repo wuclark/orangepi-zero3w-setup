@@ -211,6 +211,7 @@ class TwoFingerTapDetector:
         self.max_concurrent = 0
         self.chord_start = 0
         self.moved = False
+        self.last_mid = None
 
     def _check_move(self, slot):
         contact = self.active[slot]
@@ -243,6 +244,7 @@ class TwoFingerTapDetector:
             self.active[slot][2] = x
             self.active[slot][3] = y
             self._check_move(slot)
+        self._note_pair()
 
     def position(self, slot, x, y):
         if slot in self.active:
@@ -254,6 +256,18 @@ class TwoFingerTapDetector:
             contact[2] = x
             contact[3] = y
             self._check_move(slot)
+            self._note_pair()
+
+    def _note_pair(self):
+        # Remember the live pair midpoint so the click can land between the
+        # fingers even though the contacts are gone by chord end. Only real
+        # (positioned) contacts count: ID-time cache coordinates predate the
+        # touch and would warp to a stale corner.
+        if len(self.active) == 2:
+            pts = list(self.active.values())
+            if pts[0][5] and pts[1][5]:
+                self.last_mid = ((pts[0][2] + pts[1][2]) // 2,
+                                 (pts[0][3] + pts[1][3]) // 2)
 
     def concurrent(self):
         return len(self.active)
@@ -268,12 +282,17 @@ class TwoFingerTapDetector:
         self.max_concurrent = 0
         self.moved = False
         if fire:
-            self.on_fire()
+            if self.last_mid is not None:
+                self.on_fire(*self.last_mid)
+            else:
+                self.on_fire()
+        self.last_mid = None
 
     def reset(self):
         self.active = {}
         self.max_concurrent = 0
         self.moved = False
+        self.last_mid = None
 
 
 def run_self_test():
@@ -378,27 +397,27 @@ def run_self_test():
     check("device loss resets without firing",
           det.touch_up(950) is False and fired == [])
 
-    # 11. Two-finger quick tap fires once on the final lift.
+    # 11. Two-finger quick tap fires once on the final lift, at the pair midpoint.
     fired = []
-    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap = TwoFingerTapDetector(300, 12, lambda x, y: fired.append((x, y)))
     tap.contact(0, 10, 0, 0, 0)
     tap.position(0, 100, 100)
     tap.contact(1, 11, 0, 0, 40)
     tap.position(1, 200, 200)
     tap.contact(0, -1, 100, 100, 120)
     tap.contact(1, -1, 200, 200, 150)
-    check("two-finger tap fires once", fired == [1])
+    check("two-finger tap fires once at the midpoint", fired == [(150, 150)])
 
     # 12. Single-finger tap never fires the two-finger detector.
     fired = []
-    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap = TwoFingerTapDetector(300, 12, lambda *a: fired.append(1))
     tap.contact(0, 10, 100, 100, 0)
     tap.contact(0, -1, 100, 100, 120)
     check("single tap does not fire two-finger tap", fired == [])
 
     # 13. Lingering two-finger hold does not fire.
     fired = []
-    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap = TwoFingerTapDetector(300, 12, lambda *a: fired.append(1))
     tap.contact(0, 10, 100, 100, 0)
     tap.contact(1, 11, 200, 200, 40)
     tap.contact(0, -1, 100, 100, 900)
@@ -407,7 +426,7 @@ def run_self_test():
 
     # 14. Two-finger drag does not fire.
     fired = []
-    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap = TwoFingerTapDetector(300, 12, lambda *a: fired.append(1))
     tap.contact(0, 10, 0, 0, 0)
     tap.position(0, 100, 100)
     tap.contact(1, 11, 0, 0, 20)
@@ -419,7 +438,7 @@ def run_self_test():
 
     # 15. Three fingers never fire.
     fired = []
-    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap = TwoFingerTapDetector(300, 12, lambda *a: fired.append(1))
     tap.contact(0, 10, 100, 100, 0)
     tap.contact(1, 11, 200, 200, 20)
     tap.contact(2, 12, 300, 300, 40)
@@ -430,7 +449,7 @@ def run_self_test():
 
     # 16. A second two-finger tap after the first fires again.
     fired = []
-    tap = TwoFingerTapDetector(300, 12, lambda: fired.append(1))
+    tap = TwoFingerTapDetector(300, 12, lambda *a: fired.append(1))
     tap.contact(0, 10, 100, 100, 0)
     tap.contact(1, 11, 200, 200, 20)
     tap.contact(0, -1, 100, 100, 100)
@@ -484,7 +503,9 @@ def make_uinput_emitter(args):
         return None
     print("uinput injector ready as '%s'." % args.uinput_name, flush=True)
 
-    def emit():
+    def emit(x=None, y=None):
+        # The button-only uinput device carries no motion: the click lands
+        # wherever the cursor already is (the held finger for holds).
         injector.write(ecodes.EV_KEY, ecodes.BTN_RIGHT, 1)
         injector.syn()
         time.sleep(0.03)
@@ -592,9 +613,12 @@ def make_xtest_emitter(args):
 
     print("xtest injector ready for display '%s'." % args.display, flush=True)
 
-    def emit():
+    def emit(x=None, y=None):
         try:
             disp = connect()
+            if x is not None and y is not None:
+                disp.screen().root.warp_pointer(x, y)
+                disp.sync()
             disp.xtest_fake_input(X.ButtonPress, 3)
             disp.sync()
             time.sleep(0.03)
@@ -609,7 +633,10 @@ def make_xtest_emitter(args):
                 pass
             state["display"] = None
         else:
-            print("right-click emitted.", flush=True)
+            if x is not None and y is not None:
+                print("right-click emitted at (%d,%d)." % (x, y), flush=True)
+            else:
+                print("right-click emitted.", flush=True)
 
     return emit
 

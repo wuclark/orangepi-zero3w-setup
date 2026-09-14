@@ -107,7 +107,9 @@ sudo ./setup.sh touch-rightclick --gesture tap-hold --hold-ms 800
 - **Two-finger tap**: tap with two fingers and lift both within `--tap-ms`
   (default 300). Needs `ABS_MT_SLOT` support — i.e. the multitouch module
   above — and the daemon enables it automatically when the slots are present
-  (`--tap-ms 0` disables it). A second live contact disarms the single-finger
+  (`--tap-ms 0` disables it). The click lands at the pair midpoint (the XTEST
+  backend warps the cursor there first; the button-only uinput device clicks
+  at the current position). A second live contact disarms the single-finger
   hold for that chord, so the two gestures never double-fire; holds, drags,
   and three-finger touches never trigger it.
 - `--hold-ms` (default 500): how long the finger must stay still. Lower it

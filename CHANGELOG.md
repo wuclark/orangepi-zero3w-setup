@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Land two-finger-tap clicks at the pair midpoint: the tap detector remembers
+  the live contact midpoint and the XTEST backend warps the cursor there
+  before clicking (the button-only uinput device keeps clicking in place).
 - Fix phantom drift in the touch daemon: BTN_TOUCH precedes coordinates and
   X/Y arrive as separate events, so anchoring on partial data cancelled every
   hold and tap on real hardware. Anchors now form on the first complete
