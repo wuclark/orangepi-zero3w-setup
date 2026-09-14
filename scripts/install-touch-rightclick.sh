@@ -5,7 +5,12 @@
 #   --tap-window-ms, --move-units, --update (refresh apt
 #   first), --no-start, --uninstall; apt metadata is never refreshed implicitly.
 # Writes: python3-evdev package, /usr/local/sbin/orangepi-touch-rightclick,
-#   /etc/systemd/system/touch-rightclick.service, systemd enable/start state.
+#   /etc/systemd/system/touch-rightclick.service,
+#   /etc/modules-load.d/touch-rightclick.conf (plain `uinput` line only),
+#   systemd enable/start state.
+# Safety: input-layer only; touches no GPU stack, boot ordering, desktop, or
+#   remote configuration. The modules-load entry loads only the benign `uinput`
+#   helper at boot and is unrelated to the delayed `pvrsrvkm` sequencing.
 # Safety: input-layer only; touches no GPU stack, boot ordering, desktop, or
 #   remote configuration. Never reboots; the caller reboots only if desired.
 # Repeat behavior: idempotent; reinstalling with new flags rewrites the unit.
@@ -72,10 +77,11 @@ require_root
 
 UNIT=/etc/systemd/system/touch-rightclick.service
 DAEMON=/usr/local/sbin/orangepi-touch-rightclick
+MODULES_CONF=/etc/modules-load.d/touch-rightclick.conf
 
 if [[ $ACTION == uninstall ]]; then
     systemctl disable --now touch-rightclick.service 2>/dev/null || true
-    rm -f "$UNIT" "$DAEMON"
+    rm -f "$UNIT" "$DAEMON" "$MODULES_CONF"
     systemctl daemon-reload 2>/dev/null || true
     log "Removed touchscreen long-press right-click daemon. Plain touch is unaffected."
     exit 0
@@ -95,6 +101,14 @@ apt-get install -y python3-evdev
 
 "$SCRIPT_DIR/orangepi-touch-rightclick" --self-test
 
+# The injector needs /dev/uinput, which requires the uinput module. The vendor
+# image does not load it by default, so load it now and persist it across boot.
+if ! modprobe uinput 2>/dev/null; then
+    die "The uinput kernel module is unavailable (modprobe uinput failed). The daemon cannot inject clicks on this kernel."
+fi
+printf '%s\n' "uinput" >"$MODULES_CONF"
+[[ -c /dev/uinput ]] || die "/dev/uinput is still missing after loading uinput; check dmesg."
+
 install -m 755 "$SCRIPT_DIR/orangepi-touch-rightclick" "$DAEMON"
 install -m 644 "$SCRIPT_DIR/../systemd/touch-rightclick.service" "$UNIT.tmp"
 # Apply caller tuning to the installed unit without editing the shipped file.
@@ -106,6 +120,7 @@ sed -e "s/--device-name [^ ]*/--device-name $DEVICE_NAME/" \
 rm -f "$UNIT.tmp"
 systemctl daemon-reload
 systemctl enable touch-rightclick.service
+systemctl reset-failed touch-rightclick.service 2>/dev/null || true
 if [[ $NO_START == yes ]]; then
     log "Installed touch-rightclick (not started). Start with: sudo systemctl start touch-rightclick.service"
 else

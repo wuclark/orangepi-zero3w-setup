@@ -18,6 +18,11 @@ Standard systemd unit schema: `Unit`, `Service`, `Install` sections.
 `/usr/local/sbin/orangepi-touch-rightclick` with explicit tuning flags
 (`--device-name`, `--gesture`, `--hold-ms`, `--move-units`). `Restart=always` is required
 so USB re-enumeration or transient input errors recover without manual action.
+`StartLimitIntervalSec`/`StartLimitBurst` cap systemd-level restarts so a
+structural failure (e.g. missing `/dev/uinput`) fails visibly instead of
+restart-spinning forever; in-daemon USB re-scanning is unaffected. The unit
+itself stays comment-free by repository convention; this rationale lives here
+rather than inline.
 Do not add reboot, shutdown, or early-boot ordering directives: this service
 is input-only and must not participate in the delayed GPU module sequencing.
 

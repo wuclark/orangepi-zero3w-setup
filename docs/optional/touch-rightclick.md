@@ -42,6 +42,12 @@ sudo ./setup.sh touch-rightclick --gesture tap-hold --hold-ms 800
 - `--device-name` (default `WS170120`): substring matched against the input
   device name; find yours with `sudo evtest`.
 
+The click injector needs `/dev/uinput`: the installer loads the `uinput`
+module and persists it via `/etc/modules-load.d/touch-rightclick.conf`
+(plain `uinput` line only — unrelated to the delayed `pvrsrvkm` sequencing).
+Without it the service fails visibly instead of restart-spinning, by design;
+check `journalctl -u touch-rightclick.service` in that case.
+
 ## Verify
 
 1. `systemctl status touch-rightclick.service` is active; `journalctl -u

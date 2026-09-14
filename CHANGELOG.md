@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fix the touch daemon on vendor images without `/dev/uinput`: the installer
+  now loads the `uinput` module and persists it via
+  `/etc/modules-load.d/touch-rightclick.conf` (benign input helper,
+  unrelated to the delayed `pvrsrvkm` sequencing), resets any latched
+  failure state, and the service burst-limits restarts so a structural
+  failure surfaces in the journal instead of spinning forever.
 - Add desktop profile removal: `sudo ./setup.sh desktop --profile PROFILE
   --remove` or `sudo make desktop-remove DESKTOP_PROFILE=...` uninstalls the
   profile's packages (plus orphaned dependencies) and drops its session file.
