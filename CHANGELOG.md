@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Bundle the `xinput` and `evtest` touch diagnostics with the touch daemon
+  installer, and document why true multi-touch stays out of reach (panel is
+  5-point capable, but the vendor kernel ships no `hid-multitouch`; a kernel
+  rebuild for it is out of scope next to the working long-press path).
 - Add an XTEST click-injection backend to the touch daemon for vendor kernels
   without uinput (observed on `6.6.98-vendor-sun60iw2`: no module, not
   built in). The installer auto-selects uinput when `/dev/uinput` is usable

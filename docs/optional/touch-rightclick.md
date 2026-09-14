@@ -19,10 +19,18 @@ sudo ./setup.sh touch-rightclick
 ```
 
 or equivalently `sudo make board-touch-rightclick-install`. This installs
-`python3-evdev` from the existing apt cache (pass `--update` to refresh it
-first), runs the built-in detector self-test, and enables/starts
+`python3-evdev` (plus `python3-xlib` for the xtest backend and the `xinput` /
+`evtest` touch diagnostics) from the existing apt cache (pass `--update` to
+refresh it first), runs the built-in detector self-test, and enables/starts
 `touch-rightclick.service`. It never reboots and touches nothing in the GPU,
 desktop, or remote stacks.
+
+True multi-touch (two-finger tap, pinch) is a hardware-plus-kernel matter:
+the WS170120 panel is 5-point capacitive, but the
+`6.6.98-vendor-sun60iw2` kernel ships neither `hid-multitouch` nor uinput,
+so generic HID exposes single-touch only. Enabling it would require
+rebuilding the vendor kernel — disproportionate next to the working
+long-press path, so this daemon is the supported answer.
 
 ## Backends
 

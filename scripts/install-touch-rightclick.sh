@@ -5,8 +5,8 @@
 #   --tap-window-ms, --move-units, --backend (uinput|xtest|auto), --update
 #   (refresh apt first), --no-start, --uninstall; apt metadata is never
 #   refreshed implicitly.
-# Writes: python3-evdev (always) and python3-xlib (xtest backend) packages,
-#   /usr/local/sbin/orangepi-touch-rightclick,
+# Writes: python3-evdev (always), python3-xlib (xtest backend), xinput and
+#   evtest diagnostics, /usr/local/sbin/orangepi-touch-rightclick,
 #   /etc/systemd/system/touch-rightclick.service,
 #   /etc/modules-load.d/touch-rightclick.conf (uinput backend only),
 #   systemd enable/start state.
@@ -106,7 +106,10 @@ if [[ $APT_UPDATE == yes ]]; then
     apt-get update
 fi
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -y python3-evdev
+# Touch diagnostics ride along: xinput (X11 device list/properties/mapping)
+# and evtest (kernel event stream) are the two tools this setup is debugged
+# with, and both are tiny.
+apt-get install -y python3-evdev xinput evtest
 
 "$SCRIPT_DIR/orangepi-touch-rightclick" --self-test
 
