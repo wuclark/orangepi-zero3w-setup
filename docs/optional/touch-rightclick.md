@@ -46,6 +46,15 @@ long-press path, so this daemon is the supported answer.
 - `auto` (default) picks uinput when available, else xtest.
 
 Tuning (defaults suit the WS170120):
+
+- `--hold-ms` (default 500): how long the finger must stay still. Lower it
+  (e.g. 350) for a snappier click, raise it (e.g. 800) if menus fire while
+  you are starting a drag. Re-run the installer with the new value to apply
+  it — reinstalling is idempotent and restarts the service:
+
+```bash
+sudo ./setup.sh touch-rightclick --hold-ms 400
+```
 ```bash
 sudo ./setup.sh touch-rightclick --gesture tap-hold --hold-ms 800
 ```

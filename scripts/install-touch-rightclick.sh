@@ -28,7 +28,7 @@ source "$SCRIPT_DIR/lib.sh"
 
 DEVICE_NAME=WS170120
 GESTURE=hold
-HOLD_MS=700
+HOLD_MS=500
 TAP_WINDOW_MS=400
 MOVE_UNITS=12
 BACKEND=auto
@@ -49,7 +49,7 @@ Options:
   --gesture MODE       hold (press-and-hold fires, default) or tap-hold
                        (quick tap followed by a held press fires, leaving a
                        plain long-press free for drag/select)
-  --hold-ms MS         Hold deadline before right-click (default 700)
+  --hold-ms MS         Hold deadline before right-click (default 500)
   --tap-window-ms MS   In tap-hold mode, max gap between the tap lift and
                        the held press (default 400)
   --move-units N       Movement allowance in ABS units; motion past it

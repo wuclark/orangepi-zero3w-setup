@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Lower the touch daemon's default hold deadline from 700 ms to 500 ms and
+  document adjusting it (`--hold-ms`; reinstalling applies the new value).
 - Bundle the `xinput` and `evtest` touch diagnostics with the touch daemon
   installer, and document why true multi-touch stays out of reach (panel is
   5-point capable, but the vendor kernel ships no `hid-multitouch`; a kernel

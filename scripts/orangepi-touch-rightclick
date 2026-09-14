@@ -61,7 +61,7 @@ def _parse_args(argv):
                              "tap-hold: a quick tap followed by a held press "
                              "fires, leaving a plain long-press free for "
                              "drag/select gestures.")
-    parser.add_argument("--hold-ms", type=int, default=700,
+    parser.add_argument("--hold-ms", type=int, default=500,
                         help="Hold deadline in milliseconds before right-click.")
     parser.add_argument("--tap-window-ms", type=int, default=400,
                         help="In tap-hold mode, max gap in milliseconds between "
