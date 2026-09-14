@@ -10,7 +10,8 @@
 
 The desktop layer supports separate X11 profiles (`openbox`, `xfce`, `i3`,
 `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`, `cinnamon`,
-`gnome`, `gnome-flashback`, and `compiz`) and experimental Wayland profiles (`sway` and `labwc`). Install a
+`gnome`, `gnome-flashback`, `compiz`, and `enlightenment-x11`) and experimental
+Wayland profiles (`sway`, `labwc`, and `enlightenment-wayland`). Install a
 profile with `setup.sh desktop`, then switch installed profiles with
 `sudo orangepi-session set PROFILE --reboot`. The proven GPU evidence in this
 guide applies to the X11/LightDM path only; a Wayland login requires separate

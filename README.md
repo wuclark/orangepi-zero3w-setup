@@ -315,7 +315,8 @@ sudo ./setup.sh packages --update
 ```
 
 Choose a GUI only when wanted. Available desktop profiles include X11 sessions
-(`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`, `cinnamon`, `gnome`, `gnome-flashback`, `compiz`) and Wayland sessions
+(`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`, `cinnamon`, `gnome`, `gnome-flashback`, `compiz`, `enlightenment-x11`)
+and Wayland sessions (`sway`, `labwc`, `enlightenment-wayland`):
 (`sway`, `labwc`):
 
 ```bash

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- List the pre-existing `enlightenment-x11`/`enlightenment-wayland` profiles
+  alongside every other profile in the README, step-by-step GPU guide, and
+  tutorial, and name the touch layer in the project map.
 - Lower the touch daemon's default hold deadline from 700 ms to 500 ms and
   document adjusting it (`--hold-ms`; reinstalling applies the new value).
 - Bundle the `xinput` and `evtest` touch diagnostics with the touch daemon

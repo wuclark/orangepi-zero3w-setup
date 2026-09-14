@@ -30,7 +30,7 @@ remain outside Git.
 ├── docs/
 │   ├── development/                      contributor workflow and this map
 │   ├── guide/                            step-by-step setup and recovery
-│   ├── optional/                         GPU, VPU, NPU, and RetroArch layers
+ │   ├── optional/                         GPU, VPU, NPU, PCIe, touch, and RetroArch layers
 │   ├── reference/                        architecture, hardware, status, support, input sources
 │   ├── remote/                           SSH/VNC/remote-display procedures
 │   └── legacy/                           historical paths retained for reference
