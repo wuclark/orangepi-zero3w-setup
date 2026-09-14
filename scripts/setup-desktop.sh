@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Purpose: Install and select one supported desktop profile through LightDM.
 # Platform: Debian/Armbian board image; profile packages come from configured APT.
-# Inputs: --profile and optional --user; apt metadata is never refreshed implicitly.
-# Writes: desktop packages, project state, session files, and LightDM configuration.
+# Inputs: --profile, optional --user, and optional --remove; apt metadata is
+#   never refreshed implicitly.
+# Writes: desktop packages, project state, session files, and LightDM configuration
+#   (install); profile packages and the profile session file (remove).
 # Safety: only project-managed profile files are changed; remote access is separate.
+#   Removal refuses to drop the active session and never removes LightDM itself.
 # Repeat behavior: selecting the same profile is idempotent; switching updates state.
 # Recovery: use setup-reset.sh or the desktop rollback target; packages are preserved.
 # Verification: run board-status and the relevant X11 or Wayland verification target.
@@ -14,9 +17,11 @@ source "$SCRIPT_DIR/lib.sh"
 
 PROFILE=
 TARGET_USER=
+REMOVE=no
 usage() {
     cat <<'EOF'
-Usage: sudo ./setup.sh desktop --profile PROFILE [--user USER]
+ Usage: sudo ./setup.sh desktop --profile PROFILE [--user USER]
+        sudo ./setup.sh desktop --profile PROFILE --remove
 
 Profiles: openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie,
           cinnamon, gnome, gnome-flashback, compiz, sway, labwc,
@@ -55,15 +60,20 @@ wobbly windows, expo, and scale on the same X11 path. Compiz renders through
 than 60 fps, and run `ccsm` first to enable at least Window Decoration,
 Move, Resize, Place, and Application Switcher or the session is
 non-interactive. It
-does not run apt update.
-Run `sudo apt update` explicitly first when the package cache is not current.
-No remote-access service is installed here.
+ does not run apt update.
+ Run `sudo apt update` explicitly first when the package cache is not current.
+ No remote-access service is installed here.
+ `--remove` uninstalls the profile's packages (plus orphaned dependencies)
+ and drops its session file. It refuses to remove the active session —
+ switch first — and never removes LightDM itself; use setup-reset.sh to drop
+ the GUI entirely.
 EOF
 }
 while (($#)); do
     case "$1" in
         --profile) PROFILE=${2:?missing profile}; shift 2 ;;
         --user) TARGET_USER=${2:?missing user}; shift 2 ;;
+        --remove) REMOVE=yes; shift ;;
         -h|--help) usage; exit 0 ;;
         *) die "Unknown argument: $1" ;;
     esac
@@ -97,6 +107,25 @@ declare -A PACKAGES=(
 
 export DEBIAN_FRONTEND=noninteractive
 read -r -a package_list <<<"${PACKAGES[$PROFILE]}"
+if [[ $REMOVE == yes ]]; then
+    ACTIVE=$(cat /etc/orangepi-zero3w-setup/state/desktop-profile 2>/dev/null || true)
+    if [[ $ACTIVE == "$PROFILE" ]]; then
+        die "Profile '$PROFILE' is the active session. Switch first (e.g. sudo orangepi-session set openbox), then remove."
+    fi
+    remove_list=()
+    for pkg in "${package_list[@]}"; do
+        case "$pkg" in
+            lightdm|lightdm-gtk-greeter) continue ;;
+        esac
+        remove_list+=("$pkg")
+    done
+    apt-get remove -y "${remove_list[@]}"
+    apt-get autoremove -y
+    rm -f "/usr/share/xsessions/orangepi-$PROFILE.desktop" \
+        "/usr/share/wayland-sessions/orangepi-$PROFILE.desktop"
+    log "Removed desktop profile: $PROFILE (LightDM kept; use setup-reset.sh to drop the GUI entirely)."
+    exit 0
+fi
 apt-get install -y --no-install-recommends "${package_list[@]}"
 install -m 755 "$SCRIPT_DIR/orangepi-session" /usr/local/sbin/orangepi-session
 install -d -m 755 /etc/X11/Xresources

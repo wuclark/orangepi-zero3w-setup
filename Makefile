@@ -58,7 +58,7 @@ GIT_DEPTH ?= 1
 	board-test board-tests board-diagnostics board-validation board-base board-packages board-core board-sources board-foundation board-initial-setup board-initial-setup-gui board-acceleration-install board-gpu-test board-gpu-runtime-test board-gpu-compute-deps board-gpu-compute-test wsl-vulkan-compute-deps wsl-vulkan-compute-test board-vpu-test \
 	board-gpu-x11-setup board-gpu-wayland-setup board-gpu-wayland-verify board-gpu-sway-setup board-gpu-sway-verify board-gpu-weston-setup \
 	board-docker-install board-docker-verify \
-	desktop desktop-switch desktop-list desktop-current desktop-rollback \
+	desktop desktop-switch desktop-list desktop-current desktop-rollback desktop-remove \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
 	desktop-mate desktop-plasma desktop-lxqt desktop-lxde desktop-budgie desktop-cinnamon desktop-gnome desktop-gnome-flashback desktop-compiz \
@@ -188,6 +188,7 @@ help:
 		'make board-test BOARD_LAYER=gpu|vpu|npu|all  Run diagnostic board checks' \
 		'make board-tests BOARD_LAYER=...        Alias for board-test' \
 		'make desktop DESKTOP_PROFILE=openbox    Install a desktop profile' \
+		'make desktop-remove DESKTOP_PROFILE=compiz  Remove a desktop profile (refuses the active session)' \
 		'make desktop-switch DESKTOP_PROFILE=xfce  Switch installed session' \
 		'make desktop-list/current             List or show desktop sessions' \
 		'make lightdm-mask                    Mask LightDM and stop its session' \
@@ -442,6 +443,10 @@ desktop-switch:
 	else \
 		sudo ./scripts/orangepi-session set '$(DESKTOP_PROFILE)'; \
 	fi
+
+desktop-remove:
+	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon, gnome, gnome-flashback, compiz, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
+	sudo ./setup.sh desktop --profile '$(DESKTOP_PROFILE)' --remove
 
 desktop-list:
 	sudo ./scripts/orangepi-session list

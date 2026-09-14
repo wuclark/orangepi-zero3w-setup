@@ -54,6 +54,17 @@ sudo make desktop-switch DESKTOP_PROFILE=xfce
 sudo make desktop-switch DESKTOP_PROFILE=labwc DESKTOP_REBOOT=1
 ```
 
+To remove a profile entirely (packages plus its session file):
+
+```bash
+sudo make desktop-remove DESKTOP_PROFILE=compiz
+```
+
+Removal refuses to drop the active session — switch first — and never
+removes LightDM itself, since other profiles may still use it. Use
+`sudo ./setup.sh reset` to drop the GUI configuration entirely (packages
+are preserved by design).
+
 There are also `desktop-<profile>` and `switch-<profile>` targets for every
 profile listed below. Installation and switching remain separate so a session
 change cannot unexpectedly reboot the board.

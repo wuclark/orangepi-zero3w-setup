@@ -26,7 +26,7 @@ new public target or changing a target's boundary.
 | `board-headless-benchmark`, `board-system-benchmark` | matching `scripts/board-*.sh` | Board | Run acceleration or CPU/system workloads; storage/network are opt-in. |
 | `board-stability-test`, `board-thermal-monitor` | matching `scripts/board-*.sh` | Board | Repeat workloads and record thermal/frequency data. |
 | `board-retroarch-*` | RetroArch installer and helpers | Board | Install, validate, repair, test, and remove isolated RetroArch Vulkan. |
-| `desktop-*`, `switch-*`, `remote-*` | `scripts/setup-desktop.sh`, `setup-remote.sh` | Board | Select desktop or remote backend; changes services and graphical targets. |
+| `desktop-*`, `switch-*`, `desktop-remove`, `remote-*` | `scripts/setup-desktop.sh`, `setup-remote.sh` | Board | Select, remove, or switch desktop or remote backend; removal refuses the active session and keeps LightDM; changes services and graphical targets. |
 | `board-touch-rightclick-install`, `board-touch-rightclick-uninstall` | `scripts/install-touch-rightclick.sh`, `scripts/orangepi-touch-rightclick`, `systemd/touch-rightclick.service` | Board | Install/remove the long-press touchscreen right-click service; input-only, no reboot, no GPU/desktop/remote changes. |
 | `backup-*`, `restore` | `scripts/backup.sh`, `restore.sh` | Host | Copy or restore external inputs, caches, and separately confirmed secrets. |
 | `collect-boards`, `compare-board-reports` | report collection/comparison scripts | Host + SSH boards | Gather normalized reports and compare boards without changing them. |

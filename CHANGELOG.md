@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add desktop profile removal: `sudo ./setup.sh desktop --profile PROFILE
+  --remove` or `sudo make desktop-remove DESKTOP_PROFILE=...` uninstalls the
+  profile's packages (plus orphaned dependencies) and drops its session file.
+  It refuses to remove the active session and never removes LightDM itself.
 - Add experimental `compiz` (metapackage with `compiz-plugins-extra` and the
   `tint2` panel) standalone OpenGL compositing session: `sudo ./setup.sh
   desktop --profile compiz`, `sudo make desktop-compiz`, and `sudo make
