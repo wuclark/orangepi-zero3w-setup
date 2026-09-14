@@ -2,11 +2,13 @@
 # Purpose: Install or remove the touchscreen long-press right-click daemon and service.
 # Platform: systemd-based Armbian/Debian board image; requires root.
 # Inputs: optional --device-name, --gesture (hold|tap-hold), --hold-ms,
-#   --tap-window-ms, --move-units, --update (refresh apt
-#   first), --no-start, --uninstall; apt metadata is never refreshed implicitly.
-# Writes: python3-evdev package, /usr/local/sbin/orangepi-touch-rightclick,
+#   --tap-window-ms, --move-units, --backend (uinput|xtest|auto), --update
+#   (refresh apt first), --no-start, --uninstall; apt metadata is never
+#   refreshed implicitly.
+# Writes: python3-evdev (always) and python3-xlib (xtest backend) packages,
+#   /usr/local/sbin/orangepi-touch-rightclick,
 #   /etc/systemd/system/touch-rightclick.service,
-#   /etc/modules-load.d/touch-rightclick.conf (plain `uinput` line only),
+#   /etc/modules-load.d/touch-rightclick.conf (uinput backend only),
 #   systemd enable/start state.
 # Safety: input-layer only; touches no GPU stack, boot ordering, desktop, or
 #   remote configuration. The modules-load entry loads only the benign `uinput`
@@ -29,6 +31,7 @@ GESTURE=hold
 HOLD_MS=700
 TAP_WINDOW_MS=400
 MOVE_UNITS=12
+BACKEND=auto
 APT_UPDATE=no
 NO_START=no
 ACTION=install
@@ -39,6 +42,10 @@ Usage: sudo ./setup.sh touch-rightclick [options]
 
 Options:
   --device-name NAME   Input device substring to watch (default WS170120)
+  --backend MODE       uinput (kernel injection, X11+Wayland, needs
+                       /dev/uinput), xtest (X11 XTEST injection, no kernel
+                       support needed, X11 sessions only), or auto (default:
+                       uinput when available, else xtest)
   --gesture MODE       hold (press-and-hold fires, default) or tap-hold
                        (quick tap followed by a held press fires, leaving a
                        plain long-press free for drag/select)
@@ -61,6 +68,7 @@ EOF
 while (($#)); do
     case "$1" in
         --device-name) DEVICE_NAME=${2:?missing name}; shift 2 ;;
+        --backend) BACKEND=${2:?missing mode}; shift 2 ;;
         --gesture) GESTURE=${2:?missing mode}; shift 2 ;;
         --hold-ms) HOLD_MS=${2:?missing ms}; shift 2 ;;
         --tap-window-ms) TAP_WINDOW_MS=${2:?missing ms}; shift 2 ;;
@@ -88,6 +96,7 @@ if [[ $ACTION == uninstall ]]; then
 fi
 
 [[ $GESTURE == hold || $GESTURE == tap-hold ]] || die "--gesture must be hold or tap-hold."
+[[ $BACKEND == uinput || $BACKEND == xtest || $BACKEND == auto ]] || die "--backend must be uinput, xtest, or auto."
 [[ $HOLD_MS =~ ^[0-9]+$ && $HOLD_MS -gt 0 ]] || die "--hold-ms must be a positive integer."
 [[ $TAP_WINDOW_MS =~ ^[0-9]+$ && $TAP_WINDOW_MS -gt 0 ]] || die "--tap-window-ms must be a positive integer."
 [[ $MOVE_UNITS =~ ^[0-9]+$ ]] || die "--move-units must be a non-negative integer."
@@ -101,18 +110,42 @@ apt-get install -y python3-evdev
 
 "$SCRIPT_DIR/orangepi-touch-rightclick" --self-test
 
-# The injector needs /dev/uinput, which requires the uinput module. The vendor
-# image does not load it by default, so load it now and persist it across boot.
-if ! modprobe uinput 2>/dev/null; then
-    die "The uinput kernel module is unavailable (modprobe uinput failed). The daemon cannot inject clicks on this kernel."
+# Backend selection: uinput injects at the kernel layer (X11 and Wayland) but
+# needs /dev/uinput. Some vendor kernels ship no uinput at all, so fall back
+# to XTEST injection at the X server level (X11 sessions only, no kernel
+# support needed).
+uinput_usable() {
+    [[ -c /dev/uinput ]] && return 0
+    command -v modprobe >/dev/null 2>&1 || return 1
+    modprobe uinput 2>/dev/null && [[ -c /dev/uinput ]]
+}
+if [[ $BACKEND == auto ]]; then
+    if uinput_usable; then
+        BACKEND=uinput
+    else
+        BACKEND=xtest
+    fi
+elif [[ $BACKEND == uinput ]]; then
+    uinput_usable || die "The uinput backend needs /dev/uinput and it is unavailable (this kernel ships no uinput module). Rerun with --backend xtest on X11."
 fi
-printf '%s\n' "uinput" >"$MODULES_CONF"
-[[ -c /dev/uinput ]] || die "/dev/uinput is still missing after loading uinput; check dmesg."
+if [[ $BACKEND == uinput ]]; then
+    # Persist the helper module across boot. Plain `uinput` line only,
+    # unrelated to the delayed `pvrsrvkm` sequencing.
+    printf '%s\n' "uinput" >"$MODULES_CONF"
+    [[ -c /dev/uinput ]] || die "/dev/uinput is still missing after loading uinput; check dmesg."
+    log "Backend: uinput (kernel injection, X11 and Wayland)."
+else
+    rm -f "$MODULES_CONF"
+    apt-get install -y python3-xlib
+    python3 -c "import Xlib" || die "python3-xlib failed to import."
+    log "Backend: xtest (X11 XTEST injection; X11 sessions only, no kernel support needed)."
+fi
 
 install -m 755 "$SCRIPT_DIR/orangepi-touch-rightclick" "$DAEMON"
 install -m 644 "$SCRIPT_DIR/../systemd/touch-rightclick.service" "$UNIT.tmp"
 # Apply caller tuning to the installed unit without editing the shipped file.
 sed -e "s/--device-name [^ ]*/--device-name $DEVICE_NAME/" \
+    -e "s/--backend [^ ]*/--backend $BACKEND/" \
     -e "s/--gesture [^ ]*/--gesture $GESTURE/" \
     -e "s/--hold-ms [^ ]*/--hold-ms $HOLD_MS/" \
     -e "s/--move-units [^ ]*/--move-units $MOVE_UNITS/" \
@@ -125,6 +158,6 @@ if [[ $NO_START == yes ]]; then
     log "Installed touch-rightclick (not started). Start with: sudo systemctl start touch-rightclick.service"
 else
     systemctl restart touch-rightclick.service
-    log "Installed and started touch-rightclick (device '$DEVICE_NAME', gesture $GESTURE, hold ${HOLD_MS} ms)."
+    log "Installed and started touch-rightclick (device '$DEVICE_NAME', backend $BACKEND, gesture $GESTURE, hold ${HOLD_MS} ms)."
 fi
 log "Hold a finger still on the panel for the context menu; short taps and drags are unchanged."

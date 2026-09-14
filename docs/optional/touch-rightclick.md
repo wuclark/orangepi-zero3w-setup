@@ -24,8 +24,20 @@ first), runs the built-in detector self-test, and enables/starts
 `touch-rightclick.service`. It never reboots and touches nothing in the GPU,
 desktop, or remote stacks.
 
-Tuning (defaults suit the WS170120):
+## Backends
 
+- `uinput` injects at the kernel layer and reaches X11 and Wayland sessions,
+  but needs `/dev/uinput`. The installer loads and persists the module when
+  present. Force it with `--backend uinput`.
+- `xtest` injects through the X11 XTEST extension: no kernel support needed,
+  but X11 sessions only. The installer selects it automatically when uinput
+  is unavailable (observed on the `6.6.98-vendor-sun60iw2` kernel, which
+  ships no uinput at all) and installs `python3-xlib` for it. It addresses
+  display `:0` with the LightDM root authority by default
+  (`--display`/`--xauthority` override).
+- `auto` (default) picks uinput when available, else xtest.
+
+Tuning (defaults suit the WS170120):
 ```bash
 sudo ./setup.sh touch-rightclick --gesture tap-hold --hold-ms 800
 ```
@@ -42,10 +54,12 @@ sudo ./setup.sh touch-rightclick --gesture tap-hold --hold-ms 800
 - `--device-name` (default `WS170120`): substring matched against the input
   device name; find yours with `sudo evtest`.
 
-The click injector needs `/dev/uinput`: the installer loads the `uinput`
-module and persists it via `/etc/modules-load.d/touch-rightclick.conf`
-(plain `uinput` line only — unrelated to the delayed `pvrsrvkm` sequencing).
-Without it the service fails visibly instead of restart-spinning, by design;
+The click injector needs `/dev/uinput` in the uinput backend: the installer
+loads the `uinput` module and persists it via
+`/etc/modules-load.d/touch-rightclick.conf` (plain `uinput` line only —
+unrelated to the delayed `pvrsrvkm` sequencing). The xtest backend needs
+neither. A structural failure in either backend fails visibly instead of
+restart-spinning, by design;
 check `journalctl -u touch-rightclick.service` in that case.
 
 ## Verify

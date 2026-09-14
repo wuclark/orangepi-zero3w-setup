@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add an XTEST click-injection backend to the touch daemon for vendor kernels
+  without uinput (observed on `6.6.98-vendor-sun60iw2`: no module, not
+  built in). The installer auto-selects uinput when `/dev/uinput` is usable
+  and otherwise falls back to XTEST (`python3-xlib`, X11 sessions only,
+  LightDM root authority by default); `--backend` forces either. The
+  modules-load persistence now applies to the uinput path only.
 - Fix the touch daemon on vendor images without `/dev/uinput`: the installer
   now loads the `uinput` module and persists it via
   `/etc/modules-load.d/touch-rightclick.conf` (benign input helper,

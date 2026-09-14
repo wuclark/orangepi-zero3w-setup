@@ -3,6 +3,10 @@
 # Platform: Board-side Linux with python3-evdev; input layer only, so it works
 #   under both X11 and Wayland compositors (unlike X11-only helpers).
 # Inputs: --device-name (substring match on the input device, default WS170120),
+#   --backend (uinput: kernel injection, X11+Wayland but needs /dev/uinput;
+#   xtest: X11 XTEST injection, no kernel support needed, X11 sessions only),
+#   --display/--xauthority (xtest backend addressing, default :0 and the
+#   LightDM root authority when present),
 #   --gesture (hold: press-and-hold fires; tap-hold: quick tap followed by a
 #   held press fires, leaving a plain long-press free for drag/select),
 #   --hold-ms (hold deadline, default 700), --tap-window-ms (max gap between
@@ -30,6 +34,7 @@
 #   multi-touch slots, so two-finger gestures are impossible on them.
 """Long-press-to-right-click daemon for single-touch Waveshare panels."""
 import argparse
+import os
 import select
 import sys
 import time
@@ -41,6 +46,16 @@ def _parse_args(argv):
     )
     parser.add_argument("--device-name", default="WS170120",
                         help="Substring matched against the input device name.")
+    parser.add_argument("--backend", choices=("uinput", "xtest"), default="uinput",
+                        help="uinput: inject through the kernel (X11 and Wayland, "
+                             "needs /dev/uinput). xtest: inject through the X11 "
+                             "XTEST extension (no kernel support needed, but X11 "
+                             "sessions only).")
+    parser.add_argument("--display", default=":0",
+                        help="X display addressed by the xtest backend.")
+    parser.add_argument("--xauthority", default=None,
+                        help="Xauthority file for the xtest backend; defaults to "
+                             "the LightDM root authority when present.")
     parser.add_argument("--gesture", choices=("hold", "tap-hold"), default="hold",
                         help="hold: press-and-hold-still fires (default). "
                              "tap-hold: a quick tap followed by a held press "
@@ -249,21 +264,24 @@ def find_touch_device(evdev, name_substring):
     return None
 
 
-def run_daemon(args):
-    try:
-        import evdev
-        from evdev import ecodes, UInput
-    except ImportError:
-        print("ERROR: python3-evdev is required "
-              "(sudo apt install -y python3-evdev).", file=sys.stderr)
-        return 2
+def make_uinput_emitter(args):
+    """Right-click injector through the kernel uinput device.
 
-    injector = UInput({ecodes.EV_KEY: [ecodes.BTN_RIGHT],
-                       ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y]},
-                      name=args.uinput_name)
+    Works under X11 and Wayland but needs /dev/uinput (the uinput module).
+    Returns the emit callable, or None when unavailable."""
+    from evdev import ecodes, UInput
+    try:
+        injector = UInput({ecodes.EV_KEY: [ecodes.BTN_RIGHT],
+                           ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y]},
+                          name=args.uinput_name)
+    except OSError as exc:
+        print("ERROR: cannot create the uinput injector (%s). Load the uinput "
+              "module or rerun with --backend xtest on X11." % exc,
+              file=sys.stderr)
+        return None
     print("uinput injector ready as '%s'." % args.uinput_name, flush=True)
 
-    def emit_right_click():
+    def emit():
         injector.write(ecodes.EV_KEY, ecodes.BTN_RIGHT, 1)
         injector.syn()
         time.sleep(0.03)
@@ -271,6 +289,82 @@ def run_daemon(args):
         injector.syn()
         print("right-click emitted.", flush=True)
 
+    return emit
+
+
+LIGHTDM_ROOT_AUTH = "/var/run/lightdm/root/:0"
+
+
+def make_xtest_emitter(args):
+    """Right-click injector through the X11 XTEST extension.
+
+    Needs no kernel support, but only reaches X11 sessions (never Wayland).
+    The daemon runs as root, so it uses the LightDM root authority for the
+    autologin display by default. Returns the emit callable, or None when
+    python3-xlib is missing."""
+    try:
+        from Xlib import X
+        from Xlib import display as xdisplay
+    except ImportError:
+        print("ERROR: python3-xlib is required for --backend xtest "
+              "(sudo apt install -y python3-xlib).", file=sys.stderr)
+        return None
+    auth = args.xauthority
+    if auth is None and os.path.exists(LIGHTDM_ROOT_AUTH):
+        auth = LIGHTDM_ROOT_AUTH
+    if auth is not None:
+        os.environ["XAUTHORITY"] = auth
+    os.environ["DISPLAY"] = args.display
+    state = {"display": None}
+
+    def connect():
+        if state["display"] is None:
+            state["display"] = xdisplay.Display(args.display)
+        return state["display"]
+
+    print("xtest injector ready for display '%s'." % args.display, flush=True)
+
+    def emit():
+        try:
+            disp = connect()
+            disp.xtest_fake_input(X.ButtonPress, 3)
+            disp.sync()
+            time.sleep(0.03)
+            disp.xtest_fake_input(X.ButtonRelease, 3)
+            disp.sync()
+        except Exception as exc:
+            print("xtest emit failed (%s); will retry on the next hold."
+                  % exc, flush=True)
+            try:
+                state["display"].close()
+            except Exception:
+                pass
+            state["display"] = None
+        else:
+            print("right-click emitted.", flush=True)
+
+    return emit
+
+
+def run_daemon(args):
+    try:
+        import evdev
+        from evdev import ecodes
+    except ImportError:
+        print("ERROR: python3-evdev is required "
+              "(sudo apt install -y python3-evdev).", file=sys.stderr)
+        return 2
+
+    if args.backend == "xtest":
+        emit_right_click = make_xtest_emitter(args)
+        if emit_right_click is None:
+            return 2
+    else:
+        emit_right_click = make_uinput_emitter(args)
+        if emit_right_click is None:
+            return 2
+
+    from evdev import ecodes
     detector = HoldDetector(args.hold_ms, args.move_units, emit_right_click,
                            gesture=args.gesture,
                            tap_window_ms=args.tap_window_ms)
