@@ -117,6 +117,13 @@ sudo ./setup.sh touch-rightclick --gesture tap-hold --hold-ms 800
   you are starting a drag.
 - `--move-units` (default 12 ABS units): motion past this cancels the pending
   click, so drags and scrolls never right-click.
+- `--move-fraction` (e.g. 0.02): portable alternative to `--move-units` —
+  a fraction of the larger axis range, read from the device at startup
+  (0.02 of a 720-range panel ≈ 14 units, close to the default). Overrides
+  `--move-units` when set; the journal logs the computed units. Prefer it on
+  panels whose coordinate range differs from this one. It is a portability
+  heuristic, not finger physics: equal fractions cover different millimeters
+  on different-sized panels.
 - `--device-name` (default `WS170120`): substring matched against the input
   device name; find yours with `sudo evtest`.
 

@@ -79,6 +79,11 @@ def _parse_args(argv):
     parser.add_argument("--move-units", type=int, default=12,
                         help="Movement allowance in ABS device units; larger "
                              "motion cancels the pending right-click.")
+    parser.add_argument("--move-fraction", type=float, default=None,
+                        help="Portable alternative to --move-units: fraction of "
+                             "the larger axis range used as the allowance "
+                             "(e.g. 0.02), read from the device at startup. "
+                             "Overrides --move-units when set.")
     parser.add_argument("--uinput-name", default="orangepi-touch-rightclick",
                         help="Name of the transient uinput injector device.")
     parser.add_argument("--rescan-seconds", type=float, default=2.0,
@@ -460,11 +465,32 @@ def run_self_test():
     tap.contact(1, -1, 200, 200, 1120)
     check("repeat two-finger taps fire each time", fired == [1, 1])
 
+    # 17. Fraction-derived allowances scale with the larger axis span.
+    check("fraction on a square panel",
+          allowance_from_fraction(0.02, 0, 720, 0, 720) == 14)
+    check("fraction uses the larger span",
+          allowance_from_fraction(0.02, 0, 1920, 0, 1080) == 38)
+    check("fraction honors nonzero minima",
+          allowance_from_fraction(0.02, 100, 820, 50, 770) == 14)
+    check("fraction never drops below one unit",
+          allowance_from_fraction(0.0001, 0, 720, 0, 720) == 1)
+    check("fraction outside (0,1) is rejected",
+          main(["--move-fraction", "2"]) == 2
+          and main(["--move-fraction", "0"]) == 2
+          and main(["--move-fraction", "-0.1"]) == 2)
+
     if failures:
         print("%d self-test failure(s)." % len(failures), file=sys.stderr)
         return 1
     print("All hold-detector self-tests passed.")
     return 0
+
+
+def allowance_from_fraction(fraction, x_min, x_max, y_min, y_max):
+    """Movement allowance in device units derived from a fraction of the
+    larger axis span. Portable across panels; at least 1 unit."""
+    span = max(x_max - x_min, y_max - y_min)
+    return max(1, int(fraction * span))
 
 
 def find_touch_device(evdev, name_substring):
@@ -686,11 +712,25 @@ def run_daemon(args):
                 time.sleep(args.rescan_seconds)
                 continue
             print("watching '%s' (%s)." % (device.name, device.path), flush=True)
-            abs_codes = {code for code, _ in
-                         device.capabilities().get(ecodes.EV_ABS, [])}
+            abs_caps = {code: info for code, info in
+                        device.capabilities().get(ecodes.EV_ABS, [])}
+            if args.move_fraction is not None:
+                x_info = abs_caps.get(ecodes.ABS_X)
+                y_info = abs_caps.get(ecodes.ABS_Y)
+                if x_info is None or y_info is None:
+                    print("move fraction requested but axis ranges unreadable; "
+                          "keeping unit allowance.", flush=True)
+                else:
+                    eff = allowance_from_fraction(
+                        args.move_fraction,
+                        x_info.min, x_info.max, y_info.min, y_info.max)
+                    detector.move_units = eff
+                    tap_detector.move_units = eff
+                    print("move allowance: %d units (fraction %g of axis range)."
+                          % (eff, args.move_fraction), flush=True)
             multitouch = (args.tap_ms > 0
-                          and ecodes.ABS_MT_SLOT in abs_codes
-                          and ecodes.ABS_MT_TRACKING_ID in abs_codes)
+                          and ecodes.ABS_MT_SLOT in abs_caps
+                          and ecodes.ABS_MT_TRACKING_ID in abs_caps)
             print("two-finger tap %s." % ("enabled" if multitouch else "disabled"),
                   flush=True)
             x = y = 0
@@ -773,6 +813,10 @@ def main(argv=None):
         return 2
     if args.tap_ms < 0:
         print("ERROR: --tap-ms must be non-negative (0 disables two-finger tap).",
+              file=sys.stderr)
+        return 2
+    if args.move_fraction is not None and not 0.0 < args.move_fraction < 1.0:
+        print("ERROR: --move-fraction must be between 0 and 1 (exclusive).",
               file=sys.stderr)
         return 2
     return run_daemon(args)

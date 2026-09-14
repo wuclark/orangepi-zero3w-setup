@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add opt-in `--move-fraction` to the touch daemon: the movement allowance as
+  a fraction of the larger axis range (read from the device at startup),
+  portable across panels without retuning. `--move-units` behavior is
+  unchanged when it is unset; existing replays are unaffected.
 - Land two-finger-tap clicks at the pair midpoint: the tap detector remembers
   the live contact midpoint and the XTEST backend warps the cursor there
   before clicking (the button-only uinput device keeps clicking in place).

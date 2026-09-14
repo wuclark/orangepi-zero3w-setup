@@ -2,7 +2,8 @@
 # Purpose: Install or remove the touchscreen long-press right-click daemon and service.
 # Platform: systemd-based Armbian/Debian board image; requires root.
 # Inputs: optional --device-name, --gesture (hold|tap-hold), --hold-ms,
-#   --tap-window-ms, --tap-ms, --move-units, --backend (uinput|xtest|auto),
+#   --tap-window-ms, --tap-ms, --move-units, --move-fraction (opt-in portable
+#   alternative to --move-units), --backend (uinput|xtest|auto),
 #   --update (refresh apt first), --no-start, --uninstall; apt metadata is
 #   never refreshed implicitly.
 # Writes: python3-evdev (always), python3-xlib (xtest backend), xinput and
@@ -33,6 +34,7 @@ HOLD_MS=500
 TAP_WINDOW_MS=400
 TAP_MS=300
 MOVE_UNITS=12
+MOVE_FRACTION=
 BACKEND=auto
 DEBUG=no
 APT_UPDATE=no
@@ -60,6 +62,8 @@ Options:
   --debug              Log every press/lift/arm/cancel decision (diagnostics)
   --move-units N       Movement allowance in ABS units; motion past it
                        cancels the pending click (default 12)
+  --move-fraction F    Portable alternative: fraction of the larger axis
+                       range, e.g. 0.02 (overrides --move-units)
   --update             Run apt update before installing python3-evdev
   --no-start           Install without starting the service
   --uninstall          Disable the service and remove installed files
@@ -81,6 +85,7 @@ while (($#)); do
         --tap-ms) TAP_MS=${2:?missing ms}; shift 2 ;;
         --debug) DEBUG=yes; shift ;;
         --move-units) MOVE_UNITS=${2:?missing units}; shift 2 ;;
+        --move-fraction) MOVE_FRACTION=${2:?missing fraction}; shift 2 ;;
         --update) APT_UPDATE=yes; shift ;;
         --no-start) NO_START=yes; shift ;;
         --uninstall) ACTION=uninstall; shift ;;
@@ -109,6 +114,9 @@ fi
 [[ $HOLD_MS =~ ^[0-9]+$ && $HOLD_MS -gt 0 ]] || die "--hold-ms must be a positive integer."
 [[ $TAP_WINDOW_MS =~ ^[0-9]+$ && $TAP_WINDOW_MS -gt 0 ]] || die "--tap-window-ms must be a positive integer."
 [[ $TAP_MS =~ ^[0-9]+$ ]] || die "--tap-ms must be a non-negative integer (0 disables two-finger tap)."
+if [[ -n $MOVE_FRACTION ]]; then
+    [[ $MOVE_FRACTION =~ ^0\.[0-9]+$ ]] || die "--move-fraction must look like 0.02 (between 0 and 1, exclusive)."
+fi
 [[ $MOVE_UNITS =~ ^[0-9]+$ ]] || die "--move-units must be a non-negative integer."
 [[ -n $DEVICE_NAME ]] || die "--device-name must not be empty."
 
@@ -157,14 +165,15 @@ fi
 install -m 755 "$SCRIPT_DIR/orangepi-touch-rightclick" "$DAEMON"
 install -m 644 "$SCRIPT_DIR/../systemd/touch-rightclick.service" "$UNIT.tmp"
 # Apply caller tuning to the installed unit without editing the shipped file.
-DEBUG_FLAG=
-[[ $DEBUG == yes ]] && DEBUG_FLAG=" --debug"
+FRACTION_FLAG=
+[[ -n $MOVE_FRACTION ]] && FRACTION_FLAG=" --move-fraction $MOVE_FRACTION"
 sed -e "s/--device-name [^ ]*/--device-name $DEVICE_NAME/" \
     -e "s/--backend [^ ]*/--backend $BACKEND/" \
     -e "s/--gesture [^ ]*/--gesture $GESTURE/" \
     -e "s/--hold-ms [^ ]*/--hold-ms $HOLD_MS/" \
     -e "s/--tap-ms [^ ]*/--tap-ms $TAP_MS/" \
     -e "s/--move-units [^ ]*/--move-units $MOVE_UNITS/" \
+    -e "s|\(--move-units [^ ]*\)|\1$FRACTION_FLAG|" \
     -e "s|\(--move-units [^ ]*\)|\1$DEBUG_FLAG|" \
     "$UNIT.tmp" >"$UNIT"
 rm -f "$UNIT.tmp"
@@ -175,7 +184,7 @@ if [[ $NO_START == yes ]]; then
     log "Installed touch-rightclick (not started). Start with: sudo systemctl start touch-rightclick.service"
 else
     systemctl restart touch-rightclick.service
-    manifest_record touch "sudo ./setup.sh touch-rightclick --device-name $DEVICE_NAME --backend $BACKEND --gesture $GESTURE --hold-ms $HOLD_MS --tap-ms $TAP_MS --move-units $MOVE_UNITS$([[ $DEBUG == yes ]] && printf ' --debug' || true)"
+    manifest_record touch "sudo ./setup.sh touch-rightclick --device-name $DEVICE_NAME --backend $BACKEND --gesture $GESTURE --hold-ms $HOLD_MS --tap-ms $TAP_MS --move-units $MOVE_UNITS$([[ -n $MOVE_FRACTION ]] && printf ' --move-fraction %s' "$MOVE_FRACTION" || true)$([[ $DEBUG == yes ]] && printf ' --debug' || true)"
     log "Installed and started touch-rightclick (device '$DEVICE_NAME', backend $BACKEND, gesture $GESTURE, hold ${HOLD_MS} ms)."
 fi
     log "Hold a finger still on the panel, then lift, for the context menu; short taps and drags are unchanged."

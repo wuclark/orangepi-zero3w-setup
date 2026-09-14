@@ -16,7 +16,8 @@ right-clicks through its own transient uinput device.
 Standard systemd unit schema: `Unit`, `Service`, `Install` sections.
 `ExecStart` must point at the installed daemon path
 `/usr/local/sbin/orangepi-touch-rightclick` with explicit tuning flags
-(`--device-name`, `--backend`, `--gesture`, `--hold-ms`, `--move-units`). `Restart=always` is required
+(`--device-name`, `--backend`, `--gesture`, `--hold-ms`, `--move-units`, and
+optionally `--move-fraction`/`--debug`). `Restart=always` is required
 so USB re-enumeration or transient input errors recover without manual action.
 `StartLimitIntervalSec`/`StartLimitBurst` cap systemd-level restarts so a
 structural failure (e.g. missing `/dev/uinput`) fails visibly instead of
