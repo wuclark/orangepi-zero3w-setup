@@ -91,6 +91,11 @@ case "$PROFILE" in
         import_later
         exec startlxde
         ;;
+    budgie)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=Budgie:GNOME
+        import_later
+        exec budgie-desktop
+        ;;
     sway)
         export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway
         start_wayvnc

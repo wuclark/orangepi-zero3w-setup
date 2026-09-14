@@ -12,6 +12,11 @@
   is watched read-only and never grabbed; two-finger gestures remain impossible
   on slot-less eGalax controllers (hardware limit).
 
+- Add experimental `budgie` (`budgie-desktop`) X11 desktop profile:
+  `sudo ./setup.sh desktop --profile budgie`, `sudo make desktop-budgie`, and
+  `sudo make switch-budgie`. It reuses the LightDM/X11 Sunxi `card0`/PowerVR
+  presentation path but stays package/configuration support only until
+  real-board presentation and reboot evidence is recorded.
 - Add experimental `lxde` (`lxde-core`, `startlxde`) X11 desktop profile:
   `sudo ./setup.sh desktop --profile lxde`, `sudo make desktop-lxde`, and
   `sudo make switch-lxde`. It reuses the LightDM/X11 Sunxi `card0`/PowerVR

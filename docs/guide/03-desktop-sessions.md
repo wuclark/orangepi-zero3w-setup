@@ -6,8 +6,8 @@ access and does not install a VNC server.
 Available profiles are:
 
 ```text
-openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, sway, labwc,
-enlightenment-x11, enlightenment-wayland
+openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, sway,
+labwc, enlightenment-x11, enlightenment-wayland
 ```
 
 Install one explicitly:
@@ -27,6 +27,7 @@ sudo make desktop-mate
 sudo make desktop-plasma
 sudo make desktop-lxqt
 sudo make desktop-lxde
+sudo make desktop-budgie
 sudo make desktop-labwc
 ```
 
@@ -75,7 +76,9 @@ confirms PowerVR rendering, HDMI presentation, and recovery after reboot;
 prefer `xfce` on 1-2 GB boards and keep serial-console recovery available.
 `lxqt` (`lxqt-core`) is a lightweight Qt-based X11 desktop and `lxde`
 (`lxde-core`) a very light GTK X11 desktop on the same path; both likewise
-remain experimental until the same board evidence is recorded.
+remain experimental until the same board evidence is recorded. `budgie`
+(`budgie-desktop`) is a heavier GNOME-stack X11 desktop on the same path and
+likewise remains experimental; prefer `xfce`/`lxqt`/`lxde` on small boards.
 `sway`
 and `labwc` are direct Wayland profiles using the compositor's DRM backend;
 they are package/configuration support only until real-board evidence confirms
