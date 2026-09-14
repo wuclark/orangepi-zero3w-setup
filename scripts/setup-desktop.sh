@@ -24,11 +24,14 @@ Profiles: openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie,
 Installs only the selected desktop and LightDM. Sway and labwc also install
 the `foot` terminal, `wofi` application launcher, and `mpv` video player.
 The mate profile installs `mate-desktop-environment-core`, the plasma
-profile installs `plasma-desktop` with `konsole`, and the lxqt profile
-installs `lxqt-core`, the lxde profile installs `lxde-core`, and the budgie
-profile installs `budgie-desktop` and the cinnamon profile installs
-`cinnamon-core`; all six are
-X11 sessions using
+profile installs `plasma-desktop` with `konsole`, the lxqt profile installs
+`lxqt-core`, the lxde profile installs `lxde-core`, the budgie profile
+installs `budgie-desktop`, and the cinnamon profile installs `cinnamon-core`.
+The plasma profile additionally pins `kwin-x11` and the lxqt profile pins
+`openbox`: these window managers are only Recommends (or absent from the
+metapackage entirely), so this installer's `--no-install-recommends` would
+otherwise leave WM-less sessions that cannot manage windows or log out.
+All six are X11 sessions using
 the tested Sunxi card0/PowerVR presentation path, but remain experimental
 package/configuration support only until real-board presentation and reboot
 evidence is recorded. Mate and plasma are heavier than xfce: prefer xfce or
@@ -58,8 +61,8 @@ declare -A PACKAGES=(
     [icewm]='lightdm lightdm-gtk-greeter icewm xterm dbus-x11'
     [fluxbox]='lightdm lightdm-gtk-greeter fluxbox xterm dbus-x11'
     [mate]='lightdm lightdm-gtk-greeter mate-desktop-environment-core xterm dbus-x11'
-    [plasma]='lightdm lightdm-gtk-greeter plasma-desktop konsole dbus-x11'
-    [lxqt]='lightdm lightdm-gtk-greeter lxqt-core xterm dbus-x11'
+    [plasma]='lightdm lightdm-gtk-greeter plasma-desktop kwin-x11 konsole dbus-x11'
+    [lxqt]='lightdm lightdm-gtk-greeter lxqt-core openbox xterm dbus-x11'
     [lxde]='lightdm lightdm-gtk-greeter lxde-core xterm dbus-x11'
     [budgie]='lightdm lightdm-gtk-greeter budgie-desktop xterm dbus-x11'
     [cinnamon]='lightdm lightdm-gtk-greeter cinnamon-core xterm dbus-x11'

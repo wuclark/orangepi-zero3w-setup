@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Pin window managers the metapackages leave to Recommends: the plasma
+  profile now installs `kwin-x11` and the lxqt profile installs `openbox`.
+  Without them `--no-install-recommends` produces window-manager-less
+  sessions (observed on real hardware: Plasma ran without `kwin_x11` and
+  logout hung on a black screen; Debian bug #1110436 documents the same
+  plasma-desktop trap on minimal installs).
 - Fix `TryExec` in the managed LightDM session files: it now names the real
   session binary (`startxfce4`, `mate-session`, `startplasma-x11`, …) instead
   of the profile short name. LightDM hides entries with a missing `TryExec`,

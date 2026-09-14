@@ -75,9 +75,15 @@ The X11 profiles use the tested Sunxi `card0`/PowerVR presentation path. `mate`
 experimental package/configuration support only until real-board evidence
 confirms PowerVR rendering, HDMI presentation, and recovery after reboot;
 prefer `xfce` on 1-2 GB boards and keep serial-console recovery available.
+The plasma profile explicitly adds `kwin-x11`: it is only a Recommends of
+`plasma-desktop`, so `--no-install-recommends` would otherwise leave a
+window-manager-less session that can neither manage windows nor log out
+(Debian bug #1110436 documents the same trap on minimal installs).
 `lxqt` (`lxqt-core`) is a lightweight Qt-based X11 desktop and `lxde`
 (`lxde-core`) a very light GTK X11 desktop on the same path; both likewise
-remain experimental until the same board evidence is recorded. `budgie`
+remain experimental until the same board evidence is recorded. The lxqt
+profile explicitly adds `openbox`, LXQt's default window manager, which
+`lxqt-core` does not depend on. `budgie`
 (`budgie-desktop`) is a heavier GNOME-stack X11 desktop on the same path and
 likewise remains experimental; prefer `xfce`/`lxqt`/`lxde` on small boards.
 `cinnamon` (`cinnamon-core`) is a GNOME-fork X11 desktop with compositing
