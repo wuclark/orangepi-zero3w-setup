@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Purpose: Emit a right-click when a single-touch panel is pressed and held still.
+# Purpose: Emit a right-click when a single-touch panel press is held still,
+#   firing on lift so the pending press completes before the menu opens.
 # Platform: Board-side Linux with python3-evdev; input layer only, so it works
 #   under both X11 and Wayland compositors (unlike X11-only helpers).
 # Inputs: --device-name (substring match on the input device, default WS170120),
@@ -24,14 +25,16 @@
 # Recovery: sudo systemctl disable --now touch-rightclick.service (or the
 #   board-touch-rightclick-uninstall Make target); touch input is unaffected.
 # Verification: scripts/orangepi-touch-rightclick --self-test (no hardware or
-#   root needed); on the board, hold a finger still and watch the context menu
-#   appear, and confirm short taps and drags are unchanged.
+#   root needed); on the board, hold a finger still, lift, and watch the
+#   context menu appear with the next tap selecting normally.
 # Documentation: docs/optional/touch-rightclick.md
 # Known limitation: the press itself still reaches the stack as a left-press
-#   (this daemon observes without grabbing, by design); the injected
-#   right-click wins for context menus, but a held press may also begin a
-#   drag/select in some apps. Single-touch eGalax-style panels report no
-#   multi-touch slots, so two-finger gestures are impossible on them.
+#   (this daemon observes without grabbing, by design). The click fires on
+#   lift so that press completes first and the menu opens with no buttons
+#   down; firing mid-hold instead would leave a dangling press whose release
+#   dismisses the menu or triggers the item under the finger. Single-touch
+#   eGalax-style panels report no multi-touch slots, so two-finger gestures
+#   are impossible on them.
 """Long-press-to-right-click daemon for single-touch Waveshare panels."""
 import argparse
 import os
@@ -42,7 +45,7 @@ import time
 
 def _parse_args(argv):
     parser = argparse.ArgumentParser(
-        description="Hold a finger still on the touchscreen to right-click."
+        description="Hold a finger still on the touchscreen, then lift, to right-click."
     )
     parser.add_argument("--device-name", default="WS170120",
                         help="Substring matched against the input device name.")
@@ -62,7 +65,7 @@ def _parse_args(argv):
                              "fires, leaving a plain long-press free for "
                              "drag/select gestures.")
     parser.add_argument("--hold-ms", type=int, default=500,
-                        help="Hold deadline in milliseconds before right-click.")
+                        help="Hold deadline in milliseconds; lifting after it fires.")
     parser.add_argument("--tap-window-ms", type=int, default=400,
                         help="In tap-hold mode, max gap in milliseconds between "
                              "the tap lift and the held press.")
@@ -81,12 +84,15 @@ def _parse_args(argv):
 class HoldDetector:
     """Pure hold-to-right-click state machine (no I/O, unit-testable).
 
-    Feed timestamped touch observations; on_fire is called at most once per
-    press, when the deadline passes with the finger still down and inside
-    the movement allowance.
+    The right-click fires on LIFT, not at the deadline: the press must stay
+    down and inside the movement allowance past the deadline, and the pending
+    press must complete first. Firing mid-hold leaves a dangling press whose
+    release toolkits pair with the lift, dismissing the just-opened menu or
+    instantly triggering the item under the finger. on_fire is therefore
+    called at most once per press, from touch_up().
     """
 
-    IDLE, PRESSING, FIRED, MOVED = ("idle", "pressing", "fired", "moved")
+    IDLE, PRESSING, ARMED, MOVED = ("idle", "pressing", "armed", "moved")
 
     def __init__(self, hold_ms, move_units, on_fire,
                  gesture="hold", tap_window_ms=400):
@@ -117,24 +123,34 @@ class HoldDetector:
             self.deadline = now_ms + self.hold_ms
 
     def touch_up(self, now_ms=None):
-        if self.state in (self.PRESSING, self.FIRED, self.MOVED):
+        """End the press. Returns True when a right-click should fire: the
+        press outlasted the deadline without wandering (ARMED)."""
+        fire = self.state == self.ARMED
+        if self.state in (self.PRESSING, self.ARMED, self.MOVED):
             self.state = self.IDLE
         if now_ms is not None:
             self.last_lift_ms = now_ms
+        if fire:
+            self.on_fire()
+        return fire
+
+    def reset(self):
+        """Forget a press without firing (device loss)."""
+        self.state = self.IDLE
 
     def position(self, x, y):
-        if self.state == self.PRESSING and self._moved(x, y):
+        if self.state in (self.PRESSING, self.ARMED) and self._moved(x, y):
             self.state = self.MOVED
 
     def poll(self, now_ms):
-        """Call on every loop iteration; returns seconds until the deadline
+        """Call on every loop iteration; arms the press once the deadline
+        passes (no firing here). Returns seconds until the deadline
         (0.0 when already due) or None when no press is pending."""
         if self.state != self.PRESSING:
             return None
         remaining_ms = self.deadline - now_ms
         if remaining_ms <= 0:
-            self.state = self.FIRED
-            self.on_fire()
+            self.state = self.ARMED
             return None
         return remaining_ms / 1000.0
 
@@ -152,23 +168,19 @@ def run_self_test():
     det = HoldDetector(700, 12, lambda: fired.append(1))
     det.touch_down(0, 100, 100)
     det.poll(200)
-    det.touch_up()
-    det.poll(900)
-    check("short tap does not fire", fired == [])
+    check("short tap does not fire", det.touch_up(300) is False and fired == [])
 
-    # 2. Hold still past the deadline: exactly one fire; lift re-arms.
+    # 2. Hold still past the deadline: nothing fires mid-hold; the lift fires
+    # exactly once; a second lift fires nothing.
     fired = []
     det = HoldDetector(700, 12, lambda: fired.append(1))
     det.touch_down(0, 100, 100)
     det.position(103, 99)  # jitter inside the allowance
     check("deadline pending before hold elapses", det.poll(500) is not None)
     det.poll(700)
-    det.poll(5000)  # still held: must not repeat
-    det.touch_up()
-    check("hold fires exactly once", fired == [1])
-    det.touch_down(9000, 50, 50)
-    det.poll(9800)
-    check("second press re-arms and fires", fired == [1, 1])
+    check("no mid-hold fire after the deadline", fired == [])
+    check("lift after hold fires once", det.touch_up(900) is True and fired == [1])
+    check("second lift fires nothing", det.touch_up(950) is False and fired == [1])
 
     # 3. Drag past the allowance cancels.
     fired = []
@@ -176,26 +188,23 @@ def run_self_test():
     det.touch_down(0, 100, 100)
     det.position(200, 100)
     det.poll(5000)
-    det.touch_up()
-    check("drag cancels the pending fire", fired == [])
+    check("drag cancels the pending fire", det.touch_up(5100) is False and fired == [])
 
-    # 4. Movement after firing changes nothing (already fired once).
+    # 4. Wandering after arming cancels too.
     fired = []
     det = HoldDetector(700, 12, lambda: fired.append(1))
     det.touch_down(0, 100, 100)
     det.poll(700)
     det.position(500, 500)
-    det.poll(9000)
-    det.touch_up()
-    check("post-fire motion does not refire", fired == [1])
+    check("post-arm motion cancels", det.touch_up(900) is False and fired == [])
 
     # 5. Stray lift with no press is harmless.
     fired = []
     det = HoldDetector(700, 12, lambda: fired.append(1))
-    det.touch_up(9999)
-    check("stray lift is harmless", det.poll(19999) is None and fired == [])
+    check("stray lift is harmless", det.touch_up(9999) is False
+          and det.poll(19999) is None and fired == [])
 
-    # 6. tap-hold mode: quick tap followed by a held press fires.
+    # 6. tap-hold mode: quick tap followed by a held press fires on lift.
     fired = []
     det = HoldDetector(700, 12, lambda: fired.append(1),
                        gesture="tap-hold", tap_window_ms=400)
@@ -203,8 +212,8 @@ def run_self_test():
     det.touch_up(120)
     det.touch_down(300, 102, 101)
     det.poll(1100)
-    det.touch_up(1200)
-    check("tap-hold fires on the held press", fired == [1])
+    check("tap-hold fires on lift of the held press",
+          det.touch_up(1200) is True and fired == [1])
 
     # 7. tap-hold mode: a plain long-press without the leading tap is ignored,
     # leaving it free for drag/select gestures.
@@ -213,8 +222,8 @@ def run_self_test():
                        gesture="tap-hold", tap_window_ms=400)
     det.touch_down(5000, 100, 100)
     det.poll(9000)
-    det.touch_up(9100)
-    check("tap-hold ignores a plain long-press", fired == [])
+    check("tap-hold ignores a plain long-press",
+          det.touch_up(9100) is False and fired == [])
 
     # 8. tap-hold mode: a stale tap outside the window does not arm.
     fired = []
@@ -224,8 +233,8 @@ def run_self_test():
     det.touch_up(120)
     det.touch_down(2000, 100, 100)
     det.poll(4000)
-    det.touch_up(4100)
-    check("tap-hold ignores a stale leading tap", fired == [])
+    check("tap-hold ignores a stale leading tap",
+          det.touch_up(4100) is False and fired == [])
 
     # 9. tap-hold mode: a quick double-tap (no hold) fires nothing.
     fired = []
@@ -234,9 +243,17 @@ def run_self_test():
     det.touch_down(0, 100, 100)
     det.touch_up(100)
     det.touch_down(200, 100, 100)
-    det.touch_up(300)
-    det.poll(2000)
-    check("tap-hold ignores a quick double-tap", fired == [])
+    check("tap-hold ignores a quick double-tap",
+          det.touch_up(300) is False and fired == [])
+
+    # 10. Device loss mid-hold resets without firing.
+    fired = []
+    det = HoldDetector(700, 12, lambda: fired.append(1))
+    det.touch_down(0, 100, 100)
+    det.poll(900)
+    det.reset()
+    check("device loss resets without firing",
+          det.touch_up(950) is False and fired == [])
 
     if failures:
         print("%d self-test failure(s)." % len(failures), file=sys.stderr)
@@ -387,7 +404,7 @@ def run_daemon(args):
             ready, _, _ = select.select([device], [], [], timeout)
         except (OSError, ValueError):
             device = None
-            detector.touch_up()
+            detector.reset()
             continue
         if not ready:
             continue  # select timed out exactly at the deadline; loop re-polls.
@@ -414,7 +431,7 @@ def run_daemon(args):
             except OSError:
                 pass
             device = None
-            detector.touch_up()
+            detector.reset()
 
 
 def main(argv=None):

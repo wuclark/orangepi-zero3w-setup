@@ -83,8 +83,11 @@ check `journalctl -u touch-rightclick.service` in that case.
 
 1. `systemctl status touch-rightclick.service` is active; `journalctl -u
    touch-rightclick.service` shows the watched device and each emitted click.
-2. Hold a finger still on the panel: the context menu appears after the
-   deadline. Short taps and drags behave exactly as before.
+2. Hold a finger still past the deadline, then lift: the context menu appears
+   and stays open, and the next tap selects normally. (The click fires on
+   lift deliberately: firing mid-hold leaves a dangling press whose release
+   dismisses the menu or triggers the item under the finger.) Short taps and
+   drags behave exactly as before.
 3. Hardware-free check of the detector logic:
    `python3 scripts/orangepi-touch-rightclick --self-test`.
 
@@ -100,9 +103,10 @@ installed desktop packages are preserved (as with the desktop reset path).
 ## Known limitations
 
 - The press itself still reaches the stack as a left-press (the daemon
-  observes without grabbing, by design). The injected right-click wins for
-  context menus, but a held press can also begin a drag/select in some apps.
-  Prefer `tap-hold` when long-press selection matters to you.
+  observes without grabbing, by design), but the click fires on lift so the
+  press completes first and the menu opens with no buttons down. Moving past
+  the allowance before lifting cancels, so drags never misfire; prefer
+  `tap-hold` when even a plain hold should never summon a menu.
 - Two-finger tap, pinch, and other multi-touch gestures cannot work on
   single-touch eGalax-style controllers; that is a hardware limit, not a
   software gap. A USB mouse works alongside touch with no configuration.

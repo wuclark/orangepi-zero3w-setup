@@ -19,7 +19,8 @@
 # Recovery: --uninstall disables the service and removes installed files;
 #   plain touch input keeps working either way since the device is never grabbed.
 # Verification: scripts/orangepi-touch-rightclick --self-test, then on the panel
-#   hold a finger still for the context menu; check short taps and drags.
+#   hold a finger still, lift, and confirm the context menu stays open for the
+#   next tap; check short taps and drags.
 # Documentation: docs/optional/touch-rightclick.md
 set -Eeuo pipefail
 
@@ -165,4 +166,4 @@ else
     manifest_record touch "sudo ./setup.sh touch-rightclick --device-name $DEVICE_NAME --backend $BACKEND --gesture $GESTURE --hold-ms $HOLD_MS --move-units $MOVE_UNITS"
     log "Installed and started touch-rightclick (device '$DEVICE_NAME', backend $BACKEND, gesture $GESTURE, hold ${HOLD_MS} ms)."
 fi
-log "Hold a finger still on the panel for the context menu; short taps and drags are unchanged."
+    log "Hold a finger still on the panel, then lift, for the context menu; short taps and drags are unchanged."

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fire the touch right-click on lift instead of mid-hold: the pending press
+  completes first so the menu opens with no buttons down; firing mid-hold
+  left a dangling press whose release dismissed the menu or triggered the
+  item under the finger, making submenus unusable.
 - Add a board replay manifest: every repo-managed installer records a receipt
   (`manifest_record` in `scripts/lib.sh`) in
   `/etc/orangepi-zero3w-setup/manifest.json` and deletes it on uninstall.
