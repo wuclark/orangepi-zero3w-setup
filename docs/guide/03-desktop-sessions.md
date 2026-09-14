@@ -7,7 +7,7 @@ Available profiles are:
 
 ```text
 openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon,
-sway, labwc, enlightenment-x11, enlightenment-wayland
+gnome, sway, labwc, enlightenment-x11, enlightenment-wayland
 ```
 
 Install one explicitly:
@@ -29,6 +29,7 @@ sudo make desktop-lxqt
 sudo make desktop-lxde
 sudo make desktop-budgie
 sudo make desktop-cinnamon
+sudo make desktop-gnome
 sudo make desktop-labwc
 ```
 
@@ -89,6 +90,13 @@ likewise remains experimental; prefer `xfce`/`lxqt`/`lxde` on small boards.
 `cinnamon` (`cinnamon-core`) is a GNOME-fork X11 desktop with compositing
 demands on the same path and likewise remains experimental; like the others
 it runs under LightDM with no `gdm3`.
+`gnome` (`gnome-session` with `gnome-shell`, `gnome-terminal`, and
+`nautilus`) is a GNOME-on-Xorg session on the same path. It deliberately
+avoids the `gnome-core` metapackage, which hard-depends on `gdm3`; mutter
+compositing ships inside `gnome-shell`, so no extra window manager pin is
+needed. It is the heaviest profile — expect a software-rendered Shell and
+prefer 2 GB or more — and likewise remains experimental until the same board
+evidence is recorded.
 `sway`
 and `labwc` are direct Wayland profiles using the compositor's DRM backend;
 they are package/configuration support only until real-board evidence confirms

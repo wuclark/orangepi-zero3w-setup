@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add experimental `gnome` (GNOME Shell on Xorg: `gnome-session` with
+  `gnome-shell`, `gnome-terminal`, and `nautilus`) X11 desktop profile:
+  `sudo ./setup.sh desktop --profile gnome`, `sudo make desktop-gnome`, and
+  `sudo make switch-gnome`. It runs under LightDM with no `gdm3` (the
+  `gnome-core` metapackage is deliberately avoided) on the Sunxi
+  `card0`/PowerVR presentation path, but stays package/configuration support
+  only until real-board presentation and reboot evidence is recorded. It is
+  the heaviest profile; prefer 2 GB or more.
 - Pin window managers the metapackages leave to Recommends: the plasma
   profile now installs `kwin-x11` and the lxqt profile installs `openbox`.
   Without them `--no-install-recommends` produces window-manager-less

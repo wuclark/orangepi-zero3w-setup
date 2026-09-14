@@ -317,7 +317,7 @@ sudo ./setup.sh desktop --profile labwc
 sudo orangepi-session set labwc --reboot
 ```
 
-`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`, and `cinnamon` use X11. `sway` and `labwc` use the
+`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`, `cinnamon`, and `gnome` use X11. `sway` and `labwc` use the
 compositor's Wayland DRM session. The Wayland profiles are not part of the
 proven PowerVR/X11 support claim until they have real-board presentation and
 reboot evidence.

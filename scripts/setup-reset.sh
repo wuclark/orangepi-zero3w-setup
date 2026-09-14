@@ -29,6 +29,6 @@ rm -f /etc/orangepi-zero3w-setup/state/desktop-profile \
     /etc/orangepi-zero3w-setup/state/remote-type
 rm -f /usr/local/sbin/orangepi-session \
     /usr/local/libexec/orangepi-zero3w-setup/session-launch \
-    /usr/share/xsessions/orangepi-{openbox,xfce,i3,icewm,fluxbox,mate,plasma,lxqt,lxde,budgie,cinnamon,enlightenment-x11}.desktop \
+    /usr/share/xsessions/orangepi-{openbox,xfce,i3,icewm,fluxbox,mate,plasma,lxqt,lxde,budgie,cinnamon,gnome,enlightenment-x11}.desktop \
     /usr/share/wayland-sessions/orangepi-{sway,labwc,enlightenment-wayland}.desktop
 log "Reset project-managed desktop and remote configuration. Installed packages were preserved."

@@ -190,7 +190,9 @@ sessions. Add `DESKTOP_REBOOT=1` when switching should reboot immediately.
 `budgie` is a heavier GNOME-stack experimental X11 profile; prefer
 `xfce`/`lxqt`/`lxde` on small boards until evidence is recorded. `cinnamon`
 is a GNOME-fork experimental X11 profile with the same gate; it runs under
-LightDM with no `gdm3`.
+LightDM with no `gdm3`. `gnome` is a GNOME-on-Xorg experimental X11 profile
+(`gnome-session` + `gnome-shell`, deliberately not the `gdm3`-pulling
+`gnome-core` metapackage); it is the heaviest profile, so prefer 2 GB+.
 Desktop setup installs visible white-on-black xterm defaults under
 `/etc/X11/Xresources/90-orangepi-xterm`.
 
@@ -308,7 +310,7 @@ sudo ./setup.sh packages --update
 ```
 
 Choose a GUI only when wanted. Available desktop profiles include X11 sessions
-(`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`, `cinnamon`) and Wayland sessions
+(`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`, `cinnamon`, `gnome`) and Wayland sessions
 (`sway`, `labwc`):
 
 ```bash

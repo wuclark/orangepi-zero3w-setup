@@ -101,6 +101,11 @@ case "$PROFILE" in
         import_later
         exec cinnamon-session
         ;;
+    gnome)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=GNOME
+        import_later
+        exec gnome-session --session=gnome
+        ;;
     sway)
         export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway
         start_wayvnc
