@@ -127,12 +127,15 @@ class HoldDetector:
                 and now_ms - self.last_lift_ms <= self.tap_window_ms)
 
     def touch_down(self, now_ms, x, y):
+        # The anchor stays unset until the first complete position pair: on
+        # this panel BTN_TOUCH precedes the coordinates and X/Y arrive as
+        # separate events, so anchoring here (or on a half-fresh pair) turns
+        # arrival order into phantom drift.
         if self.state == self.IDLE and self._armed(now_ms):
             self.state = self.PRESSING
-            self.anchor = (x, y)
+            self.anchor = None
             self.deadline = now_ms + self.hold_ms
-            self.log("hold: press at (%d,%d), arming for %d ms"
-                     % (x, y, self.hold_ms))
+            self.log("hold: press, arming for %d ms" % self.hold_ms)
         elif self.state == self.IDLE:
             self.log("hold: press ignored (tap-hold window missed)")
 
@@ -161,7 +164,13 @@ class HoldDetector:
         self.state = self.IDLE
 
     def position(self, x, y):
+        # Callers must pass complete pairs (evaluated at SYN_REPORT
+        # boundaries); the first pair after touch-down becomes the anchor.
         if self.state in (self.PRESSING, self.ARMED):
+            if self.anchor is None:
+                self.anchor = (x, y)
+                self.log("hold: anchored at (%d,%d)" % (x, y))
+                return
             dx = abs(x - self.anchor[0])
             dy = abs(y - self.anchor[1])
             if self._moved(x, y):
@@ -298,7 +307,8 @@ def run_self_test():
     fired = []
     det = HoldDetector(700, 12, lambda: fired.append(1))
     det.touch_down(0, 100, 100)
-    det.position(200, 100)
+    det.position(100, 100)  # first complete pair anchors
+    det.position(200, 100)  # drag past the allowance
     det.poll(5000)
     check("drag cancels the pending fire", det.touch_up(5100) is False and fired == [])
 
@@ -306,6 +316,7 @@ def run_self_test():
     fired = []
     det = HoldDetector(700, 12, lambda: fired.append(1))
     det.touch_down(0, 100, 100)
+    det.position(100, 100)
     det.poll(700)
     det.position(500, 500)
     check("post-arm motion cancels", det.touch_up(900) is False and fired == [])
@@ -695,15 +706,17 @@ def run_daemon(args):
                             detector.reset()
                     elif multitouch and event.code == ecodes.ABS_MT_POSITION_X:
                         slot_pos.setdefault(current_slot, [0, 0])[0] = event.value
-                        tap_detector.position(current_slot, event.value,
-                                              slot_pos[current_slot][1])
                     elif multitouch and event.code == ecodes.ABS_MT_POSITION_Y:
                         slot_pos.setdefault(current_slot, [0, 0])[1] = event.value
-                        tap_detector.position(current_slot,
-                                              slot_pos[current_slot][0],
-                                              event.value)
+                elif event.type == ecodes.EV_SYN and event.code == ecodes.SYN_REPORT:
+                    # Frame boundary: every axis has reported, so cached pairs
+                    # are complete. Evaluating drift here (instead of per
+                    # event) keeps arrival order from looking like motion.
                     if touching:
                         detector.position(x, y)
+                    if multitouch:
+                        for slot, pos in slot_pos.items():
+                            tap_detector.position(slot, pos[0], pos[1])
                 elif event.type == ecodes.EV_KEY and event.code == ecodes.BTN_TOUCH:
                     if event.value:
                         touching = True

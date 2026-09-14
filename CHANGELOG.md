@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fix phantom drift in the touch daemon: BTN_TOUCH precedes coordinates and
+  X/Y arrive as separate events, so anchoring on partial data cancelled every
+  hold and tap on real hardware. Anchors now form on the first complete
+  SYN_REPORT pair (single-touch and per-slot), and drift is evaluated at frame
+  boundaries only.
 - Add `--debug` to the touch daemon/installer: per-press journal verdicts
   (drift amounts, chord durations, cancel reasons) for tuning gestures on
   unknown panels.
