@@ -91,6 +91,7 @@ if [[ $ACTION == uninstall ]]; then
     systemctl disable --now touch-rightclick.service 2>/dev/null || true
     rm -f "$UNIT" "$DAEMON" "$MODULES_CONF"
     systemctl daemon-reload 2>/dev/null || true
+    manifest_delete touch
     log "Removed touchscreen long-press right-click daemon. Plain touch is unaffected."
     exit 0
 fi
@@ -161,6 +162,7 @@ if [[ $NO_START == yes ]]; then
     log "Installed touch-rightclick (not started). Start with: sudo systemctl start touch-rightclick.service"
 else
     systemctl restart touch-rightclick.service
+    manifest_record touch "sudo ./setup.sh touch-rightclick --device-name $DEVICE_NAME --backend $BACKEND --gesture $GESTURE --hold-ms $HOLD_MS --move-units $MOVE_UNITS"
     log "Installed and started touch-rightclick (device '$DEVICE_NAME', backend $BACKEND, gesture $GESTURE, hold ${HOLD_MS} ms)."
 fi
 log "Hold a finger still on the panel for the context menu; short taps and drags are unchanged."

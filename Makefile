@@ -76,6 +76,7 @@ GIT_DEPTH ?= 1
 	npu-driver-source npu-public-onnx npu-acuity-image-load npu-acuity-image-check npu-golden-lenet npu-golden-yolov5 npu-golden-resnet50 npu-generate-goldens \
 	board-npu-golden-test-lenet board-npu-golden-test-yolov5 board-npu-golden-test-resnet50 \
 	board-core-install board-core-status board-a733-sources board-status board-report board-summary collect-boards compare-board-reports \
+	board-manifest board-replay board-replay-execute \
 	backup-required backup-cache backup-sensitive backup-all restore \
 	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-audio-auto board-retroarch-core-check board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced 	board-retroarch-download-advanced board-display-status board-audio-status board-stability-test \
 	board-touch-rightclick-install board-touch-rightclick-uninstall
@@ -149,6 +150,9 @@ help:
 		'make board-status                       Show read-only board setup status' \
 		'make board-validation                  Run all installed-layer validations' \
 		'make board-report                     Collect one normalized board report' \
+		'make board-manifest                   Show the recorded board replay manifest' \
+		'make board-replay                     Dry-run replay of the board manifest' \
+		'make board-replay-execute             Execute the board manifest replay' \
 		'make board-summary                    Render sanitized Markdown from a board report' \
 		'make collect-boards BOARDS="user@board1 ..."  Collect reports over SSH (prompts if omitted)' \
 		'make compare-board-reports REPORT_DIR=...     Compare collected board reports' \
@@ -326,6 +330,15 @@ board-status:
 
 board-report:
 	if [ "$$(id -u)" -eq 0 ]; then BOARD_REPORT_OUTPUT='$(BOARD_REPORT_OUTPUT)' ./scripts/board-report.sh; else sudo BOARD_REPORT_OUTPUT='$(BOARD_REPORT_OUTPUT)' ./scripts/board-report.sh; fi
+
+board-manifest:
+	./scripts/board-manifest.sh
+
+board-replay:
+	./scripts/board-replay.sh
+
+board-replay-execute:
+	./scripts/board-replay.sh --execute
 
 board-summary:
 	if [ "$$(id -u)" -eq 0 ]; then ./scripts/generate-board-summary.sh; else sudo ./scripts/generate-board-summary.sh; fi

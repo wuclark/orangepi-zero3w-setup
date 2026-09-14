@@ -66,6 +66,7 @@ fi
 
 printf '\n===== SETUP DATA =====\n'
 status 'Setup config' "$([[ -f /etc/orangepi-zero3w-setup/config ]] && echo present || echo absent)"
+status 'Manifest' "$([[ -f /etc/orangepi-zero3w-setup/manifest.json ]] && grep -o '"updated": "[^"]*"' /etc/orangepi-zero3w-setup/manifest.json || echo absent)"
 status 'Embedded repository' "$([[ -d /opt/orangepi-zero3w-setup ]] && echo present || echo absent)"
 status 'Vendor archives' "$(find /opt/orangepi-zero3w-setup/vendor-files -maxdepth 1 -type f -name '*.tar.gz' 2>/dev/null | wc -l) found in /opt/orangepi-zero3w-setup/vendor-files"
 status 'Recent acceleration log' "$(ls -1t /var/log/orangepi-zero3w-setup/acceleration-progress.log* 2>/dev/null | head -n1 || echo none)"

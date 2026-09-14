@@ -12,6 +12,7 @@
 # Documentation: docs/development/development.md
 set -Eeuo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/lib.sh"
 [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo 'Run with sudo.' >&2; exit 1; }
 UPDATE=no
 if [[ ${1:-} == --update ]]; then
@@ -86,6 +87,7 @@ else
 fi
 if [[ ${#packages[@]} -gt 0 ]]; then
     apt-get install -y --no-install-recommends "${packages[@]}"
+    manifest_record foundation.packages 'sudo make board-packages'
 fi
 if [[ $retroarch_requested == yes ]]; then
     # Same prerequisites as install-retroarch.sh: configuring RetroArch

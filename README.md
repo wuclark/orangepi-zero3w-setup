@@ -273,6 +273,12 @@ For health and endurance checks:
 Use `make clean` to remove generated archives, derived images, metadata, and
 local first-boot files while preserving source/base images under `work/images/`.
 
+Every repo-managed board layer records a replayable receipt in
+`/etc/orangepi-zero3w-setup/manifest.json` (never secrets). Inspect it with
+`make board-manifest`, dry-run a rebuild with `make board-replay`, and run it
+with `make board-replay-execute`. See the manifest rules in
+`docs/development/data-lifecycle.md`.
+
 Back up external build inputs before cleaning or moving the workspace:
 
 ```bash

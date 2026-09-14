@@ -123,6 +123,7 @@ if [[ $REMOVE == yes ]]; then
     apt-get autoremove -y
     rm -f "/usr/share/xsessions/orangepi-$PROFILE.desktop" \
         "/usr/share/wayland-sessions/orangepi-$PROFILE.desktop"
+    manifest_delete "desktop.$PROFILE"
     log "Removed desktop profile: $PROFILE (LightDM kept; use setup-reset.sh to drop the GUI entirely)."
     exit 0
 fi
@@ -163,6 +164,7 @@ case "$PROFILE" in
 esac
 install -d -m 755 /usr/local/libexec/orangepi-zero3w-setup
 install -m 755 "$SCRIPT_DIR/orangepi-session-launch" /usr/local/libexec/orangepi-zero3w-setup/session-launch
+install -m 755 "$SCRIPT_DIR/lib.sh" /usr/local/libexec/orangepi-zero3w-setup/lib.sh
 case "$PROFILE" in
     sway|labwc)
         install -m 755 "$SCRIPT_DIR/orangepi-tycat" /usr/local/bin/orangepi-tycat
@@ -206,6 +208,8 @@ if [[ ! -f /etc/orangepi-zero3w-setup/state/default-target ]]; then
     printf '%s\n' "$ORIGINAL_TARGET" >/etc/orangepi-zero3w-setup/state/default-target
 fi
 printf '%s\n' "$PROFILE" >/etc/orangepi-zero3w-setup/state/desktop-profile
+manifest_record "desktop.$PROFILE" "sudo make desktop-$PROFILE"
+manifest_record desktop.active "sudo make switch-$PROFILE"
 log "Installed desktop profile: $PROFILE"
 log "LightDM default session: $SESSION"
 log "Remote access remains separate; use setup.sh remote explicitly."

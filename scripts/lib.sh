@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Purpose: Provide shared constants, logging, validation, backup, copy, and user helpers.
+# Purpose: Provide shared constants, logging, validation, backup, copy, user,
+# and board-manifest helpers.
 # Platform: Sourced by repository setup/install scripts on host or Orange Pi as appropriate.
 # Inputs: Caller-provided paths, patterns, users, environment, and command arguments.
 # Dependencies: Bash built-ins and standard tools invoked by the caller; this file is not a standalone installer.
@@ -17,6 +18,7 @@ PVR_ROOT="/opt/pvr-ddk-24.2"
 REFERENCE_KERNEL="6.6.98-vendor-sun60iw2"
 REFERENCE_CODENAME="trixie"
 REFERENCE_BVNC="36.56.104.183"
+MANIFEST_FILE="/etc/orangepi-zero3w-setup/manifest.json"
 
 log() { printf '[%s] %s\n' "$PROJECT_NAME" "$*"; }
 warn() { printf '[%s] WARNING: %s\n' "$PROJECT_NAME" "$*" >&2; }
@@ -60,6 +62,104 @@ resolve_real_user() {
     else
         printf 'orangepi\n'
     fi
+}
+
+# manifest_record <step-key> <replay-command>: append a replayable receipt for
+# a completed board layer (e.g. manifest_record desktop.plasma
+# 'sudo make desktop-plasma'). Steps live in $MANIFEST_FILE as
+# {"schema":1,"board":...,"created":..,"updated":..,"steps":{key:{"replay":..,"ts":..}}}.
+# Reinstalling overwrites the same key, so the manifest always reflects
+# current state. Only replay commands are stored: never pass secrets here
+# (passwords, hashes, keys); replay re-prompts or regenerates them.
+# Bookkeeping never breaks an install: missing python3 or an unwritable
+# manifest only warns. See docs/development/data-lifecycle.md.
+manifest_record() {
+    local key=${1:?manifest step key required} replay=${2:?replay command required}
+    command -v python3 >/dev/null 2>&1 || { warn "python3 missing; skipping manifest receipt for $key."; return 0; }
+    if [[ ! -d $(dirname "$MANIFEST_FILE") ]]; then
+        install -d -m 755 "$(dirname "$MANIFEST_FILE")" 2>/dev/null || { warn "Cannot stage manifest dir; skipping receipt for $key."; return 0; }
+    fi
+    MANIFEST_KEY=$key MANIFEST_REPLAY=$replay MANIFEST_FILE=$MANIFEST_FILE python3 - <<'EOF' || warn "Manifest receipt failed for $key."
+import json, os, datetime
+path = os.environ["MANIFEST_FILE"]
+try:
+    with open(path) as f:
+        manifest = json.load(f)
+    if not isinstance(manifest.get("steps"), dict):
+        manifest["steps"] = {}
+except (OSError, ValueError):
+    manifest = {"schema": 1, "board": "unknown", "created": None, "steps": {}}
+now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+if manifest.get("created") is None:
+    manifest["created"] = now
+try:
+    with open("/proc/device-tree/compatible", "rb") as f:
+        board = f.read().replace(b"\0", b" ").decode().strip()
+except OSError:
+    board = "unknown"
+manifest["board"] = board or "unknown"
+manifest["updated"] = now
+manifest["steps"][os.environ["MANIFEST_KEY"]] = {
+    "replay": os.environ["MANIFEST_REPLAY"], "ts": now}
+tmp = path + ".tmp"
+with open(tmp, "w") as f:
+    json.dump(manifest, f, indent=2, sort_keys=True)
+    f.write("\n")
+os.replace(tmp, path)
+EOF
+}
+
+# manifest_delete <step-key>: drop one receipt (uninstall paths). Best effort.
+manifest_delete() {
+    local key=${1:?manifest step key required}
+    command -v python3 >/dev/null 2>&1 || return 0
+    [[ -f $MANIFEST_FILE ]] || return 0
+    MANIFEST_KEY=$key MANIFEST_FILE=$MANIFEST_FILE python3 - <<'EOF' || warn "Manifest delete failed for $key."
+import json, os, sys, datetime
+path = os.environ["MANIFEST_FILE"]
+try:
+    with open(path) as f:
+        manifest = json.load(f)
+except (OSError, ValueError):
+    sys.exit(0)
+steps = manifest.get("steps")
+if isinstance(steps, dict) and steps.pop(os.environ["MANIFEST_KEY"], None) is not None:
+    manifest["updated"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(manifest, f, indent=2, sort_keys=True)
+        f.write("\n")
+    os.replace(tmp, path)
+EOF
+}
+
+# manifest_delete_prefix <prefix>: drop every receipt under a namespace
+# (e.g. desktop. when the desktop selection is reset). Best effort.
+manifest_delete_prefix() {
+    local prefix=${1:?manifest key prefix required}
+    command -v python3 >/dev/null 2>&1 || return 0
+    [[ -f $MANIFEST_FILE ]] || return 0
+    MANIFEST_PREFIX=$prefix MANIFEST_FILE=$MANIFEST_FILE python3 - <<'EOF' || warn "Manifest prefix delete failed."
+import json, os, sys, datetime
+path = os.environ["MANIFEST_FILE"]
+try:
+    with open(path) as f:
+        manifest = json.load(f)
+except (OSError, ValueError):
+    sys.exit(0)
+steps = manifest.get("steps")
+if isinstance(steps, dict):
+    dropped = [k for k in steps if k.startswith(os.environ["MANIFEST_PREFIX"])]
+    for k in dropped:
+        del steps[k]
+    if dropped:
+        manifest["updated"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        tmp = path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(manifest, f, indent=2, sort_keys=True)
+            f.write("\n")
+        os.replace(tmp, path)
+EOF
 }
 
 check_image_drift() {

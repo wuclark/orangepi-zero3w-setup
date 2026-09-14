@@ -34,6 +34,12 @@ When extending a component, update its documentation in the same change. A
 feature is not complete if a maintainer can run it but cannot understand its
 inputs, side effects, recovery path, or safe ways to extend it.
 
+When adding an installer that changes board state, record a replayable
+receipt with `manifest_record <step-key> <replay-command>` from
+`scripts/lib.sh` (see the manifest rules in
+`docs/development/data-lifecycle.md`), and delete the key on uninstall.
+Never record secrets: replay re-prompts or regenerates them.
+
 For shell scripts, this compact header is a useful starting point; omit fields
 that truly do not apply and link to the relevant `docs/` guide for detail:
 

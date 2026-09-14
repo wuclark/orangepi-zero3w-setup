@@ -2,7 +2,8 @@
 # Purpose: Collect one normalized, machine-readable board capability report.
 # Platform: Orange Pi board with installed optional acceleration layers.
 # Inputs: optional --output directory or BOARD_REPORT_OUTPUT.
-# Writes: results.env, summary.txt, and component evidence below the output directory.
+# Writes: results.env, summary.txt, component evidence, and a copy of the
+# board replay manifest (when present) below the output directory.
 # Safety: diagnostics are read-only; secrets and private credentials must be sanitized.
 # Repeat behavior: each invocation uses a new timestamped default directory.
 # Recovery: rerun after a failed component check; prior reports remain intact.
@@ -25,6 +26,12 @@ SUMMARY="$OUTPUT/summary.txt"
 : >"$RESULTS"
 : >"$SUMMARY"
 printf 'git_revision=%s\n' "$(git rev-parse --short HEAD 2>/dev/null || echo unknown)" >>"$RESULTS"
+if [[ -f /etc/orangepi-zero3w-setup/manifest.json ]]; then
+    cp -a /etc/orangepi-zero3w-setup/manifest.json "$OUTPUT/manifest.json"
+    printf 'manifest=COPY\n' >>"$RESULTS"
+else
+    printf 'manifest=ABSENT\n' >>"$RESULTS"
+fi
 
 run_report() {
     local name=$1; shift

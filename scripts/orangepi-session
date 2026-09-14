@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
+# Purpose: Switch the managed LightDM desktop session and record the choice
+# in the board replay manifest when the shared helpers are available.
 set -Eeuo pipefail
+
+# Shared manifest helpers ride along with the session launcher install; fall
+# back to the checkout copy when run in place. Without either, session
+# switching still works and only the manifest receipt is skipped.
+ORANGEPI_LIB=
+for lib_candidate in /usr/local/libexec/orangepi-zero3w-setup/lib.sh \
+    "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/lib.sh"; do
+    if [[ -f $lib_candidate ]]; then ORANGEPI_LIB=$lib_candidate; break; fi
+done
+[[ -n $ORANGEPI_LIB ]] && source "$ORANGEPI_LIB" || true
 
 STATE=/etc/orangepi-zero3w-setup/state
 CONF=/etc/lightdm/lightdm.conf.d/50-orangepi-zero3w-setup.conf
@@ -44,6 +56,9 @@ user-session=orangepi-${SESSION[$profile]}
 EOF
     printf '%s\n' "$profile" >"$STATE/desktop-profile"
     printf '%s\n' "${TYPE[$profile]}" >"$STATE/remote-type"
+    if command -v manifest_record >/dev/null 2>&1; then
+        manifest_record desktop.active "sudo make switch-$profile"
+    fi
     echo "Default session set to $profile. Reboot to activate it."
     if [[ $reboot == --reboot ]]; then
         systemctl reboot

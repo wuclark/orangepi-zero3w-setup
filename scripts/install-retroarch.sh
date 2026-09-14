@@ -303,6 +303,9 @@ if [[ $ADVANCED_CORES == yes && ${#advanced_packages[@]} -eq 0 && -z ${CORE_FILE
     warn 'Supply ARM64 Libretro .so files with --core-file FILE or RETROARCH_CORE_FILES=...'
 fi
 log "Configured RetroArch for $TARGET_USER at $CFG"
+if [[ $REPAIR == no ]]; then
+    manifest_record retroarch 'sudo make board-retroarch-install'
+fi
 log 'PowerVR libraries remain isolated; LD_LIBRARY_PATH was not configured globally.'
 log 'Group changes require logout/login or reboot.'
 log 'Launch with: retroarch-powervr'

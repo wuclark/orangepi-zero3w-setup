@@ -31,4 +31,6 @@ rm -f /usr/local/sbin/orangepi-session \
     /usr/local/libexec/orangepi-zero3w-setup/session-launch \
     /usr/share/xsessions/orangepi-{openbox,xfce,i3,icewm,fluxbox,mate,plasma,lxqt,lxde,budgie,cinnamon,gnome,gnome-flashback,compiz,enlightenment-x11}.desktop \
     /usr/share/wayland-sessions/orangepi-{sway,labwc,enlightenment-wayland}.desktop
+manifest_delete_prefix desktop.
+manifest_delete_prefix remote.
 log "Reset project-managed desktop and remote configuration. Installed packages were preserved."

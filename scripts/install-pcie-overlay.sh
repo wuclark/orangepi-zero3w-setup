@@ -24,6 +24,8 @@
 # "PCIe speed of Gen2" in dmesg, and downstream devices in lspci.
 # Documentation: docs/optional/pcie.md
 set -Eeuo pipefail
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/lib.sh"
 
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 OVERLAY_NAME="sun60iw2-pcie-gen2"
@@ -97,6 +99,7 @@ if [[ $ACTION == uninstall ]]; then
     echo "Removed '$OVERLAY_NAME' from user_overlays (remaining: '${NEW:-none}')."
     echo "The file $INSTALLED_DTBO is left inert on disk; delete it manually if unwanted."
     echo 'Cold boot to apply: sudo poweroff, remove power ~10 s, then boot.'
+    manifest_delete pcie
     exit 0
 fi
 
@@ -173,6 +176,7 @@ printf 'user_overlays=%s\n' "$NEW" >>"$BOOT_ENV"
 grep -q "^user_overlays=.*${OVERLAY_NAME}" "$BOOT_ENV" \
     || { echo 'Failed to update user_overlays.' >&2; exit 1; }
 echo "user_overlays=$NEW"
+manifest_record pcie 'sudo make board-pcie-install'
 
 cat <<EOF
 

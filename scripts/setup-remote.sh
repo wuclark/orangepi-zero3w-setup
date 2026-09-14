@@ -36,10 +36,19 @@ done
 require_root
 TARGET_USER=$(resolve_real_user "$TARGET_USER")
 case "$BACKEND" in
-    x11vnc) exec "$SCRIPT_DIR/install-x11vnc.sh" --user "$TARGET_USER" ;;
-    wayvnc) exec "$SCRIPT_DIR/install-wayvnc.sh" --user "$TARGET_USER" ;;
+    x11vnc|wayvnc)
+        if "$SCRIPT_DIR/install-$BACKEND.sh" --user "$TARGET_USER"; then
+            manifest_record "remote.$BACKEND" "sudo make remote-$BACKEND REMOTE_USER=$TARGET_USER"
+        else
+            exit 1
+        fi
+        ;;
     tigervnc)
-        apt-get install -y tigervnc-standalone-server tigervnc-tools
+        if apt-get install -y tigervnc-standalone-server tigervnc-tools; then
+            manifest_record remote.tigervnc "sudo make remote-tigervnc REMOTE_USER=$TARGET_USER"
+        else
+            exit 1
+        fi
         log "TigerVNC installed; no service was exposed."
         ;;
     *) die "Unknown backend: $BACKEND" ;;

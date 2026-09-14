@@ -44,6 +44,10 @@ sequencing and ABI checks as safety-critical.
   explicit and occur on the target board.
 - The base and desktop/package setup paths must not run `apt update` unless the
   user explicitly passes an update option.
+- Every installer that changes board state must record a replayable receipt
+  with `manifest_record <step-key> <replay-command>` from `scripts/lib.sh`
+  (and delete it on uninstall); never record secrets. See the manifest rules
+  in `docs/development/data-lifecycle.md`.
 - Update README, CLI help, step-by-step guide, tutorial, and changelog whenever
   an input, option, installed path, or support claim changes.
 - Treat documentation as part of every implementation: each maintained

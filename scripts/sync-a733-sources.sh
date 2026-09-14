@@ -11,6 +11,8 @@
 # Verification: Inspect each checkout's Git revision before using source-derived artifacts.
 # Documentation: docs/development/development.md
 set -Eeuo pipefail
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/lib.sh"
 
 [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo 'Run with sudo.' >&2; exit 1; }
 SOURCE_ROOT=${SOURCE_ROOT:-/opt/orangepi-zero3w-setup/sources}
@@ -40,3 +42,4 @@ for name in "${!repos[@]}"; do
     fi
 done
 printf 'A733 source trees are under %s\n' "$SOURCE_ROOT"
+manifest_record foundation.sources 'sudo make board-sources'

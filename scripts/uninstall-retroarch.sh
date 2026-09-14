@@ -47,3 +47,4 @@ else
     echo 'ROMs, saves, and configuration were preserved.'
 fi
 echo 'RetroArch launcher and desktop entry removed. Existing group memberships were preserved.'
+manifest_delete retroarch

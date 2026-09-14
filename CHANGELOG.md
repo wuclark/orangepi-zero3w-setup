@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add a board replay manifest: every repo-managed installer records a receipt
+  (`manifest_record` in `scripts/lib.sh`) in
+  `/etc/orangepi-zero3w-setup/manifest.json` and deletes it on uninstall.
+  `make board-manifest` shows it, `make board-replay` dry-runs it in
+  dependency order, `make board-replay-execute` runs it (never reboots, never
+  records secrets). `board-report` bundles a copy as evidence, `board-status`
+  shows its freshness, and the contributor rule lives in `AGENTS.md` with the
+  schema in `docs/development/data-lifecycle.md`.
 - Report the touch-rightclick service in `board-status` alongside the other
   services, so the touch layer shows up in the same status sweep.
 - List the pre-existing `enlightenment-x11`/`enlightenment-wayland` profiles

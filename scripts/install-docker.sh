@@ -73,5 +73,6 @@ fi
     docker-buildx-plugin docker-compose-plugin
 /usr/bin/systemctl enable --now docker.service
 /usr/sbin/usermod -aG docker "$TARGET_USER"
+manifest_record docker 'sudo make board-docker-install'
 log "Docker Engine, Buildx, and Compose installed for $TARGET_USER. Log in again for docker-group access."
 log 'Verify with: docker version; docker compose version; docker run hello-world'

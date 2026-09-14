@@ -11,6 +11,8 @@
 # Verification: Confirm SSH is enabled/active and run `sudo make board-status`.
 # Documentation: docs/development/development.md
 set -Eeuo pipefail
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/lib.sh"
 
 [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo 'Run with sudo.' >&2; exit 1; }
 UPDATE=no
@@ -55,3 +57,4 @@ systemctl enable --now ssh
 install -d -m 755 /opt/orangepi-zero3w-setup/sources
 install -d -m 755 /var/log/orangepi-zero3w-setup /var/backups/orangepi-zero3w-setup
 printf 'Core maintenance layer installed. Setup path: /opt/orangepi-zero3w-setup\n'
+manifest_record foundation.core 'sudo make board-core'

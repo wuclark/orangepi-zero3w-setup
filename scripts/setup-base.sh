@@ -93,3 +93,4 @@ log "Base validation complete for Orange Pi Zero 3W/A733."
 log "CLI-only configuration recorded at $CONFIG_FILE."
 log "Network: $NETWORK_STATUS"
 log "No package update, GUI install, or reboot was performed."
+manifest_record foundation.base 'sudo make board-base'

@@ -11,6 +11,7 @@ set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
+source "$SCRIPT_DIR/lib.sh"
 LAYER=""; ACTION=""; LOG="/var/log/orangepi-zero3w-setup/acceleration-progress.log"; YES=no
 VENDOR_FILES_ROOT=${VENDOR_FILES_ROOT:-$REPO_ROOT/vendor-files}
 if [[ ! -f "$VENDOR_FILES_ROOT/pvr-userspace.tar.gz" && \
@@ -151,6 +152,9 @@ if ((result == 0)); then
         record passed "VPU H.264/H.265 decode tests passed; evidence=$decode_evidence"
     fi
     record passed "installation completed"
+    if [[ $ACTION == install ]]; then
+        manifest_record "acceleration.$LAYER" "sudo make board-$LAYER-install"
+    fi
     if [[ $LAYER == gpu ]]; then
         printf 'GPU install completed. Reboot manually, then run --action verify.\n' | tee -a "$LOG"
         record pending 'manual reboot required before verification'

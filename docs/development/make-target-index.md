@@ -23,6 +23,7 @@ new public target or changing a target's boundary.
 | `board-npu-golden-test-lenet`, `-yolov5`, `-resnet50` | `scripts/board-npu-model-test.sh` | Board | Run one of the above goldens and semantically compare (top-K/RMSE/cosine, not memcmp) against its ACUITY host tensor. |
 | `board-pcie-install`, `board-pcie-uninstall`, `board-pcie-status` | `scripts/install-pcie-overlay.sh`, `scripts/board-pcie-status.sh` | Board | Install/remove the experimental PCIe HAT overlay via `user_overlays` (cold boot after; never reboots itself) or run the read-only PCIe/USB/storage diagnostic. |
 | `board-validation`, `board-status`, `board-report`, `board-summary` | matching `scripts/board-*.sh`, `generate-board-summary.sh` | Board | Run combined validation, read-only status, evidence collection, or sanitized Markdown rendering. |
+| `board-manifest`, `board-replay`, `board-replay-execute` | `scripts/board-manifest.sh`, `board-replay.sh` | Board | Show the recorded replay manifest, dry-run it in dependency order, or execute it (never reboots). |
 | `board-headless-benchmark`, `board-system-benchmark` | matching `scripts/board-*.sh` | Board | Run acceleration or CPU/system workloads; storage/network are opt-in. |
 | `board-stability-test`, `board-thermal-monitor` | matching `scripts/board-*.sh` | Board | Repeat workloads and record thermal/frequency data. |
 | `board-retroarch-*` | RetroArch installer and helpers | Board | Install, validate, repair, test, and remove isolated RetroArch Vulkan. |
