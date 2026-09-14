@@ -111,6 +111,13 @@ case "$PROFILE" in
         import_later
         exec gnome-session --session=gnome-flashback-metacity
         ;;
+    compiz)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=Compiz
+        import_later
+        tint2 &
+        gtk-window-decorator &
+        exec compiz ccp
+        ;;
     sway)
         export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway
         start_wayvnc

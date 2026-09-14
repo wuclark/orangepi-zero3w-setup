@@ -61,9 +61,9 @@ GIT_DEPTH ?= 1
 	desktop desktop-switch desktop-list desktop-current desktop-rollback \
 	lightdm-mask lightdm-unmask \
 	desktop-openbox desktop-xfce desktop-i3 desktop-icewm desktop-fluxbox \
-	desktop-mate desktop-plasma desktop-lxqt desktop-lxde desktop-budgie desktop-cinnamon desktop-gnome desktop-gnome-flashback \
+	desktop-mate desktop-plasma desktop-lxqt desktop-lxde desktop-budgie desktop-cinnamon desktop-gnome desktop-gnome-flashback desktop-compiz \
 	desktop-sway desktop-labwc desktop-enlightenment-x11 desktop-enlightenment-wayland \
-	switch-openbox switch-xfce switch-i3 switch-icewm switch-fluxbox switch-mate switch-plasma switch-lxqt switch-lxde switch-budgie switch-cinnamon switch-gnome switch-gnome-flashback switch-sway switch-labwc \
+	switch-openbox switch-xfce switch-i3 switch-icewm switch-fluxbox switch-mate switch-plasma switch-lxqt switch-lxde switch-budgie switch-cinnamon switch-gnome switch-gnome-flashback switch-compiz switch-sway switch-labwc \
 	switch-enlightenment-x11 switch-enlightenment-wayland \
 	remote remote-x11vnc remote-wayvnc remote-tigervnc remote-status \
 	board-vpu-generate-videos board-vpu-generate-decode-videos \
@@ -432,11 +432,11 @@ board-acceleration-install:
 	$(MAKE) board-npu-install
 
 desktop:
-	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon, gnome, gnome-flashback, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
+	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon, gnome, gnome-flashback, compiz, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
 	sudo ./setup.sh desktop --profile '$(DESKTOP_PROFILE)'
 
 desktop-switch:
-	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon, gnome, gnome-flashback, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
+	@test -n '$(DESKTOP_PROFILE)' || { echo 'ERROR: choose DESKTOP_PROFILE=openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon, gnome, gnome-flashback, compiz, sway, labwc, enlightenment-x11, or enlightenment-wayland.' >&2; exit 2; }
 	@if [[ '$(DESKTOP_REBOOT)' == 1 || '$(DESKTOP_REBOOT)' == yes ]]; then \
 		sudo ./scripts/orangepi-session set '$(DESKTOP_PROFILE)' --reboot; \
 	else \
@@ -489,6 +489,8 @@ desktop-gnome: DESKTOP_PROFILE := gnome
 desktop-gnome: desktop
 desktop-gnome-flashback: DESKTOP_PROFILE := gnome-flashback
 desktop-gnome-flashback: desktop
+desktop-compiz: DESKTOP_PROFILE := compiz
+desktop-compiz: desktop
 desktop-sway: DESKTOP_PROFILE := sway
 desktop-sway: desktop
 desktop-labwc: DESKTOP_PROFILE := labwc
@@ -524,6 +526,8 @@ switch-gnome: DESKTOP_PROFILE := gnome
 switch-gnome: desktop-switch
 switch-gnome-flashback: DESKTOP_PROFILE := gnome-flashback
 switch-gnome-flashback: desktop-switch
+switch-compiz: DESKTOP_PROFILE := compiz
+switch-compiz: desktop-switch
 switch-sway: DESKTOP_PROFILE := sway
 switch-sway: desktop-switch
 switch-labwc: DESKTOP_PROFILE := labwc

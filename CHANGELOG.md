@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add experimental `compiz` (metapackage with `compiz-plugins-extra` and the
+  `tint2` panel) standalone OpenGL compositing session: `sudo ./setup.sh
+  desktop --profile compiz`, `sudo make desktop-compiz`, and `sudo make
+  switch-compiz`. Cube, wobbly, expo, and scale run on the X11 path through
+  `llvmpipe` (expect a slideshow, not 60 fps); `ccsm` must enable the
+  decoration/move/resize/place/switcher plugins first. Same experimental gate.
 - Add experimental `gnome-flashback` (`gnome-session-flashback` with
   `gnome-terminal`) X11 desktop profile: `sudo ./setup.sh desktop --profile
   gnome-flashback`, `sudo make desktop-gnome-flashback`, and `sudo make

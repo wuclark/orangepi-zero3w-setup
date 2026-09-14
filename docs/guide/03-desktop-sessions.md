@@ -7,7 +7,8 @@ Available profiles are:
 
 ```text
 openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon,
-gnome, gnome-flashback, sway, labwc, enlightenment-x11, enlightenment-wayland
+gnome, gnome-flashback, compiz, sway, labwc, enlightenment-x11,
+enlightenment-wayland
 ```
 
 Install one explicitly:
@@ -31,6 +32,7 @@ sudo make desktop-budgie
 sudo make desktop-cinnamon
 sudo make desktop-gnome
 sudo make desktop-gnome-flashback
+sudo make desktop-compiz
 sudo make desktop-labwc
 ```
 
@@ -101,7 +103,17 @@ evidence is recorded. `gnome-flashback` (`gnome-session-flashback` with
 `gnome-terminal`) is the traditional GNOME 2-style panel desktop on the same
 path; its metacity window manager and panel arrive as hard dependencies, so
 no pin is needed. It is far lighter than Shell and the most usable GNOME on
-small boards, with the same experimental gate.
+small boards, with the same experimental gate. `compiz` (the `compiz`
+metapackage with `compiz-plugins-extra` and the `tint2` panel) is a
+standalone OpenGL compositing session — cube, rotate, expo, scale, wobbly
+windows — on the same X11 path. It renders through `llvmpipe` (X11 GLX is
+software here), so expect a retro slideshow, extra heat, and higher power
+draw rather than 60 fps. First launch `ccsm` and enable at least Window
+Decoration, Move Window, Resize Window, Place Windows, and Application
+Switcher, or the session is non-interactive; then add Cube, Rotate, Expo,
+Wobbly Windows, and Animations to taste. Optional `emerald`/`emerald-themes`
+packages provide skinnable window decorations (`emerald --replace`). Same
+experimental gate as the other profiles.
 `sway`
 and `labwc` are direct Wayland profiles using the compositor's DRM backend;
 they are package/configuration support only until real-board evidence confirms
