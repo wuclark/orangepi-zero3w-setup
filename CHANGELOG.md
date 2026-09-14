@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Report the touch-rightclick service in `board-status` alongside the other
+  services, so the touch layer shows up in the same status sweep.
 - List the pre-existing `enlightenment-x11`/`enlightenment-wayland` profiles
   alongside every other profile in the README, step-by-step GPU guide, and
   tutorial, and name the touch layer in the project map.

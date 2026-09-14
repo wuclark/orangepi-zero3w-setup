@@ -50,6 +50,7 @@ status 'Default target' "$(systemctl get-default 2>/dev/null || echo unavailable
 service_status 'LightDM' lightdm
 service_status 'x11vnc' x11vnc.service
 service_status 'Weston PVR' weston-pvr.service
+service_status 'Touch right-click' touch-rightclick.service
 status 'Desktop profile' "$(cat /etc/orangepi-zero3w-setup/state/desktop-profile 2>/dev/null || echo none)"
 status 'Remote backend' "$(cat /etc/orangepi-zero3w-setup/state/remote-type 2>/dev/null || echo none)"
 
