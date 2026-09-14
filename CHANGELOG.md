@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add an out-of-tree `hid-multitouch` builder for the tested vendor kernel
+  (`scripts/install-touch-multitouch.sh`, `sudo ./setup.sh touch-multitouch`,
+  `sudo make board-touch-multitouch-install/uninstall`): upstream v6.6.98
+  sources (SHA-256 pinned and independently verified) built against matching
+  headers with a `vermagic` check, so the WS170120 reports per-contact
+  tracking (five simultaneous contacts observed) without a kernel rebuild.
+  Strict kernel guard, manifest receipt, `board-status` line, replay rank,
+  and a support-matrix input row with the honest reboot/gesture caveats.
 - Fire the touch right-click on lift instead of mid-hold: the pending press
   completes first so the menu opens with no buttons down; firing mid-hold
   left a dangling press whose release dismissed the menu or triggered the

@@ -79,7 +79,8 @@ GIT_DEPTH ?= 1
 	board-manifest board-replay board-replay-execute \
 	backup-required backup-cache backup-sensitive backup-all restore \
 	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-audio-auto board-retroarch-core-check board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced 	board-retroarch-download-advanced board-display-status board-audio-status board-stability-test \
-	board-touch-rightclick-install board-touch-rightclick-uninstall
+	board-touch-rightclick-install board-touch-rightclick-uninstall \
+	board-touch-multitouch-install board-touch-multitouch-uninstall
 
 BOARD_WORKFLOW := ./scripts/board-acceleration-workflow.sh
 BOARD_LOG ?= /var/log/orangepi-zero3w-setup/acceleration-progress.log
@@ -136,6 +137,8 @@ help:
 		'make board-display-status                Report HDMI/USB-C DP connector and X11 outputs' \
 		'make board-touch-rightclick-install      Install the touchscreen long-press right-click service' \
 		'make board-touch-rightclick-uninstall    Remove the touchscreen right-click service' \
+		'make board-touch-multitouch-install      Build/install hid-multitouch for the tested vendor kernel' \
+		'make board-touch-multitouch-uninstall    Remove the hid-multitouch module' \
 		'make board-audio-status                  Report ALSA cards and playback devices' \
 		'make board-stability-test [STABILITY_MINUTES=30]  Repeat continuously; default is 30 minutes' \
 		'make board-gpu-wayland-setup             Install Sway and WayVNC as the default Wayland path' \
@@ -405,6 +408,12 @@ board-touch-rightclick-install:
 
 board-touch-rightclick-uninstall:
 	if [ "$$(id -u)" -eq 0 ]; then ./scripts/install-touch-rightclick.sh --uninstall; else sudo ./scripts/install-touch-rightclick.sh --uninstall; fi
+
+board-touch-multitouch-install:
+	if [ "$$(id -u)" -eq 0 ]; then ./scripts/install-touch-multitouch.sh; else sudo ./scripts/install-touch-multitouch.sh; fi
+
+board-touch-multitouch-uninstall:
+	if [ "$$(id -u)" -eq 0 ]; then ./scripts/install-touch-multitouch.sh --uninstall; else sudo ./scripts/install-touch-multitouch.sh --uninstall; fi
 
 board-stability-test:
 	if [ "$$(id -u)" -eq 0 ]; then STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' STABILITY_INTERVAL_SECONDS='$(STABILITY_INTERVAL_SECONDS)' ./scripts/board-stability-test.sh; else sudo STABILITY_MINUTES='$(STABILITY_MINUTES)' STABILITY_STORAGE='$(STABILITY_STORAGE)' STABILITY_INTERVAL_SECONDS='$(STABILITY_INTERVAL_SECONDS)' ./scripts/board-stability-test.sh; fi

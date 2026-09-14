@@ -249,6 +249,9 @@ sudo make board-touch-rightclick-install
 
 See [Touchscreen long-press right-click](docs/optional/touch-rightclick.md)
 for the `hold` vs `tap-hold` gestures, tuning, verification, and removal.
+True multitouch needs the out-of-tree module instead:
+`sudo make board-touch-multitouch-install` (exact-kernel guard, verified
+against upstream sources).
 
 For health and endurance checks:
 

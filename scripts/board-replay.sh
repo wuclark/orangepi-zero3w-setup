@@ -47,7 +47,7 @@ def rank(key):
         return (2, key)
     if key.startswith("remote."):
         return (3, key)
-    tail = ["touch", "retroarch", "pcie", "docker"]
+    tail = ["input.multitouch", "touch", "retroarch", "pcie", "docker"]
     if key in tail:
         return (4, tail.index(key))
     return (5, key)

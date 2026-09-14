@@ -13,6 +13,7 @@ Usage:
   sudo ./setup.sh desktop --profile PROFILE [options]
    sudo ./setup.sh remote --backend BACKEND [options]
    sudo ./setup.sh touch-rightclick [--device-name NAME] [--backend uinput|xtest|auto] [--gesture hold|tap-hold] [--hold-ms MS] [--move-units N] [--update|--no-start|--uninstall]
+   sudo ./setup.sh touch-multitouch [--update|--uninstall]
   sudo ./setup.sh gpu [existing GPU installer options]
   sudo ./setup.sh vpu [--status|--install|--verify]
   sudo ./setup.sh npu --status
@@ -40,6 +41,7 @@ case "$command_name" in
     desktop) exec "$REPO_ROOT/scripts/setup-desktop.sh" "$@" ;;
     remote) exec "$REPO_ROOT/scripts/setup-remote.sh" "$@" ;;
     touch-rightclick) exec "$REPO_ROOT/scripts/install-touch-rightclick.sh" "$@" ;;
+    touch-multitouch) exec "$REPO_ROOT/scripts/install-touch-multitouch.sh" "$@" ;;
     gpu) exec "$REPO_ROOT/install.sh" "$@" ;;
     vpu) exec "$REPO_ROOT/scripts/setup-vpu.sh" "$@" ;;
     npu) exec "$REPO_ROOT/scripts/setup-npu.sh" "$@" ;;

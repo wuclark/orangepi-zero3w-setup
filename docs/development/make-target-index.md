@@ -29,6 +29,7 @@ new public target or changing a target's boundary.
 | `board-retroarch-*` | RetroArch installer and helpers | Board | Install, validate, repair, test, and remove isolated RetroArch Vulkan. |
 | `desktop-*`, `switch-*`, `desktop-remove`, `remote-*` | `scripts/setup-desktop.sh`, `setup-remote.sh` | Board | Select, remove, or switch desktop or remote backend; removal refuses the active session and keeps LightDM; changes services and graphical targets. |
 | `board-touch-rightclick-install`, `board-touch-rightclick-uninstall` | `scripts/install-touch-rightclick.sh`, `scripts/orangepi-touch-rightclick`, `systemd/touch-rightclick.service` | Board | Install/remove the long-press touchscreen right-click service; input-only, no reboot, no GPU/desktop/remote changes. |
+| `board-touch-multitouch-install`, `board-touch-multitouch-uninstall` | `scripts/install-touch-multitouch.sh` | Board | Build/install the upstream hid-multitouch module against vendor headers (exact-kernel guard, vermagic check); reconnect USB touch after, no reboot. |
 | `backup-*`, `restore` | `scripts/backup.sh`, `restore.sh` | Host | Copy or restore external inputs, caches, and separately confirmed secrets. |
 | `collect-boards`, `compare-board-reports` | report collection/comparison scripts | Host + SSH boards | Gather normalized reports and compare boards without changing them. |
 | `test`, `tests` | `tests/*.sh` | Host | Run syntax, policy, archive, and pre-boot checks. |

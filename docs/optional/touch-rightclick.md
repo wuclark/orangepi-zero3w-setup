@@ -26,11 +26,45 @@ refresh it first), runs the built-in detector self-test, and enables/starts
 desktop, or remote stacks.
 
 True multi-touch (two-finger tap, pinch) is a hardware-plus-kernel matter:
-the WS170120 panel is 5-point capacitive, but the
-`6.6.98-vendor-sun60iw2` kernel ships neither `hid-multitouch` nor uinput,
-so generic HID exposes single-touch only. Enabling it would require
-rebuilding the vendor kernel — disproportionate next to the working
-long-press path, so this daemon is the supported answer.
+the WS170120 panel is 5-point capacitive, but the stock
+`6.6.98-vendor-sun60iw2` kernel omits `hid-multitouch` (and uinput), so
+generic HID exposes single-touch only. That gap is now closable without
+rebuilding the kernel (see below); until then the long-press daemon is the
+supported answer.
+
+## True multitouch (out-of-tree module)
+
+Upstream `hid-multitouch` v6.6.98 builds against the matching vendor headers
+and loads on the tested kernel, after which the panel reports per-contact
+slots and tracking IDs (five simultaneous contacts observed 2026-09-14):
+
+```bash
+sudo make board-touch-multitouch-install
+```
+
+This targets exactly `6.6.98-vendor-sun60iw2` on aarch64 and aborts
+otherwise; it uses the existing apt cache unless `--update` is passed, pins
+the upstream sources by SHA-256 (verified independently), checks the compiled
+module's `vermagic` before installing to
+`/lib/modules/<kernel>/updates/`, and never replaces the kernel or reboots.
+Afterwards reconnect only the touchscreen USB data connection and verify:
+
+```bash
+sudo evtest
+```
+
+Expect `ABS_MT_SLOT`, `ABS_MT_POSITION_X/Y`, `ABS_MT_TRACKING_ID`, and
+multiple active contacts at once; only `ABS_X`/`ABS_Y`/`BTN_TOUCH` means the
+stock driver is still bound. Reboot-time autoload was not demonstrated in the
+first test: after a reboot, check `lsmod | grep hid_multitouch` and `evtest`,
+run `sudo modprobe hid_multitouch` if needed, and only then consider pinning
+`hid_multitouch` via `/etc/modules-load.d/`. The module is per-kernel: after
+a kernel update, check whether the new kernel includes the driver, otherwise
+rebuild for it — never copy the `.ko` across kernels. Remove with
+`sudo make board-touch-multitouch-uninstall` (then reconnect USB to return to
+the stock driver). Kernel-level contacts do not imply desktop gestures: if
+`evtest` shows fingers but an app ignores them, the mapping lives in the
+desktop/application layer, not here.
 
 ## Backends
 
@@ -107,9 +141,9 @@ installed desktop packages are preserved (as with the desktop reset path).
   press completes first and the menu opens with no buttons down. Moving past
   the allowance before lifting cancels, so drags never misfire; prefer
   `tap-hold` when even a plain hold should never summon a menu.
-- Two-finger tap, pinch, and other multi-touch gestures cannot work on
-  single-touch eGalax-style controllers; that is a hardware limit, not a
-  software gap. A USB mouse works alongside touch with no configuration.
+- Two-finger tap, pinch, and other multi-touch gestures need the out-of-tree
+  `hid-multitouch` module above; on the stock driver the panel is
+  single-touch only. A USB mouse works alongside touch with no configuration.
 - Needs `/dev/uinput` and event-device read access; the service runs as root
   for this reason. It is input-only and stays out of the delayed `pvrsrvkm`
   boot sequencing.
