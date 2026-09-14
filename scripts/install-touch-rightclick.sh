@@ -34,6 +34,7 @@ TAP_WINDOW_MS=400
 TAP_MS=300
 MOVE_UNITS=12
 BACKEND=auto
+DEBUG=no
 APT_UPDATE=no
 NO_START=no
 ACTION=install
@@ -56,6 +57,7 @@ Options:
                        the held press (default 400)
   --tap-ms MS          Max two-finger chord for a two-finger tap (default
                        300; needs multitouch slots, 0 disables)
+  --debug              Log every press/lift/arm/cancel decision (diagnostics)
   --move-units N       Movement allowance in ABS units; motion past it
                        cancels the pending click (default 12)
   --update             Run apt update before installing python3-evdev
@@ -77,6 +79,7 @@ while (($#)); do
         --hold-ms) HOLD_MS=${2:?missing ms}; shift 2 ;;
         --tap-window-ms) TAP_WINDOW_MS=${2:?missing ms}; shift 2 ;;
         --tap-ms) TAP_MS=${2:?missing ms}; shift 2 ;;
+        --debug) DEBUG=yes; shift ;;
         --move-units) MOVE_UNITS=${2:?missing units}; shift 2 ;;
         --update) APT_UPDATE=yes; shift ;;
         --no-start) NO_START=yes; shift ;;
@@ -154,12 +157,15 @@ fi
 install -m 755 "$SCRIPT_DIR/orangepi-touch-rightclick" "$DAEMON"
 install -m 644 "$SCRIPT_DIR/../systemd/touch-rightclick.service" "$UNIT.tmp"
 # Apply caller tuning to the installed unit without editing the shipped file.
+DEBUG_FLAG=
+[[ $DEBUG == yes ]] && DEBUG_FLAG=" --debug"
 sed -e "s/--device-name [^ ]*/--device-name $DEVICE_NAME/" \
     -e "s/--backend [^ ]*/--backend $BACKEND/" \
     -e "s/--gesture [^ ]*/--gesture $GESTURE/" \
     -e "s/--hold-ms [^ ]*/--hold-ms $HOLD_MS/" \
     -e "s/--tap-ms [^ ]*/--tap-ms $TAP_MS/" \
     -e "s/--move-units [^ ]*/--move-units $MOVE_UNITS/" \
+    -e "s|\(--move-units [^ ]*\)|\1$DEBUG_FLAG|" \
     "$UNIT.tmp" >"$UNIT"
 rm -f "$UNIT.tmp"
 systemctl daemon-reload
@@ -169,7 +175,7 @@ if [[ $NO_START == yes ]]; then
     log "Installed touch-rightclick (not started). Start with: sudo systemctl start touch-rightclick.service"
 else
     systemctl restart touch-rightclick.service
-    manifest_record touch "sudo ./setup.sh touch-rightclick --device-name $DEVICE_NAME --backend $BACKEND --gesture $GESTURE --hold-ms $HOLD_MS --tap-ms $TAP_MS --move-units $MOVE_UNITS"
+    manifest_record touch "sudo ./setup.sh touch-rightclick --device-name $DEVICE_NAME --backend $BACKEND --gesture $GESTURE --hold-ms $HOLD_MS --tap-ms $TAP_MS --move-units $MOVE_UNITS$([[ $DEBUG == yes ]] && printf ' --debug' || true)"
     log "Installed and started touch-rightclick (device '$DEVICE_NAME', backend $BACKEND, gesture $GESTURE, hold ${HOLD_MS} ms)."
 fi
     log "Hold a finger still on the panel, then lift, for the context menu; short taps and drags are unchanged."

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add `--debug` to the touch daemon/installer: per-press journal verdicts
+  (drift amounts, chord durations, cancel reasons) for tuning gestures on
+  unknown panels.
 - Harden the touch daemon's XTEST authentication: scan authority candidates
   (explicit flag, LightDM root authority, login user's authority) and live X
   sockets, validating each combo with a round-trip and re-resolving on every

@@ -140,6 +140,10 @@ check `journalctl -u touch-rightclick.service` in that case.
    drags behave exactly as before.
 3. Hardware-free check of the detector logic:
    `python3 scripts/orangepi-touch-rightclick --self-test`.
+4. If gestures misfire or never fire, reinstall with `--debug` and watch the
+   per-press verdicts (drift amounts, chord durations, cancel reasons):
+   `sudo ./setup.sh touch-rightclick --debug`, then
+   `sudo journalctl -u touch-rightclick.service -f` while touching.
 
 ## Remove
 

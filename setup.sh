@@ -12,7 +12,7 @@ Usage:
   sudo ./setup.sh packages [options]
   sudo ./setup.sh desktop --profile PROFILE [options]
    sudo ./setup.sh remote --backend BACKEND [options]
-   sudo ./setup.sh touch-rightclick [--device-name NAME] [--backend uinput|xtest|auto] [--gesture hold|tap-hold] [--hold-ms MS] [--tap-ms MS] [--move-units N] [--update|--no-start|--uninstall]
+   sudo ./setup.sh touch-rightclick [--device-name NAME] [--backend uinput|xtest|auto] [--gesture hold|tap-hold] [--hold-ms MS] [--tap-ms MS] [--move-units N] [--debug] [--update|--no-start|--uninstall]
    sudo ./setup.sh touch-multitouch [--update|--uninstall]
   sudo ./setup.sh gpu [existing GPU installer options]
   sudo ./setup.sh vpu [--status|--install|--verify]
