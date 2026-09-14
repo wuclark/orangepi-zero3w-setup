@@ -96,6 +96,11 @@ case "$PROFILE" in
         import_later
         exec budgie-desktop
         ;;
+    cinnamon)
+        export XDG_SESSION_TYPE=x11 XDG_CURRENT_DESKTOP=X-Cinnamon
+        import_later
+        exec cinnamon-session
+        ;;
     sway)
         export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway
         start_wayvnc

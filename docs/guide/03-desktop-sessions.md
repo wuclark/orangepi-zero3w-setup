@@ -6,8 +6,8 @@ access and does not install a VNC server.
 Available profiles are:
 
 ```text
-openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, sway,
-labwc, enlightenment-x11, enlightenment-wayland
+openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon,
+sway, labwc, enlightenment-x11, enlightenment-wayland
 ```
 
 Install one explicitly:
@@ -28,6 +28,7 @@ sudo make desktop-plasma
 sudo make desktop-lxqt
 sudo make desktop-lxde
 sudo make desktop-budgie
+sudo make desktop-cinnamon
 sudo make desktop-labwc
 ```
 
@@ -79,6 +80,9 @@ prefer `xfce` on 1-2 GB boards and keep serial-console recovery available.
 remain experimental until the same board evidence is recorded. `budgie`
 (`budgie-desktop`) is a heavier GNOME-stack X11 desktop on the same path and
 likewise remains experimental; prefer `xfce`/`lxqt`/`lxde` on small boards.
+`cinnamon` (`cinnamon-core`) is a GNOME-fork X11 desktop with compositing
+demands on the same path and likewise remains experimental; like the others
+it runs under LightDM with no `gdm3`.
 `sway`
 and `labwc` are direct Wayland profiles using the compositor's DRM backend;
 they are package/configuration support only until real-board evidence confirms

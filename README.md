@@ -188,7 +188,9 @@ sessions. Add `DESKTOP_REBOOT=1` when switching should reboot immediately.
 `lxqt` is a lightweight experimental X11 profile with the same evidence gate.
 `lxde` is a very light GTK experimental X11 profile with the same gate.
 `budgie` is a heavier GNOME-stack experimental X11 profile; prefer
-`xfce`/`lxqt`/`lxde` on small boards until evidence is recorded.
+`xfce`/`lxqt`/`lxde` on small boards until evidence is recorded. `cinnamon`
+is a GNOME-fork experimental X11 profile with the same gate; it runs under
+LightDM with no `gdm3`.
 Desktop setup installs visible white-on-black xterm defaults under
 `/etc/X11/Xresources/90-orangepi-xterm`.
 
@@ -306,7 +308,7 @@ sudo ./setup.sh packages --update
 ```
 
 Choose a GUI only when wanted. Available desktop profiles include X11 sessions
-(`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`) and Wayland sessions
+(`openbox`, `xfce`, `i3`, `icewm`, `fluxbox`, `mate`, `plasma`, `lxqt`, `lxde`, `budgie`, `cinnamon`) and Wayland sessions
 (`sway`, `labwc`):
 
 ```bash

@@ -12,6 +12,12 @@
   is watched read-only and never grabbed; two-finger gestures remain impossible
   on slot-less eGalax controllers (hardware limit).
 
+- Add experimental `cinnamon` (`cinnamon-core`, `cinnamon-session`) X11 desktop
+  profile: `sudo ./setup.sh desktop --profile cinnamon`, `sudo make
+  desktop-cinnamon`, and `sudo make switch-cinnamon`. It reuses the
+  LightDM/X11 Sunxi `card0`/PowerVR presentation path with no `gdm3` but stays
+  package/configuration support only until real-board presentation and reboot
+  evidence is recorded.
 - Add experimental `budgie` (`budgie-desktop`) X11 desktop profile:
   `sudo ./setup.sh desktop --profile budgie`, `sudo make desktop-budgie`, and
   `sudo make switch-budgie`. It reuses the LightDM/X11 Sunxi `card0`/PowerVR

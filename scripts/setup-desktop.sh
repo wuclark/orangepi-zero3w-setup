@@ -19,14 +19,15 @@ usage() {
 Usage: sudo ./setup.sh desktop --profile PROFILE [--user USER]
 
 Profiles: openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie,
-          sway, labwc, enlightenment-x11, enlightenment-wayland
+          cinnamon, sway, labwc, enlightenment-x11, enlightenment-wayland
 
 Installs only the selected desktop and LightDM. Sway and labwc also install
 the `foot` terminal, `wofi` application launcher, and `mpv` video player.
 The mate profile installs `mate-desktop-environment-core`, the plasma
 profile installs `plasma-desktop` with `konsole`, and the lxqt profile
 installs `lxqt-core`, the lxde profile installs `lxde-core`, and the budgie
-profile installs `budgie-desktop`; all five are
+profile installs `budgie-desktop` and the cinnamon profile installs
+`cinnamon-core`; all six are
 X11 sessions using
 the tested Sunxi card0/PowerVR presentation path, but remain experimental
 package/configuration support only until real-board presentation and reboot
@@ -61,6 +62,7 @@ declare -A PACKAGES=(
     [lxqt]='lightdm lightdm-gtk-greeter lxqt-core xterm dbus-x11'
     [lxde]='lightdm lightdm-gtk-greeter lxde-core xterm dbus-x11'
     [budgie]='lightdm lightdm-gtk-greeter budgie-desktop xterm dbus-x11'
+    [cinnamon]='lightdm lightdm-gtk-greeter cinnamon-core xterm dbus-x11'
     [sway]='lightdm sway wayland-protocols xwayland foot wofi mpv'
     [labwc]='lightdm labwc wayland-protocols xwayland foot wofi mpv'
     [enlightenment-x11]='lightdm enlightenment xterm dbus-x11'
@@ -94,6 +96,7 @@ case "$PROFILE" in
     lxqt) SESSION=lxqt ;;
     lxde) SESSION=lxde ;;
     budgie) SESSION=budgie ;;
+    cinnamon) SESSION=cinnamon ;;
     sway|labwc|enlightenment-x11|enlightenment-wayland) SESSION=$PROFILE ;;
 esac
 install -d -m 755 /usr/local/libexec/orangepi-zero3w-setup
@@ -124,7 +127,7 @@ DesktopNames=$profile
 EOF
 }
 case "$PROFILE" in
-    openbox|xfce|i3|icewm|fluxbox|mate|plasma|lxqt|lxde|budgie|enlightenment-x11) install_session_file "$PROFILE" x11 ;;
+    openbox|xfce|i3|icewm|fluxbox|mate|plasma|lxqt|lxde|budgie|cinnamon|enlightenment-x11) install_session_file "$PROFILE" x11 ;;
     sway|labwc|enlightenment-wayland) install_session_file "$PROFILE" wayland ;;
 esac
 cat >"$CONF" <<EOF
