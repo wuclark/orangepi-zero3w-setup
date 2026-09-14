@@ -7,7 +7,7 @@ Available profiles are:
 
 ```text
 openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie, cinnamon,
-gnome, sway, labwc, enlightenment-x11, enlightenment-wayland
+gnome, gnome-flashback, sway, labwc, enlightenment-x11, enlightenment-wayland
 ```
 
 Install one explicitly:
@@ -30,6 +30,7 @@ sudo make desktop-lxde
 sudo make desktop-budgie
 sudo make desktop-cinnamon
 sudo make desktop-gnome
+sudo make desktop-gnome-flashback
 sudo make desktop-labwc
 ```
 
@@ -96,7 +97,11 @@ avoids the `gnome-core` metapackage, which hard-depends on `gdm3`; mutter
 compositing ships inside `gnome-shell`, so no extra window manager pin is
 needed. It is the heaviest profile — expect a software-rendered Shell and
 prefer 2 GB or more — and likewise remains experimental until the same board
-evidence is recorded.
+evidence is recorded. `gnome-flashback` (`gnome-session-flashback` with
+`gnome-terminal`) is the traditional GNOME 2-style panel desktop on the same
+path; its metacity window manager and panel arrive as hard dependencies, so
+no pin is needed. It is far lighter than Shell and the most usable GNOME on
+small boards, with the same experimental gate.
 `sway`
 and `labwc` are direct Wayland profiles using the compositor's DRM backend;
 they are package/configuration support only until real-board evidence confirms

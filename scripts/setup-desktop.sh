@@ -19,7 +19,8 @@ usage() {
 Usage: sudo ./setup.sh desktop --profile PROFILE [--user USER]
 
 Profiles: openbox, xfce, i3, icewm, fluxbox, mate, plasma, lxqt, lxde, budgie,
-          cinnamon, gnome, sway, labwc, enlightenment-x11, enlightenment-wayland
+          cinnamon, gnome, gnome-flashback, sway, labwc, enlightenment-x11,
+          enlightenment-wayland
 
 Installs only the selected desktop and LightDM. Sway and labwc also install
 the `foot` terminal, `wofi` application launcher, and `mpv` video player.
@@ -41,7 +42,12 @@ profile installs `gnome-session` with `gnome-shell`, `gnome-terminal`, and
 deliberately avoids the `gnome-core` metapackage (which hard-depends on
 `gdm3`); mutter compositing ships inside `gnome-shell`, so no extra window
 manager pin is needed. It is the heaviest profile: expect a
-software-rendered Shell on this board and prefer 2 GB or more. It
+software-rendered Shell on this board and prefer 2 GB or more. The
+gnome-flashback profile installs `gnome-session-flashback` with
+`gnome-terminal` for the traditional GNOME 2-style panel desktop; its
+metacity window manager and panel arrive as hard dependencies, so no pin is
+needed. It is far lighter than Shell and the most usable GNOME on small
+boards. It
 does not run apt update.
 Run `sudo apt update` explicitly first when the package cache is not current.
 No remote-access service is installed here.
@@ -73,6 +79,7 @@ declare -A PACKAGES=(
     [budgie]='lightdm lightdm-gtk-greeter budgie-desktop xterm dbus-x11'
     [cinnamon]='lightdm lightdm-gtk-greeter cinnamon-core xterm dbus-x11'
     [gnome]='lightdm lightdm-gtk-greeter gnome-session gnome-shell gnome-terminal nautilus xterm dbus-x11'
+    [gnome-flashback]='lightdm lightdm-gtk-greeter gnome-session-flashback gnome-terminal xterm dbus-x11'
     [sway]='lightdm sway wayland-protocols xwayland foot wofi mpv'
     [labwc]='lightdm labwc wayland-protocols xwayland foot wofi mpv'
     [enlightenment-x11]='lightdm enlightenment xterm dbus-x11'
@@ -111,6 +118,7 @@ case "$PROFILE" in
     budgie) SESSION=budgie; TRYEXEC=budgie-desktop ;;
     cinnamon) SESSION=cinnamon; TRYEXEC=cinnamon-session ;;
     gnome) SESSION=gnome; TRYEXEC=gnome-session ;;
+    gnome-flashback) SESSION=gnome-flashback; TRYEXEC=gnome-session ;;
     sway) SESSION=sway; TRYEXEC=sway ;;
     labwc) SESSION=labwc; TRYEXEC=labwc ;;
     enlightenment-x11|enlightenment-wayland) SESSION=$PROFILE; TRYEXEC=enlightenment_start ;;
@@ -143,7 +151,7 @@ DesktopNames=$profile
 EOF
 }
 case "$PROFILE" in
-    openbox|xfce|i3|icewm|fluxbox|mate|plasma|lxqt|lxde|budgie|cinnamon|gnome|enlightenment-x11) install_session_file "$PROFILE" x11 ;;
+    openbox|xfce|i3|icewm|fluxbox|mate|plasma|lxqt|lxde|budgie|cinnamon|gnome|gnome-flashback|enlightenment-x11) install_session_file "$PROFILE" x11 ;;
     sway|labwc|enlightenment-wayland) install_session_file "$PROFILE" wayland ;;
 esac
 cat >"$CONF" <<EOF

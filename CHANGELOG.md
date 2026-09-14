@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add experimental `gnome-flashback` (`gnome-session-flashback` with
+  `gnome-terminal`) X11 desktop profile: `sudo ./setup.sh desktop --profile
+  gnome-flashback`, `sudo make desktop-gnome-flashback`, and `sudo make
+  switch-gnome-flashback`. It is the traditional GNOME 2-style panel desktop
+  on the LightDM/X11 path (metacity and panel arrive as hard dependencies, so
+  no WM pin is needed) and the lightest usable GNOME for small boards, with
+  the same experimental gate.
 - Add experimental `gnome` (GNOME Shell on Xorg: `gnome-session` with
   `gnome-shell`, `gnome-terminal`, and `nautilus`) X11 desktop profile:
   `sudo ./setup.sh desktop --profile gnome`, `sudo make desktop-gnome`, and
