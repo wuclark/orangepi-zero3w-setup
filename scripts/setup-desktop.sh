@@ -85,19 +85,24 @@ if [[ -e $CONF ]] && ! grep -q 'managed by orangepi-zero3w-setup' "$CONF"; then
     BACKUP_ROOT="/var/backups/$PROJECT_NAME/$(date -u +%Y%m%dT%H%M%SZ)"
     backup_file "$CONF" "$BACKUP_ROOT"
 fi
+# TRYEXEC must name the real session binary: LightDM hides .desktop entries
+# whose TryExec is missing, so a profile short name (e.g. xfce, plasma) that
+# is not itself an executable breaks session selection and logout fallback.
 case "$PROFILE" in
-    openbox) SESSION=openbox ;;
-    xfce) SESSION=xfce ;;
-    i3) SESSION=i3 ;;
-    icewm) SESSION=icewm ;;
-    fluxbox) SESSION=fluxbox ;;
-    mate) SESSION=mate ;;
-    plasma) SESSION=plasma ;;
-    lxqt) SESSION=lxqt ;;
-    lxde) SESSION=lxde ;;
-    budgie) SESSION=budgie ;;
-    cinnamon) SESSION=cinnamon ;;
-    sway|labwc|enlightenment-x11|enlightenment-wayland) SESSION=$PROFILE ;;
+    openbox) SESSION=openbox; TRYEXEC=openbox ;;
+    xfce) SESSION=xfce; TRYEXEC=startxfce4 ;;
+    i3) SESSION=i3; TRYEXEC=i3 ;;
+    icewm) SESSION=icewm; TRYEXEC=icewm ;;
+    fluxbox) SESSION=fluxbox; TRYEXEC=startfluxbox ;;
+    mate) SESSION=mate; TRYEXEC=mate-session ;;
+    plasma) SESSION=plasma; TRYEXEC=startplasma-x11 ;;
+    lxqt) SESSION=lxqt; TRYEXEC=startlxqt ;;
+    lxde) SESSION=lxde; TRYEXEC=startlxde ;;
+    budgie) SESSION=budgie; TRYEXEC=budgie-desktop ;;
+    cinnamon) SESSION=cinnamon; TRYEXEC=cinnamon-session ;;
+    sway) SESSION=sway; TRYEXEC=sway ;;
+    labwc) SESSION=labwc; TRYEXEC=labwc ;;
+    enlightenment-x11|enlightenment-wayland) SESSION=$PROFILE; TRYEXEC=enlightenment_start ;;
 esac
 install -d -m 755 /usr/local/libexec/orangepi-zero3w-setup
 install -m 755 "$SCRIPT_DIR/orangepi-session-launch" /usr/local/libexec/orangepi-zero3w-setup/session-launch
@@ -121,7 +126,7 @@ install_session_file() {
 Name=Orange Pi $profile
 Comment=Orange Pi managed $type session
 Exec=/usr/local/libexec/orangepi-zero3w-setup/session-launch $profile
-TryExec=${profile%%-*}
+TryExec=$TRYEXEC
 Type=Application
 DesktopNames=$profile
 EOF

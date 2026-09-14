@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fix `TryExec` in the managed LightDM session files: it now names the real
+  session binary (`startxfce4`, `mate-session`, `startplasma-x11`, …) instead
+  of the profile short name. LightDM hides entries with a missing `TryExec`,
+  so every managed session except `openbox` was invisible and session
+  selection silently fell back to the desktop's own session file.
 - Add a touchscreen long-press right-click daemon for single-touch Waveshare
   panels (`scripts/orangepi-touch-rightclick`, `scripts/install-touch-rightclick.sh`,
   `systemd/touch-rightclick.service`, `sudo ./setup.sh touch-rightclick`, `sudo
