@@ -456,6 +456,51 @@ def make_uinput_emitter(args):
 
 
 LIGHTDM_ROOT_AUTH = "/var/run/lightdm/root/:0"
+STATE_USER_FILE = "/etc/orangepi-zero3w-setup/state/user"
+
+
+def _auth_candidates(args):
+    """Readable, non-empty X authority files, best first: explicit flag,
+    LightDM root authority, then the recorded login user's authority."""
+    paths = []
+    if args.xauthority:
+        paths.append(args.xauthority)
+    paths.append(LIGHTDM_ROOT_AUTH)
+    try:
+        with open(STATE_USER_FILE) as f:
+            user = f.read().strip()
+        if user and "/" not in user:
+            paths.append("/home/%s/.Xauthority" % user)
+    except OSError:
+        pass
+    seen = set()
+    usable = []
+    for path in paths:
+        if path in seen:
+            continue
+        seen.add(path)
+        try:
+            if os.path.getsize(path) > 0:
+                usable.append(path)
+        except OSError:
+            continue
+    return usable
+
+
+def _display_candidates(args):
+    """Configured display first, then any other live X sockets (covers the
+    :0/:1 shuffle when a greeter and a session coexist)."""
+    displays = [args.display]
+    try:
+        names = sorted(os.listdir("/tmp/.X11-unix"))
+    except OSError:
+        names = []
+    for name in names:
+        if name.startswith("X") and name[1:].isdigit():
+            disp = ":" + name[1:]
+            if disp not in displays:
+                displays.append(disp)
+    return displays
 
 
 def make_xtest_emitter(args):
@@ -481,9 +526,29 @@ def make_xtest_emitter(args):
     state = {"display": None}
 
     def connect():
-        if state["display"] is None:
-            state["display"] = xdisplay.Display(args.display)
-        return state["display"]
+        # python-xlib connects lazily: construction alone does not prove the
+        # authority works, so force a round-trip to validate each combo.
+        if state["display"] is not None:
+            return state["display"]
+        last_exc = Exception("no usable display/authority combination found")
+        for disp in _display_candidates(args):
+            for auth_path in _auth_candidates(args):
+                os.environ["XAUTHORITY"] = auth_path
+                try:
+                    candidate = xdisplay.Display(disp)
+                    candidate.sync()
+                except Exception as exc:
+                    last_exc = exc
+                    try:
+                        candidate.close()
+                    except Exception:
+                        pass
+                    continue
+                state["display"] = candidate
+                print("xtest connected to display '%s' (%s)."
+                      % (disp, auth_path), flush=True)
+                return candidate
+        raise last_exc
 
     print("xtest injector ready for display '%s'." % args.display, flush=True)
 

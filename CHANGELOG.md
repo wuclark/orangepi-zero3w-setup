@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Harden the touch daemon's XTEST authentication: scan authority candidates
+  (explicit flag, LightDM root authority, login user's authority) and live X
+  sockets, validating each combo with a round-trip and re-resolving on every
+  failed connect. Fixes "Authorization required" failures from boot races and
+  `:0`/`:1` display shuffles.
 - Add native two-finger-tap right-click to the touch daemon: with `ABS_MT_SLOT`
   support (the out-of-tree module), exactly two quick contacts fire one click
   on the final lift, while a second live contact disarms the single-finger

@@ -74,9 +74,11 @@ desktop/application layer, not here.
 - `xtest` injects through the X11 XTEST extension: no kernel support needed,
   but X11 sessions only. The installer selects it automatically when uinput
   is unavailable (observed on the `6.6.98-vendor-sun60iw2` kernel, which
-  ships no uinput at all) and installs `python3-xlib` for it. It addresses
-  display `:0` with the LightDM root authority by default
-  (`--display`/`--xauthority` override).
+  ships no uinput at all) and installs `python3-xlib` for it. It authenticates
+  by scanning authority candidates (explicit `--xauthority`, the LightDM root
+  authority, the recorded login user's `~/.Xauthority`) and live X sockets
+  (`--display` first), re-resolving on every failed connect so boot races and
+  `:0`/`:1` shuffles recover on the next hold.
 - `auto` (default) picks uinput when available, else xtest.
 
 Tuning (defaults suit the WS170120):
