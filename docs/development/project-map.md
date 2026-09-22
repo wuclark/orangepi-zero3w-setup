@@ -17,6 +17,7 @@ remain outside Git.
 ├── scripts/
 │   ├── extract-*, prepare-*, build-*    host image/archive production
 │   ├── armbian-*, create-*              image first-boot provisioning
+│   ├── backup-*, restore-*, *-offline-bundle*  host backup and portable offline bundles
 │   ├── setup-*, install-*, uninstall-*  board system changes
 │   ├── board-*, test-*, verify-*        board diagnostics and validation
 │   ├── collect-*, compare-*              evidence and multi-board reports

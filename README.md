@@ -311,6 +311,22 @@ Sensitive restoration also requires the explicit `RESTORE SENSITIVE` phrase;
 `RESTORE_FORCE=1` bypasses prompts for controlled automation. Backups should be
 stored outside Git and sensitive backups should be encrypted.
 
+For one portable bundle with the repo snapshot and everything above, use the
+full offline backup (gzip default). With no `BACKUP_DIR` it prints the required
+arguments and restore instructions instead of guessing:
+
+```bash
+make fullbackup BACKUP_DIR=/mnt/usb/zero3w-bundle
+make fullbackup BACKUP_DIR=/mnt/usb/zero3w-bundle INCLUDE_SENSITIVE=YES BUNDLE_COMPRESS=xz
+make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle
+make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle RESTORE_SET=cache
+```
+
+`fullbackup` picks up new images or vendor files under `work/images/`,
+`vendor-files/`, `vendor-root/`, `work/vendor-output/`, or `work/sources/`
+automatically. Credentials and firstboot images are only included with
+`INCLUDE_SENSITIVE=YES` plus typed confirmation.
+
 The first-boot generator asks for a hostname and creates a one-time
 `/root/provisioning.sh` hook to apply it after the first successful login.
 Armbian's preset file itself contains only documented first-boot variables.

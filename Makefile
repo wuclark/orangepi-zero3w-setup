@@ -48,6 +48,8 @@ BACKUP_SET ?=
 BACKUP_CONFIRM ?=
 RESTORE_SET ?=
 RESTORE_FORCE ?=
+INCLUDE_SENSITIVE ?= no
+BUNDLE_COMPRESS ?= gzip
 DESKTOP_PROFILE ?=
 DESKTOP_REBOOT ?= no
 REMOTE_BACKEND ?=
@@ -78,6 +80,7 @@ GIT_DEPTH ?= 1
 	board-core-install board-core-status board-a733-sources board-status board-report board-summary collect-boards compare-board-reports \
 	board-manifest board-replay board-replay-execute \
 	backup-required backup-cache backup-sensitive backup-all restore \
+	fullbackup fullrestore \
 	board-retroarch-install board-retroarch-verify board-retroarch-repair board-retroarch-audio-test board-retroarch-audio-auto board-retroarch-core-check board-retroarch-uninstall board-retroarch-emulationstation board-retroarch-advanced 	board-retroarch-download-advanced board-display-status board-audio-status board-stability-test \
 	board-touch-rightclick-install board-touch-rightclick-uninstall \
 	board-touch-multitouch-install board-touch-multitouch-uninstall
@@ -164,6 +167,9 @@ help:
 		'make backup-sensitive BACKUP_DIR=...         Back up credentials separately' \
 		'make backup-all BACKUP_DIR=...               Back up all input categories' \
 		'make restore BACKUP_DIR=... RESTORE_SET=...  Selectively restore a backup set' \
+		'make fullbackup BACKUP_DIR=...            Full offline bundle (repo + images + vendor, gzip)' \
+		'make fullrestore BACKUP_DIR=...           Restore a full offline bundle (verifies checksums)' \
+		'  INCLUDE_SENSITIVE=YES BUNDLE_COMPRESS=xz  Sensitive opt-in and xz opt-in for fullbackup' \
 		'make board-foundation                  Install base, packages, core, sources' \
 		'make board-initial-setup               Install base, core, and all acceleration layers' \
 		'make board-initial-setup-gui           Add XFCE/X11, x11vnc, and enable LightDM' \
@@ -366,6 +372,51 @@ backup-all:
 
 restore:
 	BACKUP_DIR='$(BACKUP_DIR)' RESTORE_SET='$(RESTORE_SET)' RESTORE_FORCE='$(RESTORE_FORCE)' ./scripts/restore.sh
+
+fullbackup:
+	@if [[ -z '$(strip $(BACKUP_DIR))' ]]; then \
+		printf '%s\n' >&2 \
+			'ERROR: BACKUP_DIR is required.' \
+			'Usage:' \
+			'  make fullbackup BACKUP_DIR=/path/to/bundle [INCLUDE_SENSITIVE=YES] [BUNDLE_COMPRESS=gzip|xz|none]' \
+			'' \
+			'What it backs up (full offline kit, gzip default):' \
+			'  repo snapshot + repo.bundle (offline clone, later git pull) + reference-stack identity' \
+			'  required: Orange Pi / Radxa / Armbian source images, ai-sdk, ACUITY zip,' \
+			'            public ONNX, kernel source, work/sources/*, vendor-files/ when present' \
+			'  cache: work/vendor-output/*, derived preloaded image + checksums, VPU fixtures' \
+			'  sensitive (ONLY with INCLUDE_SENSITIVE=YES): not_logged_in_yet,' \
+			'            provisioning.sh, credential-bearing firstboot images' \
+			'' \
+			'Examples:' \
+			'  make fullbackup BACKUP_DIR=/mnt/usb/zero3w-bundle' \
+			'  make fullbackup BACKUP_DIR=/mnt/usb/zero3w-bundle INCLUDE_SENSITIVE=YES BUNDLE_COMPRESS=xz' \
+			'' \
+			'Restore:' \
+			'  make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle [RESTORE_SET=required|cache|sensitive|all]' \
+			'  Offline checkout: git clone /mnt/usb/zero3w-bundle/repo.bundle orangepi-zero3w-setup' \
+			'See: docs/reference/input-sources.md, ./scripts/create-offline-bundle.sh --help'; \
+		exit 2; \
+	fi
+	BACKUP_DIR='$(BACKUP_DIR)' INCLUDE_SENSITIVE='$(INCLUDE_SENSITIVE)' BUNDLE_COMPRESS='$(BUNDLE_COMPRESS)' ./scripts/create-offline-bundle.sh
+
+fullrestore:
+	@if [[ -z '$(strip $(BACKUP_DIR))' ]]; then \
+		printf '%s\n' >&2 \
+			'ERROR: BACKUP_DIR is required.' \
+			'Usage:' \
+			'  make fullrestore BACKUP_DIR=/path/to/bundle [RESTORE_SET=required|cache|sensitive|all]' \
+			'' \
+			'Verifies SHA256SUMS before extracting anything into the checkout.' \
+			'Sensitive restores always prompt (type RESTORE SENSITIVE).' \
+			'' \
+			'Examples:' \
+			'  make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle' \
+			'  make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle RESTORE_SET=cache' \
+			'See: ./scripts/restore-offline-bundle.sh --help'; \
+		exit 2; \
+	fi
+	BACKUP_DIR='$(BACKUP_DIR)' RESTORE_SET='$(RESTORE_SET)' RESTORE_FORCE='$(RESTORE_FORCE)' ./scripts/restore-offline-bundle.sh
 
 board-retroarch-install:
 	if [ "$$(id -u)" -eq 0 ]; then RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/install-retroarch.sh --install; else sudo RETROARCH_USER='$(RETROARCH_USER)' RETROARCH_AUDIO_DEVICE='$(RETROARCH_AUDIO_DEVICE)' ./scripts/install-retroarch.sh --install; fi

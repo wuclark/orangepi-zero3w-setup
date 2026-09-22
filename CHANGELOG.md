@@ -1,6 +1,23 @@
 # Changelog
 
-## Unreleased
+## 1.0.1 — 2026-09-22
+
+- Add a portable full offline bundle: `make fullbackup BACKUP_DIR=...`
+  (gzip default, `BUNDLE_COMPRESS=xz|none` opt-in) captures the repo snapshot
+  plus every private input — source images, AI SDK, ACUITY zip, public ONNX,
+  kernel source, `work/sources/*`, `vendor-files/`, generated vendor outputs,
+  and derived preloaded images — with `SHA256SUMS` verification.
+  `make fullrestore BACKUP_DIR=... [RESTORE_SET=...]` restores it after
+  checksum validation. Both targets print required arguments and restore
+  instructions when `BACKUP_DIR` is missing. Credentials and firstboot images
+  are only included with `INCLUDE_SENSITIVE=YES` plus typed confirmation.
+  New images or vendor files under the known roots are picked up automatically
+  by pattern (`tests/test-bundle-manifest.sh` guards coverage).
+- The offline bundle now also carries `repo.bundle` (full git history via
+  `git bundle create --all`, checksummed in `SHA256SUMS`): a new machine can
+  `git clone` the checkout with no GitHub access and retarget origin for
+  later `git pull`s, so only host `apt` setup needs the network.
+  `make fullrestore` retargets a bundle-cloned origin automatically.
 
 - Add opt-in `--move-fraction` to the touch daemon: the movement allowance as
   a fraction of the larger axis range (read from the device at startup),

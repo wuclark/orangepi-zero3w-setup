@@ -30,6 +30,27 @@ Every new artifact must be classified as tracked source, private input,
 rebuildable output, installed system state, or evidence. Add it to the correct
 backup set and Git exclusion policy before introducing it to a workflow.
 
+## Full offline bundle
+
+`make fullbackup BACKUP_DIR=...` (gzip default) writes one portable bundle
+outside the checkout: `repo-snapshot.tar.gz`, `required.tar.gz`, `cache.tar.gz`,
+optionally `sensitive.tar.gz`, plus `bundle-info.txt` and top-level `SHA256SUMS`.
+
+- `required` = private hard-to-replace inputs (source images, AI SDK, ACUITY
+  zip, public ONNX, kernel source, `work/sources/*`, `vendor-files/`).
+- `cache` = rebuildable outputs (`work/vendor-output/*`, derived preloaded
+  images, VPU fixtures). Credential-bearing firstboot images are excluded here.
+- `sensitive` = credentials (`not_logged_in_yet`, `provisioning.sh`,
+  firstboot images), only with `INCLUDE_SENSITIVE=YES` plus typed confirmation.
+- New images or vendor files under `work/images/`, `vendor-files/`,
+  `vendor-root/`, `work/vendor-output/`, or `work/sources/` match the bundle
+  patterns in `scripts/create-offline-bundle.sh` automatically; update that
+  pattern list and this section together when a genuinely new root appears.
+- Classification: the bundle is private input + rebuildable cache (sensitive
+  subset when included). Store it outside Git; encrypt before any network copy
+  when sensitive. Restore with `make fullrestore BACKUP_DIR=...`, which
+  verifies `SHA256SUMS` before extracting anything.
+
 ## Board replay manifest
 
 `/etc/orangepi-zero3w-setup/manifest.json` records every repo-managed board

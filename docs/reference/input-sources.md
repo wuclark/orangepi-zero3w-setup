@@ -80,6 +80,31 @@ similarly named image. The extractor refuses ambiguous image matches and
 validates the pinned reference hashes when they are supplied through
 `GPU_VPU_SHA256` and `NPU_SHA256`.
 
+## Full offline bundle
+
+When every input is already in place, capture them in one portable bundle:
+
+```bash
+make fullbackup BACKUP_DIR=/mnt/usb/zero3w-bundle
+make fullbackup BACKUP_DIR=/mnt/usb/zero3w-bundle INCLUDE_SENSITIVE=YES BUNDLE_COMPRESS=xz
+```
+
+With no `BACKUP_DIR`, the target prints the required arguments, set contents,
+and restore instructions instead of guessing. Compression defaults to gzip
+(fast; raw `.img` files shrink ~30-50% while `.tar.gz`/`.zip`/`.onnx` inputs
+barely shrink further). Restore on any fresh checkout with:
+
+```bash
+make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle
+make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle RESTORE_SET=cache
+```
+
+Checksums are verified before anything is copied; credential-bearing files
+(`not_logged_in_yet`, `provisioning.sh`, firstboot images) are only bundled
+and restored with explicit sensitive confirmation. New images or vendor files
+dropped under `work/images/`, `vendor-files/`, `vendor-root/`,
+`work/vendor-output/`, or `work/sources/` are picked up automatically.
+
 ## Boundaries and non-goals
 
 This page does not provide proprietary binaries, firmware, kernel modules,
