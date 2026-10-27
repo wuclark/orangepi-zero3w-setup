@@ -106,6 +106,26 @@ progress() {
     printf '[%s] [%s] %s\n' "offline-bundle" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"
 }
 
+# Long image archives and checksum passes can take minutes on removable drives.
+# Keep the terminal visibly alive without requiring optional progress tools.
+run_with_heartbeat() {
+    local description=${1:?heartbeat description required}
+    shift
+    local heartbeat_pid
+    (
+        while :; do
+            sleep 30
+            progress "$description is still running..."
+        done
+    ) &
+    heartbeat_pid=$!
+    local result=0
+    "$@" || result=$?
+    kill "$heartbeat_pid" 2>/dev/null || true
+    wait "$heartbeat_pid" 2>/dev/null || true
+    return "$result"
+}
+
 while (($#)); do
     case "$1" in
         --destination|--output) BACKUP_DIR=${2:?}; shift 2;;
@@ -266,11 +286,22 @@ tar_one() {
     (($#)) || return 0
     progress "Archiving $(basename "$output") ($# paths, $compression)..."
     case "$compression" in
-        gzip) tar -C "$REPO_ROOT" -czf "$output" "$@" ;;
-        xz) tar -C "$REPO_ROOT" -cJf "$output" "$@" ;;
-        none) tar -C "$REPO_ROOT" -cf "$output" "$@" ;;
+        gzip) run_with_heartbeat "Creating $(basename "$output")" tar -C "$REPO_ROOT" -czf "$output" "$@" ;;
+        xz) run_with_heartbeat "Creating $(basename "$output")" tar -C "$REPO_ROOT" -cJf "$output" "$@" ;;
+        none) run_with_heartbeat "Creating $(basename "$output")" tar -C "$REPO_ROOT" -cf "$output" "$@" ;;
     esac
     printf '%s\n' "$@" >"$output.files.txt"
+}
+
+# chmod is unavailable or advisory on some Windows-mounted filesystems. Keep
+# backups portable there, but make the reduced protection explicit for any
+# credential-bearing archive written to such a destination.
+set_private_permissions() {
+    local label=$1
+    shift
+    if ! chmod 600 "$@" 2>/dev/null; then
+        progress "WARNING: destination cannot enforce private permissions for $label; protect this backup with Windows ACLs or encryption."
+    fi
 }
 
 progress "Writing repo snapshot (git archive HEAD)..."
@@ -298,7 +329,7 @@ tar_one "$BACKUP_DIR/cache.$suffix" "$BUNDLE_COMPRESS" ${cache_files[@]+"${cache
 if ((sensitive_requested)); then
     mkdir -p -m 700 "$BACKUP_DIR"
     tar_one "$BACKUP_DIR/sensitive.$suffix" "$BUNDLE_COMPRESS" "${sensitive_files[@]}"
-    chmod 600 "$BACKUP_DIR/sensitive.$suffix" "$BACKUP_DIR/sensitive.$suffix.files.txt"
+    set_private_permissions 'sensitive backup files' "$BACKUP_DIR/sensitive.$suffix" "$BACKUP_DIR/sensitive.$suffix.files.txt"
 fi
 
 {
@@ -320,13 +351,23 @@ fi
         printf 'reference_stack_mtime=%s\n' "$(stat -c %y "$REPO_ROOT/manifests/reference-stack.env" 2>/dev/null || echo unknown)"
     fi
 } >"$BACKUP_DIR/bundle-info.txt"
-chmod 600 "$BACKUP_DIR/bundle-info.txt"
+set_private_permissions 'bundle metadata' "$BACKUP_DIR/bundle-info.txt"
 
-(cd "$BACKUP_DIR" && sha256sum bundle-info.txt repo-snapshot.tar* repo.bundle required."$suffix" cache."$suffix" 2>/dev/null >SHA256SUMS)
-if ((sensitive_requested)); then
+write_primary_checksums() {
+    (cd "$BACKUP_DIR" && sha256sum bundle-info.txt repo-snapshot.tar* repo.bundle required."$suffix" cache."$suffix" 2>/dev/null >SHA256SUMS)
+}
+write_sensitive_checksum() {
     (cd "$BACKUP_DIR" && sha256sum sensitive."$suffix" >>SHA256SUMS)
+}
+verify_checksums() {
+    (cd "$BACKUP_DIR" && sha256sum -c SHA256SUMS >/dev/null)
+}
+
+run_with_heartbeat 'Calculating backup checksums' write_primary_checksums
+if ((sensitive_requested)); then
+    run_with_heartbeat 'Calculating sensitive backup checksum' write_sensitive_checksum
 fi
-(cd "$BACKUP_DIR" && sha256sum -c SHA256SUMS >/dev/null)
+run_with_heartbeat 'Verifying backup checksums' verify_checksums
 
 du -sh "$BACKUP_DIR" >&2 || true
 progress "Bundle complete: $BACKUP_DIR (compression=$BUNDLE_COMPRESS, sensitive=$([ "$sensitive_requested" -eq 1 ] && echo YES || echo no))"
