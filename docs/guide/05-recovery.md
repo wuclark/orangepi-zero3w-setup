@@ -78,6 +78,44 @@ make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle
 make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle RESTORE_SET=cache
 ```
 
+The restore verifies `SHA256SUMS` before extraction and again afterward. For a
+safe recovery test, clone into a separate directory and restore there; allow
+enough free space for the extracted images and source trees:
+
+```bash
+git clone https://github.com/wuclark/orangepi-zero3w-setup.git ~/github/orangepi-zero3w-restore-test
+cd ~/github/orangepi-zero3w-restore-test
+make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle
+```
+
+Confirm the `RESTORE` prompt. A successful run ends with `Restore complete: all`.
+Only then consider removing the previous checkout.
+
+If automatic extraction of a gzip set fails with `gzip: stdin: Cannot allocate
+memory` or `tar: Unexpected EOF in archive`, do not assume the archive is bad
+or the restore succeeded. Check free space and verify the bundle first:
+
+```bash
+cd /mnt/usb/zero3w-bundle
+sha256sum -c SHA256SUMS
+```
+
+If all checksums pass, manual extraction can be used in the fresh checkout:
+
+```bash
+cd ~/github/orangepi-zero3w-restore-test
+tar -xzf /mnt/usb/zero3w-bundle/required.tar.gz
+tar -xzf /mnt/usb/zero3w-bundle/cache.tar.gz
+cd /mnt/usb/zero3w-bundle
+sha256sum -c SHA256SUMS
+```
+
+The manual commands explicitly select gzip. The automated restore now does the
+same based on each archive suffix; the original error was consistent with a
+host `tar`/gzip auto-detection or resource issue, but the exact cause cannot be
+confirmed from the error alone. The reported bundle was readable by explicit
+`tar -xzf` and all its checksums passed.
+
 New images or vendor files under `work/images/`, `vendor-files/`,
 `vendor-root/`, `work/vendor-output/`, or `work/sources/` are picked up
 automatically by pattern (see `scripts/create-offline-bundle.sh`).

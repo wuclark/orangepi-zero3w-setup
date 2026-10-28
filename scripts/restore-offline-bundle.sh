@@ -116,7 +116,15 @@ for set_name in "${sets[@]}"; do
         echo "ERROR: unsafe path in bundle archive: $archive" >&2
         exit 1
     fi
-    tar -C "$REPO_ROOT" -xf "$archive"
+    # Select the decompressor explicitly. Some GNU tar builds fail to
+    # auto-detect gzip archives on mounted filesystems even when direct
+    # `tar -xzf` succeeds; the archive suffix is already validated above.
+    case "$archive" in
+        *.tar.gz) tar -C "$REPO_ROOT" -xzf "$archive" ;;
+        *.tar.xz) tar -C "$REPO_ROOT" -xJf "$archive" ;;
+        *.tar) tar -C "$REPO_ROOT" -xf "$archive" ;;
+        *) echo "ERROR: unsupported archive format: $archive" >&2; exit 2;;
+    esac
 done
 
 (cd "$BACKUP_DIR" && sha256sum -c SHA256SUMS >/dev/null)

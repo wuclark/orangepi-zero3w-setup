@@ -2,6 +2,8 @@
 
 ## 1.0.1 — 2026-09-22
 
+- Make `fullrestore` select gzip or xz explicitly from the archive suffix and
+  document a separate-checkout restore test plus manual gzip recovery steps.
 - Add a portable full offline bundle: `make fullbackup BACKUP_DIR=...`
   (gzip default, `BUNDLE_COMPRESS=xz|none` opt-in) captures the repo snapshot
   plus every private input — source images, AI SDK, ACUITY zip, public ONNX,

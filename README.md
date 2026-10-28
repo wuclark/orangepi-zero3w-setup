@@ -327,6 +327,17 @@ make fullrestore BACKUP_DIR=/mnt/usb/zero3w-bundle RESTORE_SET=cache
 automatically. Credentials and firstboot images are only included with
 `INCLUDE_SENSITIVE=YES` plus typed confirmation.
 
+If `make fullrestore` fails while extracting a `.tar.gz` archive with a gzip
+memory or unexpected-EOF error, first verify the bundle with
+`(cd "$BACKUP_DIR" && sha256sum -c SHA256SUMS)`. If checksums pass, try the
+manual extraction in the fresh checkout: `tar -xzf "$BACKUP_DIR/required.tar.gz"`
+and `tar -xzf "$BACKUP_DIR/cache.tar.gz"`. Then verify the bundle checksums
+again. Keep the original checkout until both sets are restored and checked.
+The automated restore now selects gzip/xz explicitly; manual extraction is a
+fallback for older checkouts or host-specific tar behavior. See the
+[recovery guide](docs/guide/05-recovery.md#full-offline-bundle) for the full
+procedure.
+
 The first-boot generator asks for a hostname and creates a one-time
 `/root/provisioning.sh` hook to apply it after the first successful login.
 Armbian's preset file itself contains only documented first-boot variables.
